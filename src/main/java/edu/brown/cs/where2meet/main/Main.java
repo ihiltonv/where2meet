@@ -2,6 +2,7 @@ package edu.brown.cs.where2meet.main;
 
 import com.google.gson.Gson;
 
+import edu.brown.cs.where2meet.database.W2MDatabase;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -29,5 +30,7 @@ public final class Main {
     parser.accepts("port").withRequiredArg().ofType(Integer.class)
         .defaultsTo(DEFAULT_PORT);
     OptionSet options = parser.parse(args);
+    W2MDatabase wmdb = new W2MDatabase();
+    System.out.println("Finished");
   }
 }
