@@ -8,6 +8,8 @@ import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
+import edu.brown.cs.where2meet.event.Event;
+
 public class W2MDatabase {
   
   private MongoClient mongoClient;
@@ -29,7 +31,7 @@ public class W2MDatabase {
      return eventDatabase.getCollection(name);
   }
   
-  public void addEvent(String id, String name) {
+  public void addEvent(Event event) {
     
   }
 
