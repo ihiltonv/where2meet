@@ -1,1 +1,7 @@
 /target/
+
+.classpath
+
+.mvn-classpath
+
+/.idea
