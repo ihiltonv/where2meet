@@ -13,5 +13,17 @@ public class Event {
     this.name = name;
     this.users = users;
   }
+  
+  public Set<User> getUsers(){
+    return this.users;
+  }
+  
+  public String getId() {
+    return this.id;
+  }
+  
+  public String getName() {
+    return this.name;
+  }
 
 }
