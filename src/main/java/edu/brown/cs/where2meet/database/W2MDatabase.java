@@ -44,6 +44,7 @@ public class W2MDatabase {
   
   public void addEvent(Event event) {
     DBCollection eventColl = eventDatabase.getCollection("events");
+    eventColl.drop();
     
     Set<User> users = event.getUsers();
     BasicDBList dbusers = new BasicDBList();
@@ -87,6 +88,7 @@ public class W2MDatabase {
   
   public void addUser(User user) {
     DBCollection userColl = eventDatabase.getCollection("users");
+    userColl.drop();
     DBObject person = new BasicDBObject("_id", user.getId()).append("name", user.getName());
     try{
     userColl.insert(person);
