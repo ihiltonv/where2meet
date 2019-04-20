@@ -1,5 +1,6 @@
 package edu.brown.cs.where2meet.event;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -10,6 +11,7 @@ public class User {
   
   private String name;
   private String id;
+  private Set<String> events;
   private Set<String> filters;
   
   /**
@@ -21,6 +23,17 @@ public class User {
   public User(String id, String name) {
     this.name = name;
     this.id = id;
+    this.events = new HashSet<>();
+    this.filters = new HashSet<>();
+    
+  }
+  
+  public User(String id, String name, Set<String> events) {
+    this.name = name;
+    this.id = id;
+    this.events = events;
+    this.filters = new HashSet<>();
+    
   }
   
   public String getName() {
@@ -29,6 +42,16 @@ public class User {
   
   public String getId() {
     return this.id;
+  }
+  
+  public void addEvent(String e) {
+    if(!events.contains(e)) {
+      events.add(e);
+    }
+  }
+  
+  public Set<String> getEvents(){
+    return this.events;
   }
 
   @Override
@@ -42,23 +65,30 @@ public class User {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     User other = (User) obj;
     if (id == null) {
-      if (other.id != null)
+      if (other.id != null) {
         return false;
-    } else if (!id.equals(other.id))
+      }
+    } else if (!id.equals(other.id)) {
       return false;
+    }
     if (name == null) {
-      if (other.name != null)
+      if (other.name != null) {
         return false;
-    } else if (!name.equals(other.name))
+      }
+    } else if (!name.equals(other.name)) {
       return false;
+    }
     return true;
   }
 

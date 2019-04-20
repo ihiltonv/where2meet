@@ -2,11 +2,14 @@ package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
+
+import com.mongodb.DBCollection;
 
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.User;
@@ -22,9 +25,11 @@ public class W2MDatabaseTest {
   @Test
   public void testAddUser() {
     W2MDatabase db = new W2MDatabase("testdb");
+    DBCollection userColl = db.getCollection("users");
+    userColl.drop();
     User test = new User("id","name");
-    db.addUser(test);
-    User ret = db.getUser("id");
+    W2MDatabase.addUser(test);
+    User ret = W2MDatabase.getUser("id");
     assertEquals(ret.getName(),"name");
     assertEquals(ret.getId(),"id");
     
@@ -32,19 +37,67 @@ public class W2MDatabaseTest {
   
   @Test
   public void testAddEvent() {
+    
     W2MDatabase db = new W2MDatabase("testdb");
-    User uTest = new User("uid","uname");
-    db.addUser(uTest);
-    Set<User> userList = new HashSet<User>();
-    userList.add(uTest);
+    DBCollection eventColl = db.getCollection("events");
+    eventColl.drop();
+    
+    User uTest1 = new User("uid1","uname1");
+    User uTest2 = new User("uid2","uname2");
+    Set<String> userList = new HashSet<>();
+    userList.add(uTest1.getId());
+    userList.add(uTest2.getId());
     Event test = new Event("id","name",userList);
     db.addEvent(test);
-    Event ret = db.getEvent("id");
+    Event ret = W2MDatabase.getEvent("id");
     assertEquals(ret.getName(),"name");
     assertEquals(ret.getId(),"id");
-    Set<User> users = ret.getUsers();
-    assertEquals(users.size(),1);
-    assertEquals(users.toArray()[0],new User("uid","uname"));
+    Set<String> users = ret.getUsers();
+    assertEquals(users.size(),2);
+    assertEquals(users.toArray()[0],"uid2");
+    assertEquals(users.toArray()[1],"uid1");
+  }
+  
+  @Test
+  public void testAddUserWithEvent() {
+    
+    W2MDatabase db = new W2MDatabase("testdb");
+    DBCollection eventColl = db.getCollection("events");
+    eventColl.drop();
+    DBCollection userColl = db.getCollection("users");
+    userColl.drop();
+    
+    User uTest = new User("userid1","uname1");
+    W2MDatabase.addUser(uTest);
+    Event eTest1 = new Event("eid1","ename1");
+    Event eTest2 = new Event("eid2","ename2");
+    eTest1.addUser(uTest.getId());
+    eTest2.addUser(uTest.getId());
+    db.addEvent(eTest1);
+    db.addEvent(eTest2);
+    W2MDatabase.addUser(uTest);
+    
+    User ret = W2MDatabase.getUser("userid1");
+    assertEquals(ret.getName(),"uname1");
+    assertEquals(ret.getId(),"userid1");
+    Set<String> events = ret.getEvents();
+    Set<String> userSet = new HashSet<>();
+    userSet.add(uTest.getId());
+    assertEquals(events.size(),2);
+    String e1 = (String)events.toArray()[1];
+    String e2 = (String)events.toArray()[0];
+    assertEquals(e2,"eid2");
+    assertEquals(e1,"eid1");
+    Event event1 = W2MDatabase.getEvent(e1);
+    Event event2 = W2MDatabase.getEvent(e2);
+    assertEquals(event1.getName(),"ename1");
+    assertEquals(event2.getName(),"ename2");
+    Set<String> eusers1 = event1.getUsers();
+    Set<String> eusers2 = event2.getUsers();
+    assertEquals(eusers1.size(),1);
+    assertEquals(eusers2.size(),1);
+    assertTrue(eusers1.contains("userid1"));
+    assertTrue(eusers2.contains("userid1"));
   }
 
 }
