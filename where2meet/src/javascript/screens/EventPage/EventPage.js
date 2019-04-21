@@ -4,8 +4,14 @@ import '../../../css/App.css';
 import '../../../javascript/components/Modal/InputForm.css';
 import './EventPage.css'
 import '../../components/Modal/Geosuggest.css'
-import Geosuggest from 'react-geosuggest';
 import CustomizedTable from '../../components/CustomizedTable/CustomizedTable'
+import Geosuggest from 'react-geosuggest'
+
+const fakeData = [
+    {"venue": 'Frozen yoghurt', "votes": "10", "location": 'Thayer', "url": 'www.something.com'},
+    {"venue": 'Ice Cream', "votes": "10", "location": 'Thayer', "url": 'www.something.com'},
+    {"venue": 'Cake', "votes": "10", "location": 'Thayer', "url": 'www.something.com'},
+];
 
 class EventPage extends React.Component {
     constructor() {
@@ -21,29 +27,34 @@ class EventPage extends React.Component {
                 <header className="App-header">
                     {this.state.GroupName}
                 </header>
+                <div className={"tablesContainer"}>
+                    <div className={"leaderBoardContainer"}>
+                        <div className={"tableTitle"}>
+                            Current LeaderBoard
+                        </div>
+                        <CustomizedTable data={fakeData}/>
+                    </div>
+                    <div className={"yourPicksContainer"}>
+                        <div className={"tableTitle"}>
+                            Your Picks
+                        </div>
+                        <CustomizedTable data={fakeData}/>
+                    </div>
+                </div>
                 <div className="InputContainer">
-                    <div>Your Name:</div>
-                    <input className="name-input" id={"nameInput"} type={"text"} placeholder=" "/>
-                    <div>Location:</div>
-                    <div className="location-input">
+                    <div>
+                        <div>Your Name:</div>
+                        <input className="name-input" id={"nameInput"} type={"text"} placeholder=" "/>
+                    </div>
+                    <div>
+                        <div>Location:</div>
                         <Geosuggest placeholder={""} id={"geoSuggest"} style={{'input': geoSuggestInputStyle}}/>
                     </div>
                 </div>
-                <div className={"leaderBoardContainer"}>
-                    <div className={"leaderboardTitle"}>
-                        Current LeaderBoard
-                    </div>
-                    <CustomizedTable/>
-                </div>
-                {/*<div className={"choiceButtonsContainer"}>*/}
-
-                {/*<button style={{"background-color": "lawngreen"}}>*/}
-                {/*1*/}
-                {/*</button>*/}
-                {/*<button style={{"background-color": "limegreen"}}/>*/}
-                {/*<button style={{"background-color": "lightgreen"}}/>*/}
-                {/*</div>*/}
                 <div className={"suggestionsBoardContainer"}>
+                    <div className={"tableTitle"}>
+                        Some Suggestions
+                    </div>
                     <CustomizedTable/>
                 </div>
             </div>
@@ -56,9 +67,9 @@ class EventPage extends React.Component {
 export default EventPage
 
 const geoSuggestInputStyle = {
-    "margin-top": "-25px",
+    "margin-top": "-30px",
     "width": "30vw",
-    "height": "9vh",
+    "height": "8vh",
     "border-width": "2px",
     "border-radius": "10px",
     "border-style": "inset",
