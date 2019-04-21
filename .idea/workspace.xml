@@ -140,11 +140,6 @@
             <path>
               <item name="term-project--glee43-ihiltonv-jhuddle1-thouchen" type="b2602c69:ProjectViewProjectNode" />
               <item name="term-project--glee43-ihiltonv-jhuddle1-thouchen" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="term-project--glee43-ihiltonv-jhuddle1-thouchen" type="b2602c69:ProjectViewProjectNode" />
-              <item name="term-project--glee43-ihiltonv-jhuddle1-thouchen" type="462c0819:PsiDirectoryNode" />
               <item name="where2meet" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -189,12 +184,12 @@
       <option name="presentableId" value="Default" />
       <updated>1555614896567</updated>
       <workItem from="1555614899905" duration="5759000" />
-      <workItem from="1555869989801" duration="268000" />
+      <workItem from="1555869989801" duration="386000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6528000" />
+    <option name="totallyTimeSpent" value="6646000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="804" extended-state="6" />
