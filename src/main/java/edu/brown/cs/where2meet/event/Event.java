@@ -13,47 +13,62 @@ import edu.brown.cs.where2meet.database.W2MDatabase;
  */
 public class Event {
 
-  private String id;
+  private Long id;
   private String name;
   private Set<String> users;
   private List<Double> coordinates;
+  private String date;
+  private String time;
 
   /**
    * Constructor for an Event.
    *
-   * @param id
-   *          the id of the event
    * @param name
    *          the name of the event.
+   * @param coordinates
+   *          the coordinates that the event
+   *          should be near
+   * @param date
+   *          a String representing the date of
+   *          the event
+   * @param time
+   *          a String representing the time of
+   *          the event
    */
-  public Event(String id, String name) {
-    this.id = id;
+  public Event(String name, List<Double> coordinates, String date, String time) {
+    this.id = System.currentTimeMillis();
     this.name = name;
     this.users = new HashSet<>();
-    this.coordinates = new ArrayList<>();
+    this.coordinates = coordinates;
+    this.date = date;
+    this.time = time;
   }
 
   /**
    * A constructor for the Event.
    *
-   * @param id
-   *          the id of the event.
    * @param name
    *          the name of the event.
    * @param users
    *          the users in the event.
    * @param coordinates
    *          the coordinates of the event's location.
+   * @param date
+   *          a String representing the event's date
+   * @param time
+   *          a String representing the event's time
    */
-  public Event(String id, String name, Set<String> users,
-      List<Double> coordinates) {
-    this.id = id;
+  public Event(String name, Set<String> users,
+      List<Double> coordinates, String date, String time) {
+    this.id = System.currentTimeMillis();
     this.name = name;
     this.users = users;
     for (String u : users) {
       addUser(u);
     }
     this.coordinates = coordinates;
+    this.date = date;
+    this.time = time;
   }
 
   @Override
@@ -131,7 +146,7 @@ public class Event {
    *
    * @return the id of the event
    */
-  public String getId() {
+  public Long getId() {
     return this.id;
   }
 
