@@ -1,6 +1,7 @@
 package edu.brown.cs.where2meet.main;
 
 import com.google.gson.Gson;
+
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -26,7 +27,8 @@ public final class Main {
     OptionParser parser = new OptionParser();
     parser.accepts("gui");
     parser.accepts("port").withRequiredArg().ofType(Integer.class)
-        .defaultsTo(Main.DEFAULT_PORT);
-    OptionSet options = parser.parse(this.args);
+        .defaultsTo(DEFAULT_PORT);
+    OptionSet options = parser.parse(args);
+
   }
 }
