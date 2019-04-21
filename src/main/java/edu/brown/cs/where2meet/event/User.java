@@ -12,7 +12,7 @@ public class User {
 
   private String name;
   private String id;
-  private Set<String> events;
+  private Set<Long> events;
   private List<Double> coordinates;
 
   /**
@@ -45,7 +45,7 @@ public class User {
    * @param coords
    *          the coordinates of the user's location.
    */
-  public User(String id, String name, Set<String> events, List<Double> coords) {
+  public User(String id, String name, Set<Long> events, List<Double> coords) {
     this.name = name;
     this.id = id;
     this.events = events;
@@ -77,7 +77,7 @@ public class User {
    * @param e
    *          the event to add.
    */
-  public void addEvent(String e) {
+  public void addEvent(Long e) {
     if (!events.contains(e)) {
       events.add(e);
     }
@@ -88,7 +88,7 @@ public class User {
    *
    * @return the events of the user.
    */
-  public Set<String> getEvents() {
+  public Set<Long> getEvents() {
     return this.events;
   }
 

@@ -3,6 +3,7 @@ package edu.brown.cs.where2meet.main;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+import edu.brown.cs.where2meet.event.Event;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -79,15 +81,44 @@ public final class Main {
     //
 
     // Setup Spark Routes
-    Spark.post("/event", new EventHandler(), freeMarker);
-    Spark.post("/vote", new VoteHandler(), freeMarker);
+    Spark.post("/event", new EventHandler());
+    Spark.post("/vote", new EventHandler());
   }
 
   /**
-   * This class handles post requests that want
-   * to find the nearest intersection to a set of coordinates.
+   * This class handles the creation of new events.
    */
-  public static class EventHandler() implements Route {
+  public static class EventHandler implements Route {
+
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String name = qm.value("name");
+      double lat = Double.parseDouble(qm.value("lat"));
+      double lon = Double.parseDouble(qm.value("lon"));
+      String date = qm.value("date");
+      String time = qm.value("time");
+
+      List<Double> coordinates = new ArrayList<>();
+      coordinates.add(lat);
+      coordinates.add(lon);
+
+      Event event = new Event(name, coordinates, date, time);
+
+
+      Map<String, Object> variables =
+              ImmutableMap.of();
+
+
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class handles a user voting in a specific
+   * event.
+   */
+  public static class VoteHandler implements Route {
 
     @Override
     public String handle(Request req, Response res) {
@@ -95,7 +126,8 @@ public final class Main {
 
 
       Map<String, Object> variables =
-              ImmutableMap.of("data", data, "error", error);
+              ImmutableMap.of();
+
 
       return GSON.toJson(variables);
     }
