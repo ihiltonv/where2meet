@@ -5,11 +5,7 @@ import com.google.common.cache.CacheLoader;
 import edu.brown.cs.where2meet.event.Event;
 
 /**
- *
- * @author jhuddle1
- *
- *         Class uses to hold a cache that contains the edges associated with a
- *         given MapNode
+ * A class to handle loading in events to the cache.
  *
  */
 public class EventCacheLoader extends CacheLoader<String, Event> {

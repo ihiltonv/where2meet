@@ -5,11 +5,7 @@ import com.google.common.cache.CacheLoader;
 import edu.brown.cs.where2meet.event.User;
 
 /**
- *
- * @author jhuddle1
- *
- *         Class uses to hold a cache that contains the edges associated with a
- *         given MapNode
+ * A class to load in users for the user cache.
  *
  */
 public class UserCacheLoader extends CacheLoader<String, User> {
