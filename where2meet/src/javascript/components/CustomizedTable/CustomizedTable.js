@@ -15,7 +15,7 @@ const CustomTableCell = withStyles(theme => ({
         fontSize: 20
     },
     body: {
-        fontSize: 20,
+        fontSize: 15,
     },
 }))(TableCell);
 
@@ -28,7 +28,7 @@ const styles = theme => ({
             overflowY: 'auto',
         },
         table: {
-            minWidth: 700,
+            minWidth: 500,
         },
         row: {
             '&:nth-of-type(odd)': {
@@ -43,6 +43,7 @@ const styles = theme => ({
             '&:nth-of-type(3)': {
                 backgroundColor: "lightgreen",
             },
+            maxHeight: "100px"
         },
     })
 ;
@@ -52,18 +53,21 @@ let id = 0;
 function createData(venue, votes, location, url) {
     id += 1;
     return {id, venue, votes, location, url};
+};
+
+function createRows(data) {
+    let dataRows = [];
+    for (let i in data) {
+        const item = data[i];
+        dataRows.push(createData(item.venue, item.votes, item.location, item.url))
+    }
+    return dataRows;
 }
 
-const rows = [
-    createData('Frozen yoghurt', 10, 'Thayer', 'www.something.com'),
-    createData('Ice cream sandwich', 9, 'Thayer', 'www.something.com'),
-    createData('Eclair', 6, 'Thayer', 'www.something.com'),
-    createData('Cupcake', 5, 'Thayer', 'www.something.com'),
-    createData('Gingerbread', 1, 'Thayer', 'www.something.com'),
-];
-
 function CustomizedTable(props) {
-    const {classes} = props;
+    const {classes, data} = props;
+    id = 0;
+    const rows = createRows(data);
 
     return (
         <Paper className={classes.root}>
@@ -84,9 +88,9 @@ function CustomizedTable(props) {
                                 {row.id}
                             </CustomTableCell>
                             <CustomTableCell align="center">{row.venue}</CustomTableCell>
-                            <CustomTableCell align="right">{row.votes}</CustomTableCell>
-                            <CustomTableCell align="right">{row.location}</CustomTableCell>
-                            <CustomTableCell align="right">{row.url}</CustomTableCell>
+                            <CustomTableCell align="center">{row.votes}</CustomTableCell>
+                            <CustomTableCell align="center">{row.location}</CustomTableCell>
+                            <CustomTableCell align="center">{row.url}</CustomTableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -97,6 +101,7 @@ function CustomizedTable(props) {
 
 CustomizedTable.propTypes = {
     classes: PropTypes.object.isRequired,
+    data: [],
 };
 
 export default withStyles(styles)(CustomizedTable);

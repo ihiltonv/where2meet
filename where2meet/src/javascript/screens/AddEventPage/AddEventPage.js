@@ -1,11 +1,10 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import '../../../css/App.css';
 import Modal from '../../components/Modal/Modal.js'
 
-export default class AddEventPage extends Component  {
+export default class AddEventPage extends Component {
     constructor() {
         super();
-
         this.state = {
             isShowing: false
         }
@@ -23,7 +22,7 @@ export default class AddEventPage extends Component  {
         });
     };
 
-    goToEvent = () =>{
+    goToEvent = () => {
         this.props.history.push('/event');
     };
 
@@ -38,9 +37,8 @@ export default class AddEventPage extends Component  {
                     className="modal"
                     show={this.state.isShowing}
                     close={this.closeModalHandler}>
-                    Maybe aircrafts fly very high because they don't want to be seen in plane sight?
                 </Modal>
-                <button className="Add-button" onClick={()=> this.openModalHandler()}>
+                <button className="Add-button" onClick={() => this.openModalHandler()}>
                     +
                 </button>
                 <p className={"App-label"}>

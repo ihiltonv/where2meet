@@ -6,10 +6,9 @@ import './Geosuggest.css';
 import './InputForm.css';
 
 
+class modal extends React.Component {
 
-class modal extends React.Component{
-
-    render(){
+    render() {
         return (
             <div>
                 <div className="modal-wrapper"
@@ -29,13 +28,17 @@ class modal extends React.Component{
                         </div>
 
                         <div className="floating-label">
-                        <input className="floating-input" id={"timeInput"} type={"text"} onClick={() => document.getElementById("timeInput").setAttribute("type", 'time')} placeholder=" "/>
-                        <span className="highlight"></span>
-                        <label>Meeting Time</label>
-                    </div>
+                            <input className="floating-input" id={"timeInput"} type={"text"}
+                                   onClick={() => document.getElementById("timeInput").setAttribute("type", 'time')}
+                                   placeholder=" "/>
+                            <span className="highlight"></span>
+                            <label>Meeting Time</label>
+                        </div>
 
                         <div className="floating-label">
-                            <input className="floating-input" type="text" id={"dateInput"} onClick={() => document.getElementById("dateInput").setAttribute("type", 'date')} placeholder=" "/>
+                            <input className="floating-input" type="text" id={"dateInput"}
+                                   onClick={() => document.getElementById("dateInput").setAttribute("type", 'date')}
+                                   placeholder=" "/>
                             <span className="highlight"></span>
                             <label>Meeting Date</label>
                         </div>
@@ -55,7 +58,11 @@ class modal extends React.Component{
                         {/*</div>*/}
 
                         <div className="floating-label">
-                            <Geosuggest className="floating-input" id={"geoSuggest"} placeholder={"Meeting Location"} onClick ={() => {document.getElementById("locationLabel").removeAttribute("hidden"); document.getElementById("geoSuggest").setAttribute("placeholder", " ") }}/>
+                            <Geosuggest className="floating-input" id={"geoSuggest"} placeholder={"Meeting Location"}
+                                        onClick={() => {
+                                            document.getElementById("locationLabel").removeAttribute("hidden");
+                                            document.getElementById("geoSuggest").setAttribute("placeholder", " ")
+                                        }}/>
                             <span className="highlight"></span>
                             <label id="locationLabel" hidden={true}>Meeting Location</label>
                         </div>
