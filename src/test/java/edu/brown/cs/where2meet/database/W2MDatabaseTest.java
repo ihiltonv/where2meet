@@ -27,6 +27,7 @@ public class W2MDatabaseTest {
   public void testAddUser() {
     System.out.println("TestAddUser\n");
     W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
     db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
@@ -43,8 +44,8 @@ public class W2MDatabaseTest {
   public void testAddEvent() {
     System.out.println("TestAddEvent\n");
     W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
     db.createdb();
-
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
@@ -84,8 +85,8 @@ public class W2MDatabaseTest {
   public void testAddUserWithEvent() {
     System.out.println("TestAddUserWithEvent\n");
     W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
     db.createdb();
-
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
@@ -126,6 +127,40 @@ public class W2MDatabaseTest {
     assertEquals(eusers2.size(), 1);
     assertTrue(eusers1.contains(uid));
     assertTrue(eusers2.contains(uid));
+  }
+
+  @Test
+  public void testUpdateUser() {
+    System.out.println("TestUpdateUser\n");
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    User uTest1 = new User("/n/1", coords);
+    W2MDatabase.addUser(uTest1);
+    Long uid = uTest1.getId();
+    Event eTest1 = new Event("/e/1", coords, "date", "time");
+    db.addEvent(eTest1);
+    eTest1.addUser(uid);
+    User ret = W2MDatabase.getUser(uid);
+    assertEquals(ret.getCategory(), "");
+    assertEquals(ret.getPrice(), 1);
+    assertEquals(ret.getRating(), 5);
+    assert ret.getDist() == 1;
+
+    uTest1.setCategory("test");
+    uTest1.setDist(2.0);
+    uTest1.setPrice(2);
+    uTest1.setRating(4);
+    W2MDatabase.updateUser(uTest1, eTest1.getId());
+    ret = W2MDatabase.getUser(uid);
+
+    assertEquals(ret.getCategory(), "test");
+    assertEquals(ret.getPrice(), 2);
+    assertEquals(ret.getRating(), 4);
+    assert ret.getDist() == 2.0;
   }
 
 }

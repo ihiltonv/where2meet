@@ -1,6 +1,5 @@
 package edu.brown.cs.where2meet.database;
 
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -30,7 +29,6 @@ public class W2MDatabase {
   private static LoadingCache<Long, Event> eventCache;
   private static LoadingCache<Long, User> userCache;
   private static final int MAX_CACHE = 1000;
-  private final static PrintWriter pw = new PrintWriter(System.out);
 
   /**
    * Constructor for the W2MDatabase.
@@ -48,28 +46,35 @@ public class W2MDatabase {
         .build(new EventCacheLoader());
   }
 
+  /**
+   * Establishes a connection to the database.
+   *
+   * @param dbname
+   *          the name of the database to connect to.
+   * @return a connection to the database.
+   */
   private Connection connectToDB(String dbname) {
-    Connection conn = null;
+    Connection setup = null;
     try {
       Class.forName("org.sqlite.JDBC");
     } catch (ClassNotFoundException c) {
-      pw.println("ERROR:");
+      System.out.println("ERROR:");
     }
 
     String url = "jdbc:sqlite:" + dbname;
     try {
-      conn = DriverManager.getConnection(url);
-      try (Statement stat = conn.createStatement()) {
+      setup = DriverManager.getConnection(url);
+      try (Statement stat = setup.createStatement()) {
         stat.executeUpdate("PRAGMA foreign_keys = ON;");
       } catch (SQLException e) {
-        pw.println("ERROR:");
+        System.out.println("ERROR:");
         return null;
       }
     } catch (SQLException e) {
-      pw.println("ERROR:");
+      System.out.println("ERROR:");
       return null;
     }
-    return conn;
+    return setup;
   }
 
   /**
@@ -122,7 +127,7 @@ public class W2MDatabase {
       }
       return e;
     } catch (ExecutionException e) {
-      pw.print("ERROR: could not retrieve event");
+      System.out.print("ERROR: could not retrieve event");
       return null;
     }
   }
@@ -162,13 +167,18 @@ public class W2MDatabase {
     try {
       User u = userCache.get(id);
 
-      try (PreparedStatement prep = conn.prepareStatement(
-          "SELECT event_id FROM events_users WHERE user_id = ?;")) {
+      try (PreparedStatement prep = conn
+          .prepareStatement("SELECT event_id, price, rating, distance, "
+              + "category FROM events_users WHERE user_id = ?;")) {
         prep.setLong(1, id);
 
         try (ResultSet rs = prep.executeQuery()) {
           while (rs.next()) {
             u.addEvent(rs.getLong(1));
+            u.setPrice(rs.getInt(2));
+            u.setRating(rs.getInt(3));
+            u.setDist(rs.getDouble(4));
+            u.setCategory(rs.getString(5));
           }
         }
       } catch (SQLException e) {
@@ -176,7 +186,7 @@ public class W2MDatabase {
       }
       return u;
     } catch (ExecutionException e) {
-      pw.print("ERROR: could not retrieve user");
+      System.out.print("ERROR: could not retrieve user");
       return null;
     }
   }
@@ -249,7 +259,6 @@ public class W2MDatabase {
     } catch (SQLException e) {
       System.out.println(e);
     }
-    System.out.println("id " + id + " name: " + name);
     Set<Long> events = new HashSet<>();
 
     List<Double> coords = new ArrayList<>();
@@ -258,34 +267,106 @@ public class W2MDatabase {
     return new User(id, name, events, coords);
   }
 
-  public static void addUserToEvent(Long user, Long event) {
+  /**
+   * Adds a user to an event in the events_users table of the database.
+   *
+   * @param user
+   *          the user to add
+   * @param event
+   *          the id of the event with which the user is associated.
+   */
+  public static void addUserToEvent(User user, Long event) {
+
     try (PreparedStatement prep = conn
-        .prepareStatement("INSERT INTO events_users VALUES(?,?);")) {
+        .prepareStatement("INSERT INTO events_users VALUES(?,?,?,?,?,?);")) {
       prep.setLong(1, event);
-      prep.setLong(2, user);
+      prep.setLong(2, user.getId());
+      prep.setInt(3, user.getPrice());
+      prep.setDouble(5, user.getDist());
+      prep.setInt(4, user.getRating());
+      prep.setString(6, user.getCategory());
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
   }
 
-  public void createdb() {
+  /**
+   * Updates the filters for a user in the events_users table.
+   *
+   * @param user
+   *          the user whose data is to be updated.
+   * @param event
+   *          the event with which the user is associated.
+   */
+  public static void updateUser(User user, Long event) {
     try (PreparedStatement prep = conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, 'longitude' INTEGER);")) {
+        "UPDATE events_users SET price = ?, rating = ?, distance = ?, "
+            + "category = ? WHERE (user_id = ? AND event_id = ?);")) {
+      prep.setInt(1, user.getPrice());
+      prep.setInt(2, user.getRating());
+      prep.setDouble(3, user.getDist());
+      prep.setString(4, user.getCategory());
+      prep.setLong(5, user.getId());
+      prep.setLong(6, event);
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Creates the tables for the db. Primarily used for testing.
+   */
+  public void createdb() {
+    try (PreparedStatement prep = conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, "
+            + "'name' TEXT, 'latitude' INTEGER, 'longitude' INTEGER);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'events'('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, 'longitude' INTEGER, 'date' STRING, 'time' STRING);")) {
+    try (PreparedStatement prep = conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'events'"
+            + "('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, "
+            + "'longitude' INTEGER, 'date' STRING, 'time' STRING);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println();
     }
 
-    try (PreparedStatement prep = conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'events_users'('event_id' INTEGER, 'user_id' INTEGER);")) {
+    try (PreparedStatement prep = conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'events_users'"
+            + "('event_id' INTEGER, 'user_id' INTEGER, 'price' INTEGER, "
+            + "'rating' INTEGER, 'distance' INTEGER, category TEXT);")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Clears the tables of the database. Primarily used for testing to keep the
+   * testdb size down.
+   */
+  public void cleardb() {
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS users")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS events")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS events_users")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);

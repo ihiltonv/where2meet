@@ -14,12 +14,14 @@ public class User {
   private Long id;
   private Set<Long> events;
   private List<Double> coordinates;
+  private int price;
+  private double dist;
+  private int rating;
+  private String category;
 
   /**
    * Constructor for a user.
    *
-   * @param id
-   *          the id of the user
    * @param name
    *          the name of the user
    * @param coords
@@ -30,6 +32,7 @@ public class User {
     this.id = System.currentTimeMillis();
     this.events = new HashSet<>();
     this.coordinates = coords;
+    resetFilters();
 
   }
 
@@ -48,6 +51,7 @@ public class User {
     this.id = System.currentTimeMillis();
     this.events = events;
     this.coordinates = coords;
+    resetFilters();
 
   }
 
@@ -68,6 +72,18 @@ public class User {
     this.id = id;
     this.events = events;
     this.coordinates = coords;
+    resetFilters();
+  }
+
+  /**
+   * Resets the filter values for a user.
+   */
+  public void resetFilters() {
+    this.category = "";
+    this.price = 1;
+    this.rating = 5;
+    this.dist = 1;
+
   }
 
   /**
@@ -154,6 +170,82 @@ public class User {
    */
   public List<Double> getLocation() {
     return this.coordinates;
+  }
+
+  /**
+   * Gets the price filter.
+   *
+   * @return the value for the price filter.
+   */
+  public int getPrice() {
+    return price;
+  }
+
+  /**
+   * Sets the value for the price filter.
+   *
+   * @param price
+   *          the new value for the price filter
+   */
+  public void setPrice(int price) {
+    this.price = price;
+  }
+
+  /**
+   * Gets the value for the dist filter.
+   *
+   * @return the value for the distance filter
+   */
+  public double getDist() {
+    return dist;
+  }
+
+  /**
+   * Sets the value of the dist filter.
+   *
+   * @param dist
+   *          the new value of the dist filter.
+   */
+  public void setDist(double dist) {
+    this.dist = dist;
+  }
+
+  /**
+   * Gets the value of the rating filter.
+   *
+   * @return the value of the rating filter.
+   */
+  public int getRating() {
+    return rating;
+  }
+
+  /**
+   * Sets the value of the rating filter.
+   *
+   * @param rating
+   *          the new value of the rating filter.
+   */
+  public void setRating(int rating) {
+    this.rating = rating;
+  }
+
+  /**
+   * Gets the value of the category filter.
+   *
+   * @return the value of the category filter.
+   */
+  public String getCategory() {
+    return category;
+  }
+
+  /**
+   * Sets the value of the category filter.
+   *
+   * @param category
+   *          the new value of the category filter.
+   */
+  public void setCategory(String category) {
+    this.category = category;
   }
 
 }

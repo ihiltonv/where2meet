@@ -154,7 +154,7 @@ public class Event {
       users.add(u);
       User user = W2MDatabase.getUser(u);
       user.addEvent(this.id);
-      W2MDatabase.addUserToEvent(u, this.id);
+      W2MDatabase.addUserToEvent(user, this.id);
     }
   }
 
@@ -194,10 +194,20 @@ public class Event {
     return this.coordinates;
   }
 
+  /**
+   * Gets the date of the event.
+   *
+   * @return a string with the date of the event.
+   */
   public String getDate() {
     return this.date;
   }
 
+  /**
+   * Gets the time of the event.
+   *
+   * @return a string with the time of the event.
+   */
   public String getTime() {
     return this.time;
   }
