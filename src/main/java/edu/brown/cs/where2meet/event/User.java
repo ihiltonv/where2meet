@@ -11,7 +11,7 @@ import java.util.Set;
 public class User {
 
   private String name;
-  private String id;
+  private Long id;
   private Set<Long> events;
   private List<Double> coordinates;
 
@@ -25,10 +25,28 @@ public class User {
    * @param coords
    *          the coordinates of the user's location
    */
-  public User(String id, String name, List<Double> coords) {
+  public User(String name, List<Double> coords) {
     this.name = name;
-    this.id = id;
+    this.id = System.currentTimeMillis();
     this.events = new HashSet<>();
+    this.coordinates = coords;
+
+  }
+
+  /**
+   * Constructor for the user.
+   *
+   * @param name
+   *          the name of the user
+   * @param events
+   *          the events that the user is in.
+   * @param coords
+   *          the coordinates of the user's location.
+   */
+  public User(String name, Set<Long> events, List<Double> coords) {
+    this.name = name;
+    this.id = System.currentTimeMillis();
+    this.events = events;
     this.coordinates = coords;
 
   }
@@ -45,12 +63,11 @@ public class User {
    * @param coords
    *          the coordinates of the user's location.
    */
-  public User(String id, String name, Set<Long> events, List<Double> coords) {
+  public User(Long id, String name, Set<Long> events, List<Double> coords) {
     this.name = name;
     this.id = id;
     this.events = events;
     this.coordinates = coords;
-
   }
 
   /**
@@ -67,7 +84,7 @@ public class User {
    *
    * @return the id of the user.
    */
-  public String getId() {
+  public Long getId() {
     return this.id;
   }
 

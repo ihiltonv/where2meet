@@ -8,10 +8,10 @@ import edu.brown.cs.where2meet.event.User;
  * A class to load in users for the user cache.
  *
  */
-public class UserCacheLoader extends CacheLoader<String, User> {
+public class UserCacheLoader extends CacheLoader<Long, User> {
 
   @Override
-  public User load(String id) {
+  public User load(Long id) {
     try {
       return W2MDatabase.loadUser(id);
     } catch (Exception e) {

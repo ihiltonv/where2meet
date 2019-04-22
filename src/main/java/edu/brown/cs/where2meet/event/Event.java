@@ -1,6 +1,5 @@
 package edu.brown.cs.where2meet.event;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +14,7 @@ public class Event {
 
   private Long id;
   private String name;
-  private Set<String> users;
+  private Set<Long> users;
   private List<Double> coordinates;
   private String date;
   private String time;
@@ -26,16 +25,14 @@ public class Event {
    * @param name
    *          the name of the event.
    * @param coordinates
-   *          the coordinates that the event
-   *          should be near
+   *          the coordinates that the event should be near
    * @param date
-   *          a String representing the date of
-   *          the event
+   *          a String representing the date of the event
    * @param time
-   *          a String representing the time of
-   *          the event
+   *          a String representing the time of the event
    */
-  public Event(String name, List<Double> coordinates, String date, String time) {
+  public Event(String name, List<Double> coordinates, String date,
+      String time) {
     this.id = System.currentTimeMillis();
     this.name = name;
     this.users = new HashSet<>();
@@ -58,12 +55,41 @@ public class Event {
    * @param time
    *          a String representing the event's time
    */
-  public Event(String name, Set<String> users,
-      List<Double> coordinates, String date, String time) {
+  public Event(String name, Set<Long> users, List<Double> coordinates,
+      String date, String time) {
     this.id = System.currentTimeMillis();
     this.name = name;
-    this.users = users;
-    for (String u : users) {
+    this.users = new HashSet<>();
+    for (Long u : users) {
+      addUser(u);
+    }
+    this.coordinates = coordinates;
+    this.date = date;
+    this.time = time;
+  }
+
+  /**
+   * A constructor for the Event.
+   *
+   * @param id
+   *          the id of the event.
+   * @param name
+   *          the name of the event.
+   * @param users
+   *          the users in the event.
+   * @param coordinates
+   *          the coordinates of the event's location.
+   * @param date
+   *          a String representing the event's date
+   * @param time
+   *          a String representing the event's time
+   */
+  public Event(Long id, String name, Set<Long> users, List<Double> coordinates,
+      String date, String time) {
+    this.id = id;
+    this.name = name;
+    this.users = new HashSet<>();
+    for (Long u : users) {
       addUser(u);
     }
     this.coordinates = coordinates;
@@ -123,12 +149,12 @@ public class Event {
    * @param u
    *          the user to add
    */
-  public void addUser(String u) {
+  public void addUser(Long u) {
     if (!users.contains(u)) {
       users.add(u);
       User user = W2MDatabase.getUser(u);
       user.addEvent(this.id);
-      W2MDatabase.updateUser(user);
+      W2MDatabase.addUserToEvent(u, this.id);
     }
   }
 
@@ -137,7 +163,7 @@ public class Event {
    *
    * @return the set of users for the event.
    */
-  public Set<String> getUsers() {
+  public Set<Long> getUsers() {
     return this.users;
   }
 
@@ -166,5 +192,13 @@ public class Event {
    */
   public List<Double> getLocation() {
     return this.coordinates;
+  }
+
+  public String getDate() {
+    return this.date;
+  }
+
+  public String getTime() {
+    return this.time;
   }
 }

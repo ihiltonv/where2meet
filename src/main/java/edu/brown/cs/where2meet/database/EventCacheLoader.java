@@ -8,10 +8,10 @@ import edu.brown.cs.where2meet.event.Event;
  * A class to handle loading in events to the cache.
  *
  */
-public class EventCacheLoader extends CacheLoader<String, Event> {
+public class EventCacheLoader extends CacheLoader<Long, Event> {
 
   @Override
-  public Event load(String id) {
+  public Event load(Long id) {
     try {
       return W2MDatabase.loadEvent(id);
     } catch (Exception e) {
