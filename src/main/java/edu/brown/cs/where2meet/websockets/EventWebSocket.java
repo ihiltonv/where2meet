@@ -10,6 +10,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 @WebSocket
 public class EventWebSocket {
@@ -23,8 +24,12 @@ public class EventWebSocket {
   }
 
   @OnWebSocketConnect
-  public void connected(Session session) {
+  public void connected(Session session, String message) {
+    JsonObject received = GSON.fromJson(message, JsonObject.class);
+    assert received.get("type").getAsInt() == MESSAGE_TYPE.CONNECT.ordinal();
+
     sessions.add(session);
+
   }
 
   @OnWebSocketClose
