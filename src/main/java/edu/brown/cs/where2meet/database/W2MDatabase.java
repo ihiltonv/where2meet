@@ -514,4 +514,13 @@ public class W2MDatabase {
     }
   }
 
+  /**
+   * Gets the connection for this database for testing purposes.
+   * 
+   * @return the connection of this database.
+   */
+  public Connection getConn() {
+    return W2MDatabase.conn;
+  }
+
 }

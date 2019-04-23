@@ -5,6 +5,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -192,6 +196,74 @@ public class W2MDatabaseTest {
     id = W2MDatabase.getIdFromName("/n/1", eid);
     assertEquals(id, uid);
 
+  }
+
+  @Test
+  public void testDeleteEvents() {
+    System.out.println("TestDeleteEvents\n");
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    Connection conn = db.getConn();
+    db.cleardb();
+    db.createdb();
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    Event test1 = new Event("test1", coords, "date", "time");
+
+    Long e1 = test1.getId();
+
+    User uTest1 = new User("username", coords);
+    Long u = uTest1.getId();
+    test1.addUser(u);
+    db.addEvent(test1);
+    int count = 0;
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT COUNT(*) FROM events WHERE id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+    assertEquals(count, 1);
+
+    try (PreparedStatement prep = conn.prepareStatement(
+        "SELECT COUNT(*) FROM events_users WHERE event_id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+
+    assertEquals(count, 1);
+
+    db.deleteEvent(e1);
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT COUNT(*) FROM events WHERE id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+    assertEquals(count, 0);
+
+    try (PreparedStatement prep = conn.prepareStatement(
+        "SELECT COUNT(*) FROM events_users WHERE event_id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+
+    assertEquals(count, 0);
   }
 
 }
