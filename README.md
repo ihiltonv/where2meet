@@ -14,3 +14,6 @@ Filters in use:
 	Location range(double)
 	Popularity(double 0-5)
 	Category(string)
+	
+	
+There are also a number of magic number errors in the checkstyle for W2MDatabase, those should be disregarded as they pertain to indices that were used to get data from a resultset.
