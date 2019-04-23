@@ -16,6 +16,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 
 import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
 
 /**
@@ -90,13 +91,17 @@ public class W2MDatabase {
     String date = event.getDate();
     String time = event.getTime();
     try (PreparedStatement prep = conn
-        .prepareStatement("INSERT INTO events VALUES(?,?,?,?,?,?)")) {
+        .prepareStatement("INSERT INTO events VALUES(?,?,?,?,?,?,?,?,?)")) {
       prep.setLong(1, id);
       prep.setString(2, name);
       prep.setDouble(3, coords.get(0));
       prep.setDouble(4, coords.get(1));
       prep.setString(5, date);
       prep.setString(6, time);
+      Suggestion[] s = event.getSuggestions();
+      prep.setString(7, s[0].toString());
+      prep.setString(8, s[1].toString());
+      prep.setString(9, s[2].toString());
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -167,18 +172,13 @@ public class W2MDatabase {
     try {
       User u = userCache.get(id);
 
-      try (PreparedStatement prep = conn
-          .prepareStatement("SELECT event_id, price, rating, distance, "
-              + "category FROM events_users WHERE user_id = ?;")) {
+      try (PreparedStatement prep = conn.prepareStatement(
+          "SELECT event_id FROM events_users WHERE user_id = ?;")) {
         prep.setLong(1, id);
 
         try (ResultSet rs = prep.executeQuery()) {
           while (rs.next()) {
             u.addEvent(rs.getLong(1));
-            u.setPrice(rs.getInt(2));
-            u.setRating(rs.getInt(3));
-            u.setDist(rs.getDouble(4));
-            u.setCategory(rs.getString(5));
           }
         }
       } catch (SQLException e) {
@@ -189,6 +189,74 @@ public class W2MDatabase {
       System.out.print("ERROR: could not retrieve user");
       return null;
     }
+  }
+
+  /**
+   * Gets the id of a name associated with an event.
+   *
+   * @param name
+   *          the name of the user.
+   * @param event
+   *          the id of the event.
+   * @return the id of the user with the corresponding name.
+   */
+  public static Long getIdFromName(String name, Long event) {
+    Long uid = null;
+    try (PreparedStatement prep = conn.prepareStatement(
+        "SELECT u.id FROM users AS u, events_users AS eu WHERE eu.event_id = ? "
+            + "AND u.name = ?;")) {
+      prep.setLong(1, event);
+      prep.setString(2, name);
+      try (ResultSet rs = prep.executeQuery()) {
+        uid = rs.getLong(1);
+
+      }
+    } catch (SQLException e) {
+      System.out.println(e);
+      return null;
+    }
+    return uid;
+
+  }
+
+  /**
+   * Gets the user associated with an event.
+   *
+   * @param uid
+   *          the id of the user to get.
+   * @param eid
+   *          the id of the event to get.
+   * @return the user associated with the event.
+   */
+  public static User getUserWithEvent(Long uid, Long eid) {
+    User u = getUser(uid);
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT price, rating, distance,category,s1,s2,s3 "
+            + "FROM events_users WHERE (user_id = ? AND event_id = ?);")) {
+      prep.setLong(1, uid);
+      prep.setLong(2, eid);
+
+      try (ResultSet rs = prep.executeQuery()) {
+        while (rs.next()) {
+
+          u.setPrice(rs.getInt(1));
+          u.setRating(rs.getInt(2));
+          u.setDist(rs.getDouble(3));
+          u.setCategory(rs.getString(4));
+          Suggestion[] sugg = new Suggestion[3];
+          sugg[0] = Suggestion.toSugg(rs.getString(5));
+          sugg[1] = Suggestion.toSugg(rs.getString(6));
+          sugg[2] = Suggestion.toSugg(rs.getString(7));
+          u.setSuggestions(sugg);
+        }
+      }
+
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    return u;
   }
 
   /**
@@ -205,6 +273,7 @@ public class W2MDatabase {
     double lng = 0;
     String date = "";
     String time = "";
+    Suggestion[] suggestions = new Suggestion[3];
 
     try (PreparedStatement prep = conn
         .prepareStatement("SELECT * FROM events WHERE id = ?;")) {
@@ -216,6 +285,10 @@ public class W2MDatabase {
           lng = rs.getDouble(4);
           date = rs.getString(5);
           time = rs.getString(6);
+          suggestions[0] = Suggestion.toSugg(rs.getString(7));
+          suggestions[1] = Suggestion.toSugg(rs.getString(8));
+          suggestions[2] = Suggestion.toSugg(rs.getString(9));
+
         }
       }
     } catch (SQLException e) {
@@ -226,8 +299,9 @@ public class W2MDatabase {
     coords.add(lat);
     coords.add(lng);
     Set<Long> users = new HashSet<>();
-
-    return new Event(id, name, users, coords, date, time);
+    Event newEvent = new Event(id, name, users, coords, date, time);
+    newEvent.setSuggestions(suggestions);
+    return newEvent;
   }
 
   /**
@@ -277,14 +351,18 @@ public class W2MDatabase {
    */
   public static void addUserToEvent(User user, Long event) {
 
-    try (PreparedStatement prep = conn
-        .prepareStatement("INSERT INTO events_users VALUES(?,?,?,?,?,?);")) {
+    try (PreparedStatement prep = conn.prepareStatement(
+        "INSERT INTO events_users VALUES(?,?,?,?,?,?,?,?,?);")) {
       prep.setLong(1, event);
       prep.setLong(2, user.getId());
       prep.setInt(3, user.getPrice());
       prep.setDouble(5, user.getDist());
-      prep.setInt(4, user.getRating());
+      prep.setDouble(4, user.getRating());
       prep.setString(6, user.getCategory());
+      Suggestion[] s = user.getSuggestions();
+      prep.setString(7, s[0].toString());
+      prep.setString(8, s[1].toString());
+      prep.setString(9, s[2].toString());
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -302,17 +380,54 @@ public class W2MDatabase {
   public static void updateUser(User user, Long event) {
     try (PreparedStatement prep = conn.prepareStatement(
         "UPDATE events_users SET price = ?, rating = ?, distance = ?, "
-            + "category = ? WHERE (user_id = ? AND event_id = ?);")) {
+            + "category = ?, s1 = ?, s2 = ?, s3 = ? WHERE "
+            + "(user_id = ? AND event_id = ?);")) {
       prep.setInt(1, user.getPrice());
-      prep.setInt(2, user.getRating());
+      prep.setDouble(2, user.getRating());
       prep.setDouble(3, user.getDist());
       prep.setString(4, user.getCategory());
-      prep.setLong(5, user.getId());
-      prep.setLong(6, event);
+      prep.setLong(8, user.getId());
+      prep.setLong(9, event);
+      Suggestion[] s = user.getSuggestions();
+      prep.setString(5, s[0].toString());
+      prep.setString(6, s[1].toString());
+      prep.setString(7, s[2].toString());
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
+  }
+
+  /**
+   * Updates the values of an event in the database.
+   *
+   * @param event
+   *          the event to update.
+   */
+  public static void updateEvent(Event event) {
+    Long id = event.getId();
+    String name = event.getName();
+    List<Double> coords = event.getLocation();
+    String date = event.getDate();
+    String time = event.getTime();
+    try (PreparedStatement prep = conn.prepareStatement(
+        "UPDATE events SET name = ?, latitude = ?, longitude = ?, date = ?, time = ?, "
+            + "s1 = ?, s2 = ?, s3 = ? WHERE id = ?")) {
+      prep.setLong(9, id);
+      prep.setString(1, name);
+      prep.setDouble(2, coords.get(0));
+      prep.setDouble(3, coords.get(1));
+      prep.setString(4, date);
+      prep.setString(5, time);
+      Suggestion[] s = event.getSuggestions();
+      prep.setString(6, s[0].toString());
+      prep.setString(7, s[1].toString());
+      prep.setString(8, s[2].toString());
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
   }
 
   /**
@@ -330,7 +445,8 @@ public class W2MDatabase {
     try (PreparedStatement prep = conn
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'events'"
             + "('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, "
-            + "'longitude' INTEGER, 'date' STRING, 'time' STRING);")) {
+            + "'longitude' INTEGER, 'date' TEXT, 'time' TEXT, 's1'"
+            + " TEXT, 's2' TEXT, 's3' TEXT);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println();
@@ -339,7 +455,8 @@ public class W2MDatabase {
     try (PreparedStatement prep = conn
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'events_users'"
             + "('event_id' INTEGER, 'user_id' INTEGER, 'price' INTEGER, "
-            + "'rating' INTEGER, 'distance' INTEGER, category TEXT);")) {
+            + "'rating' INTEGER, 'distance' INTEGER, category TEXT,'s1' "
+            + "TEXT, 's2' TEXT, 's3' TEXT);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -371,6 +488,39 @@ public class W2MDatabase {
     } catch (SQLException e) {
       System.out.println(e);
     }
+  }
+
+  /**
+   * deletes an event from the events and events_users tables.
+   *
+   * @param event
+   *          the id of the event to delete.
+   */
+  public void deleteEvent(Long event) {
+    try (PreparedStatement prep = conn
+        .prepareStatement("DELETE FROM events WHERE id = ?;")) {
+      prep.setLong(1, event);
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DELETE FROM events_users WHERE event_id = ?;")) {
+      prep.setLong(1, event);
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Gets the connection for this database for testing purposes.
+   * 
+   * @return the connection of this database.
+   */
+  public Connection getConn() {
+    return W2MDatabase.conn;
   }
 
 }

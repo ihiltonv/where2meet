@@ -17,9 +17,9 @@ public class User {
   private List<Double> coordinates;
   private int price;
   private double dist;
-  private int rating;
+  private double rating;
   private String category;
-  private HashMap<Long, List<Venue>> votes;
+  private Suggestion[] suggestions;
 
   /**
    * Constructor for a user.
@@ -35,6 +35,8 @@ public class User {
     this.events = new HashSet<>();
     this.coordinates = coords;
     resetFilters();
+
+    instantiateSuggestions();
   }
 
   /**
@@ -52,6 +54,7 @@ public class User {
     this.id = System.currentTimeMillis();
     this.events = events;
     this.coordinates = coords;
+    instantiateSuggestions();
     resetFilters();
 
   }
@@ -73,6 +76,7 @@ public class User {
     this.id = id;
     this.events = events;
     this.coordinates = coords;
+    instantiateSuggestions();
     resetFilters();
   }
 
@@ -221,7 +225,7 @@ public class User {
    *
    * @return the value of the rating filter.
    */
-  public int getRating() {
+  public double getRating() {
     return rating;
   }
 
@@ -231,7 +235,7 @@ public class User {
    * @param rating
    *          the new value of the rating filter.
    */
-  public void setRating(int rating) {
+  public void setRating(double rating) {
     this.rating = rating;
   }
 
@@ -252,6 +256,59 @@ public class User {
    */
   public void setCategory(String category) {
     this.category = category;
+  }
+
+  /**
+   * Gets the suggestion at a specified rank (1 through 3).
+   *
+   * @param rank
+   *          the rank of the suggestion
+   * @return the suggestion at the specified rank.
+   */
+  public Suggestion getSuggestion(int rank) {
+    return suggestions[rank];
+  }
+
+  /**
+   * Gets the suggestion list.
+   *
+   * @return the list of suggestions for the event.
+   */
+  public Suggestion[] getSuggestions() {
+    return this.suggestions;
+  }
+
+  /**
+   * Sets the suggestion list.
+   *
+   * @param suggestions
+   *          the array to which suggestions is set.
+   */
+  public void setSuggestions(Suggestion[] suggestions) {
+    this.suggestions = suggestions;
+  }
+
+  /**
+   *
+   * Sets a specific suggestion in the array.
+   *
+   * @param s
+   *          the new suggestion.
+   * @param rank
+   *          the position in the array to replace.
+   */
+  public void setSuggestion(Suggestion s, int rank) {
+    this.suggestions[rank] = s;
+  }
+
+  /**
+   * Instantiates the suggestion array.
+   */
+  private void instantiateSuggestions() {
+    this.suggestions = new Suggestion[3];
+    this.suggestions[0] = new Suggestion();
+    this.suggestions[1] = new Suggestion();
+    this.suggestions[2] = new Suggestion();
   }
 
 }
