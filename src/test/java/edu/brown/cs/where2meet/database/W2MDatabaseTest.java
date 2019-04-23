@@ -2,6 +2,7 @@ package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -142,12 +143,13 @@ public class W2MDatabaseTest {
     W2MDatabase.addUser(uTest1);
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
+    Long eid = eTest1.getId();
     db.addEvent(eTest1);
     eTest1.addUser(uid);
-    User ret = W2MDatabase.getUser(uid);
+    User ret = W2MDatabase.getUserWithEvent(uid, eid);
     assertEquals(ret.getCategory(), "");
     assertEquals(ret.getPrice(), 1);
-    assertEquals(ret.getRating(), 5);
+    assert ret.getRating() == 5;
     assert ret.getDist() == 1;
 
     uTest1.setCategory("test");
@@ -155,12 +157,41 @@ public class W2MDatabaseTest {
     uTest1.setPrice(2);
     uTest1.setRating(4);
     W2MDatabase.updateUser(uTest1, eTest1.getId());
-    ret = W2MDatabase.getUser(uid);
+    ret = W2MDatabase.getUserWithEvent(uid, eid);
 
     assertEquals(ret.getCategory(), "test");
     assertEquals(ret.getPrice(), 2);
-    assertEquals(ret.getRating(), 4);
+    assert ret.getRating() == 4;
     assert ret.getDist() == 2.0;
+  }
+
+  @Test
+  public void testGetIdFromName() {
+    System.out.println("TestGetIdFromName\n");
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    User uTest1 = new User("/n/1", coords);
+    Long uid = uTest1.getId();
+    Event eTest1 = new Event("/e/1", coords, "date", "time");
+    Long eid = eTest1.getId();
+
+    while (uid.equals(eid)) {
+      eTest1 = new Event("/e/1", coords, "date", "time");
+      eid = eTest1.getId();
+    }
+    W2MDatabase.addUser(uTest1);
+    db.addEvent(eTest1);
+    Long id = W2MDatabase.getIdFromName("/n/1", eid);
+    assertNull(id);
+
+    eTest1.addUser(uid);
+    id = W2MDatabase.getIdFromName("/n/1", eid);
+    assertEquals(id, uid);
+
   }
 
 }
