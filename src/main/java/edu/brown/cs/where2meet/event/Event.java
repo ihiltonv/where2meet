@@ -1,10 +1,12 @@
 package edu.brown.cs.where2meet.event;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import edu.brown.cs.where2meet.database.W2MDatabase;
+import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
 
 /**
  * A class to hold data for the events.
@@ -18,6 +20,8 @@ public class Event {
   private List<Double> coordinates;
   private String date;
   private String time;
+  private Set<Venue> venues;
+  private VenueRanker topRanker;
 
   /**
    * Constructor for an Event.
@@ -39,6 +43,9 @@ public class Event {
     this.coordinates = coordinates;
     this.date = date;
     this.time = time;
+
+    venues = new HashSet<>();
+    topRanker = new VenueRanker();
   }
 
   /**
@@ -66,6 +73,9 @@ public class Event {
     this.coordinates = coordinates;
     this.date = date;
     this.time = time;
+
+    venues = new HashSet<>();
+    topRanker = new VenueRanker();
   }
 
   /**
@@ -96,6 +106,27 @@ public class Event {
     this.date = date;
     this.time = time;
   }
+
+  public void updateVotes(Venue o1, Venue o2, Venue o3, Venue n1, Venue n2, Venue n3) {
+    this.topRanker.updateRankRelative(o1, -5.0);
+    this.topRanker.updateRankRelative(o2, -3.0);
+    this.topRanker.updateRankRelative(o2, -1.0);
+    this.topRanker.updateRankRelative(o2, 1.0);
+    this.topRanker.updateRankRelative(o2, 3.0);
+    this.topRanker.updateRankRelative(o2, 5.0);
+
+  }
+
+  public Set<Venue> filterVenues(User u) {
+    Set<Venue> result = new HashSet<>();
+    for (Venue venue : venues) {
+      if (venue.getPrice() <= u.getPrice() && venue.getDistance() <= u.getDist() && venue.getPopularity() >= u.getRating()){
+        result.add(venue);
+      }
+    }
+    return result;
+  }
+
 
   @Override
   public int hashCode() {

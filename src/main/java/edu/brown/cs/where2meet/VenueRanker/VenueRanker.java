@@ -1,0 +1,114 @@
+package edu.brown.cs.where2meet.VenueRanker;
+
+import edu.brown.cs.where2meet.event.Venue;
+
+import java.util.*;
+
+public class VenueRanker {
+
+  private List<VenueScore> rankings;
+
+  public VenueRanker() {
+    this.rankings = new ArrayList<>();
+  }
+
+  public List<Venue> getRanked() {
+    List<Venue> result = new ArrayList<>();
+    for(VenueScore v : this.rankings) {
+      result.add(v.getVenue());
+    }
+    return result;
+  }
+
+  /**
+   * This method allows a user to change the score of
+   * a particular venue and recalculates the rankings.
+   * @param v
+   * @param s
+   */
+  public void updateRank(Venue v, Double s) {
+    VenueScore update = new VenueScore(v, s);
+    for(VenueScore ven : this.rankings) {
+      if(ven.equals(update)) {
+        this.rankings.remove(ven);
+      }
+    }
+    this.rankings.add(update);
+    Collections.sort(this.rankings);
+    Collections.reverse(this.rankings);
+  }
+
+  /**
+   * This method allows a user to input a relative change
+   * in score for an existing venue (e.g. +3) rather than
+   * an absolute score.
+   * @param v
+   * @param s
+   */
+  public void updateRankRelative(Venue v, Double s) {
+    Double newScore = s;
+    VenueScore update = new VenueScore(v, 0);
+    for(VenueScore ven : this.rankings) {
+      if(ven.equals(update)) {
+        newScore += ven.score();
+        this.rankings.remove(ven);
+      }
+    }
+    update = new VenueScore(v, newScore);
+    this.rankings.add(update);
+    Collections.sort(this.rankings);
+    Collections.reverse(this.rankings);
+  }
+
+  private class VenueScore implements Comparable<VenueScore>{
+    private double score;
+    private Venue venue;
+    private Long id;
+
+    public VenueScore(Venue venue, double score) {
+      this.score = score;
+      this.venue = venue;
+      this.id = venue.getId();
+    }
+
+    public double score() {
+      return this.score;
+    }
+
+    public Long getId() {
+      return id;
+    }
+
+    public Venue getVenue() {
+      return this.venue;
+    }
+
+    @Override
+    public int compareTo(VenueScore o) {
+      if (this.score() > o.score()) {
+        return 1;
+      } else if (this.score() < o.score()) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == this) {
+        return true;
+      }
+
+      if (!(o instanceof VenueScore)) {
+        return false;
+      }
+
+      VenueScore n = (VenueScore) o;
+
+      return n.getId().equals(this.id);
+    }
+  }
+
+
+}
