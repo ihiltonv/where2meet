@@ -1,30 +1,22 @@
 package edu.brown.cs.where2meet.database;
 
-import java.io.PrintWriter;
-import java.net.UnknownHostException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
 
 import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
 
 /**
@@ -33,13 +25,11 @@ import edu.brown.cs.where2meet.event.User;
  */
 public class W2MDatabase {
 
-  private MongoClient mongoClient;
-  private static DB eventDatabase;
-  private static LoadingCache<String, Event> eventCache;
-  private static LoadingCache<String, User> userCache;
+  private static Connection conn;
+
+  private static LoadingCache<Long, Event> eventCache;
+  private static LoadingCache<Long, User> userCache;
   private static final int MAX_CACHE = 1000;
-  private static PrintWriter pw;
-  private static final Gson GSON = new Gson();
 
   /**
    * Constructor for the W2MDatabase.
@@ -48,19 +38,44 @@ public class W2MDatabase {
    *          the name of the database to use.
    */
   public W2MDatabase(String dbname) {
-    pw = new PrintWriter(System.out);
+    conn = connectToDB(dbname);
+
+    userCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE)
+        .build(new UserCacheLoader());
+
+    eventCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE)
+        .build(new EventCacheLoader());
+  }
+
+  /**
+   * Establishes a connection to the database.
+   *
+   * @param dbname
+   *          the name of the database to connect to.
+   * @return a connection to the database.
+   */
+  private Connection connectToDB(String dbname) {
+    Connection setup = null;
     try {
-      mongoClient = new MongoClient();
-      eventDatabase = mongoClient.getDB(dbname);
-      eventCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE)
-          .build(new EventCacheLoader());
-      userCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE)
-          .build(new UserCacheLoader());
-
-    } catch (UnknownHostException e) {
-      pw.println("ERROR: cannot connect to mongo");
-
+      Class.forName("org.sqlite.JDBC");
+    } catch (ClassNotFoundException c) {
+      System.out.println("ERROR:");
     }
+
+    String url = "jdbc:sqlite:" + dbname;
+    try {
+      setup = DriverManager.getConnection(url);
+      try (Statement stat = setup.createStatement()) {
+        stat.executeUpdate("PRAGMA foreign_keys = ON;");
+      } catch (SQLException e) {
+        System.out.println("ERROR:");
+        return null;
+      }
+    } catch (SQLException e) {
+      System.out.println("ERROR:");
+      return null;
+    }
+    return setup;
   }
 
   /**
@@ -70,17 +85,28 @@ public class W2MDatabase {
    *          the event whose data is to be added.
    */
   public void addEvent(Event event) {
-    DBCollection eventColl = eventDatabase.getCollection("events");
-    String userarray = setToString(event.getUsers());
-    String coordsarray = setToString(event.getLocation());
-    DBObject query = new BasicDBObject("_id", event.getId())
-        .append("users", userarray).append("name", event.getName())
-        .append("location", coordsarray);
-    try {
-      eventColl.insert(query);
-    } catch (MongoException m) {
-
+    Long id = event.getId();
+    String name = event.getName();
+    List<Double> coords = event.getLocation();
+    String date = event.getDate();
+    String time = event.getTime();
+    try (PreparedStatement prep = conn
+        .prepareStatement("INSERT INTO events VALUES(?,?,?,?,?,?,?,?,?)")) {
+      prep.setLong(1, id);
+      prep.setString(2, name);
+      prep.setDouble(3, coords.get(0));
+      prep.setDouble(4, coords.get(1));
+      prep.setString(5, date);
+      prep.setString(6, time);
+      Suggestion[] s = event.getSuggestions();
+      prep.setString(7, s[0].toString());
+      prep.setString(8, s[1].toString());
+      prep.setString(9, s[2].toString());
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
     }
+
   }
 
   /**
@@ -90,29 +116,25 @@ public class W2MDatabase {
    *          the id of the event to be retrieved
    * @return an event object holding the data from the database.
    */
-  public static Event getEvent(String id) {
+  public static Event getEvent(Long id) {
     try {
-      return eventCache.get(id);
+      Event e = eventCache.get(id);
+      try (PreparedStatement prep = conn.prepareStatement(
+          "SELECT user_id FROM events_users WHERE event_id = ?;")) {
+        prep.setLong(1, id);
+        try (ResultSet rs = prep.executeQuery()) {
+          while (rs.next()) {
+            e.addUser(rs.getLong(1));
+          }
+        }
+      } catch (SQLException err) {
+        System.out.println(err);
+      }
+      return e;
     } catch (ExecutionException e) {
-      pw.print("ERROR: could not retrieve event");
+      System.out.print("ERROR: could not retrieve event");
       return null;
     }
-  }
-
-  /**
-   * Converts an iterable object to a JSON string of its elements.
-   *
-   * @param i
-   *          the iterable object
-   * @return a string representing the elements
-   */
-  private static String setToString(Iterable i) {
-    BasicDBList dblist = new BasicDBList();
-    Iterator iter = i.iterator();
-    while (iter.hasNext()) {
-      dblist.add(iter.next());
-    }
-    return GSON.toJson(dblist);
   }
 
   /**
@@ -122,17 +144,20 @@ public class W2MDatabase {
    *          the user whose data is added to the collection
    */
   public static void addUser(User user) {
-    DBCollection userColl = eventDatabase.getCollection("users");
-
-    String eventarray = setToString(user.getEvents());
-    String coords = setToString(user.getLocation());
-    DBObject person = new BasicDBObject("_id", user.getId())
-        .append("name", user.getName()).append("events", eventarray)
-        .append("location", coords);
-    try {
-      userColl.insert(person);
-    } catch (MongoException m) {
-      pw.println("ERROR: could not insert user");
+    Long id = user.getId();
+    String name = user.getName();
+    List<Double> coords = user.getLocation();
+    double lat = coords.get(0);
+    double lng = coords.get(1);
+    try (PreparedStatement prep = conn
+        .prepareStatement("INSERT INTO users VALUES(?,?,?,?)")) {
+      prep.setLong(1, id);
+      prep.setString(2, name);
+      prep.setDouble(3, lat);
+      prep.setDouble(4, lng);
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
     }
   }
 
@@ -143,45 +168,95 @@ public class W2MDatabase {
    *          the id of the user to be retrieved.
    * @return a User object with the data retrieved from the database.
    */
-  public static User getUser(String id) {
+  public static User getUser(Long id) {
     try {
-      return userCache.get(id);
+      User u = userCache.get(id);
+
+      try (PreparedStatement prep = conn.prepareStatement(
+          "SELECT event_id FROM events_users WHERE user_id = ?;")) {
+        prep.setLong(1, id);
+
+        try (ResultSet rs = prep.executeQuery()) {
+          while (rs.next()) {
+            u.addEvent(rs.getLong(1));
+          }
+        }
+      } catch (SQLException e) {
+        System.out.println(e);
+      }
+      return u;
     } catch (ExecutionException e) {
-      pw.print("ERROR: could not retrieve user");
+      System.out.print("ERROR: could not retrieve user");
       return null;
     }
   }
 
   /**
-   * Builds a set from a string of its elements.
+   * Gets the id of a name associated with an event.
    *
-   * @param dbset
-   *          the string to turn into a set
-   * @return a set with the elements represented in the string.
+   * @param name
+   *          the name of the user.
+   * @param event
+   *          the id of the event.
+   * @return the id of the user with the corresponding name.
    */
-  private static Set<String> buildSubSet(String dbset) {
-    JsonElement jevents = new JsonParser().parse(dbset);
-    JsonArray jarray = jevents.getAsJsonArray();
-    // builds the list of users
-    Set<String> set = new HashSet<>();
-    for (JsonElement s : jarray) {
-      String sId = s.toString();
-      String actId = sId.split("\"")[1];
-      System.out.println("event id: " + actId);
-      set.add(actId);
+  public static Long getIdFromName(String name, Long event) {
+    Long uid = null;
+    try (PreparedStatement prep = conn.prepareStatement(
+        "SELECT u.id FROM users AS u, events_users AS eu WHERE eu.event_id = ? "
+            + "AND u.name = ?;")) {
+      prep.setLong(1, event);
+      prep.setString(2, name);
+      try (ResultSet rs = prep.executeQuery()) {
+        uid = rs.getLong(1);
+
+      }
+    } catch (SQLException e) {
+      System.out.println(e);
+      return null;
     }
-    return set;
+    return uid;
+
   }
 
   /**
-   * gets a collection from the database.
+   * Gets the user associated with an event.
    *
-   * @param name
-   *          the name of the collection to get
-   * @return a collection from the database.
+   * @param uid
+   *          the id of the user to get.
+   * @param eid
+   *          the id of the event to get.
+   * @return the user associated with the event.
    */
-  public DBCollection getCollection(String name) {
-    return eventDatabase.getCollection(name);
+  public static User getUserWithEvent(Long uid, Long eid) {
+    User u = getUser(uid);
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT price, rating, distance,category,s1,s2,s3 "
+            + "FROM events_users WHERE (user_id = ? AND event_id = ?);")) {
+      prep.setLong(1, uid);
+      prep.setLong(2, eid);
+
+      try (ResultSet rs = prep.executeQuery()) {
+        while (rs.next()) {
+
+          u.setPrice(rs.getInt(1));
+          u.setRating(rs.getInt(2));
+          u.setDist(rs.getDouble(3));
+          u.setCategory(rs.getString(4));
+          Suggestion[] sugg = new Suggestion[3];
+          sugg[0] = Suggestion.toSugg(rs.getString(5));
+          sugg[1] = Suggestion.toSugg(rs.getString(6));
+          sugg[2] = Suggestion.toSugg(rs.getString(7));
+          u.setSuggestions(sugg);
+        }
+      }
+
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    return u;
   }
 
   /**
@@ -191,43 +266,42 @@ public class W2MDatabase {
    *          the id of the event to be stored.
    * @return the event to be stored.
    */
-  public static Event loadEvent(String id) {
-    DBCollection eventColl = eventDatabase.getCollection("events");
-    DBObject query = new BasicDBObject("_id", id);
-    DBCursor cursor = eventColl.find(query);
-    String name = (String) cursor.one().get("name");
-    String dbusers = (String) cursor.one().get("users");
-    String dbcoords = (String) cursor.one().get("location");
-    Set<String> users = buildSubSet(dbusers);
-    List<Double> coords = buildCoords(dbcoords);
-    return new Event(id, name, users, coords);
-  }
+  public static Event loadEvent(Long id) {
 
-  /**
-   * Builds a list of coordinates from a string.
-   *
-   * @param coords
-   *          The string with the coordinates.
-   * @return A list of coordinates.
-   */
-  private static List<Double> buildCoords(String coords) {
-    List<Double> loc = new ArrayList<>();
-    System.out.println("coords " + coords);
-    JsonElement jcoords = new JsonParser().parse(coords);
-    JsonArray jarray = jcoords.getAsJsonArray();
-    // builds the list of users
+    String name = "";
+    double lat = 0;
+    double lng = 0;
+    String date = "";
+    String time = "";
+    Suggestion[] suggestions = new Suggestion[3];
 
-    for (JsonElement s : jarray) {
-      String coord = s.toString();
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT * FROM events WHERE id = ?;")) {
+      prep.setLong(1, id);
+      try (ResultSet rs = prep.executeQuery()) {
+        while (rs.next()) {
+          name = rs.getString(2);
+          lat = rs.getDouble(3);
+          lng = rs.getDouble(4);
+          date = rs.getString(5);
+          time = rs.getString(6);
+          suggestions[0] = Suggestion.toSugg(rs.getString(7));
+          suggestions[1] = Suggestion.toSugg(rs.getString(8));
+          suggestions[2] = Suggestion.toSugg(rs.getString(9));
 
-      System.out.println("actCoords: " + coord);
-      try {
-        loc.add(Double.valueOf(coord));
-      } catch (NumberFormatException n) {
-        System.out.println(n);
+        }
       }
+    } catch (SQLException e) {
+      System.out.println(e);
     }
-    return loc;
+
+    List<Double> coords = new ArrayList<>();
+    coords.add(lat);
+    coords.add(lng);
+    Set<Long> users = new HashSet<>();
+    Event newEvent = new Event(id, name, users, coords, date, time);
+    newEvent.setSuggestions(suggestions);
+    return newEvent;
   }
 
   /**
@@ -237,41 +311,216 @@ public class W2MDatabase {
    *          the id of the user to be stored
    * @return the user to be stored.
    */
-  public static User loadUser(String id) {
-    DBCollection userColl = eventDatabase.getCollection("users");
-    DBObject query = new BasicDBObject("_id", id);
-    DBCursor cursor = userColl.find(query);
-    String name = (String) cursor.one().get("name");
-    String dbevents = (String) cursor.one().get("events");
-    String dbcoords = (String) cursor.one().get("location");
-    Set<String> events = buildSubSet(dbevents);
-    System.out.println("found events");
-    System.out.println("dbcoords: " + dbcoords);
-    List<Double> coords = buildCoords(dbcoords);
-    System.out.println("done finding things");
+  public static User loadUser(Long id) {
+
+    String name = "";
+    double lat = 0;
+    double lng = 0;
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT * FROM users WHERE id = ?;")) {
+      prep.setLong(1, id);
+
+      try (ResultSet rs = prep.executeQuery()) {
+        while (rs.next()) {
+          name = rs.getString(2);
+          lat = rs.getDouble(3);
+          lng = rs.getDouble(4);
+        }
+      } catch (SQLException e) {
+        System.out.println(e);
+      }
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+    Set<Long> events = new HashSet<>();
+
+    List<Double> coords = new ArrayList<>();
+    coords.add(lat);
+    coords.add(lng);
     return new User(id, name, events, coords);
   }
 
   /**
-   * Updates the data for a user in the database.
+   * Adds a user to an event in the events_users table of the database.
    *
-   * @param u
-   *          user with updated information.
+   * @param user
+   *          the user to add
+   * @param event
+   *          the id of the event with which the user is associated.
    */
-  public static void updateUser(User u) {
-    DBCollection userColl = eventDatabase.getCollection("users");
-    DBObject query = new BasicDBObject("_id", u.getId());
+  public static void addUserToEvent(User user, Long event) {
 
-    Set<String> events = u.getEvents();
-    BasicDBList dbevents = new BasicDBList();
-    for (String e : events) {
-      dbevents.add(e);
+    try (PreparedStatement prep = conn.prepareStatement(
+        "INSERT INTO events_users VALUES(?,?,?,?,?,?,?,?,?);")) {
+      prep.setLong(1, event);
+      prep.setLong(2, user.getId());
+      prep.setInt(3, user.getPrice());
+      prep.setDouble(5, user.getDist());
+      prep.setDouble(4, user.getRating());
+      prep.setString(6, user.getCategory());
+      Suggestion[] s = user.getSuggestions();
+      prep.setString(7, s[0].toString());
+      prep.setString(8, s[1].toString());
+      prep.setString(9, s[2].toString());
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
     }
-    String eventarray = new Gson().toJson(dbevents);
+  }
 
-    DBObject person = new BasicDBObject("_id", u.getId())
-        .append("name", u.getName()).append("events", eventarray);
-    userColl.update(query, person, true, true);
+  /**
+   * Updates the filters for a user in the events_users table.
+   *
+   * @param user
+   *          the user whose data is to be updated.
+   * @param event
+   *          the event with which the user is associated.
+   */
+  public static void updateUser(User user, Long event) {
+    try (PreparedStatement prep = conn.prepareStatement(
+        "UPDATE events_users SET price = ?, rating = ?, distance = ?, "
+            + "category = ?, s1 = ?, s2 = ?, s3 = ? WHERE "
+            + "(user_id = ? AND event_id = ?);")) {
+      prep.setInt(1, user.getPrice());
+      prep.setDouble(2, user.getRating());
+      prep.setDouble(3, user.getDist());
+      prep.setString(4, user.getCategory());
+      prep.setLong(8, user.getId());
+      prep.setLong(9, event);
+      Suggestion[] s = user.getSuggestions();
+      prep.setString(5, s[0].toString());
+      prep.setString(6, s[1].toString());
+      prep.setString(7, s[2].toString());
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Updates the values of an event in the database.
+   *
+   * @param event
+   *          the event to update.
+   */
+  public static void updateEvent(Event event) {
+    Long id = event.getId();
+    String name = event.getName();
+    List<Double> coords = event.getLocation();
+    String date = event.getDate();
+    String time = event.getTime();
+    try (PreparedStatement prep = conn.prepareStatement(
+        "UPDATE events SET name = ?, latitude = ?, longitude = ?, date = ?, time = ?, "
+            + "s1 = ?, s2 = ?, s3 = ? WHERE id = ?")) {
+      prep.setLong(9, id);
+      prep.setString(1, name);
+      prep.setDouble(2, coords.get(0));
+      prep.setDouble(3, coords.get(1));
+      prep.setString(4, date);
+      prep.setString(5, time);
+      Suggestion[] s = event.getSuggestions();
+      prep.setString(6, s[0].toString());
+      prep.setString(7, s[1].toString());
+      prep.setString(8, s[2].toString());
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+  }
+
+  /**
+   * Creates the tables for the db. Primarily used for testing.
+   */
+  public void createdb() {
+    try (PreparedStatement prep = conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, "
+            + "'name' TEXT, 'latitude' INTEGER, 'longitude' INTEGER);")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'events'"
+            + "('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, "
+            + "'longitude' INTEGER, 'date' TEXT, 'time' TEXT, 's1'"
+            + " TEXT, 's2' TEXT, 's3' TEXT);")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println();
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'events_users'"
+            + "('event_id' INTEGER, 'user_id' INTEGER, 'price' INTEGER, "
+            + "'rating' INTEGER, 'distance' INTEGER, category TEXT,'s1' "
+            + "TEXT, 's2' TEXT, 's3' TEXT);")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Clears the tables of the database. Primarily used for testing to keep the
+   * testdb size down.
+   */
+  public void cleardb() {
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS users")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS events")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS events_users")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * deletes an event from the events and events_users tables.
+   *
+   * @param event
+   *          the id of the event to delete.
+   */
+  public void deleteEvent(Long event) {
+    try (PreparedStatement prep = conn
+        .prepareStatement("DELETE FROM events WHERE id = ?;")) {
+      prep.setLong(1, event);
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DELETE FROM events_users WHERE event_id = ?;")) {
+      prep.setLong(1, event);
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Gets the connection for this database for testing purposes.
+   * 
+   * @return the connection of this database.
+   */
+  public Connection getConn() {
+    return W2MDatabase.conn;
   }
 
 }

@@ -105,9 +105,14 @@ public final class Main {
 
       Event event = new Event(name, coordinates, date, time);
 
+      //return empty json array for leaderboard and picks
+      //return a list (ranked of all suggestions)
+      //return id
 
+
+      //TODO: Build the json
       Map<String, Object> variables =
-              ImmutableMap.of();
+              ImmutableMap.of("testKeyEvent", "testValEvent");
 
 
       return GSON.toJson(variables);
@@ -120,13 +125,17 @@ public final class Main {
    */
   public static class VoteHandler implements Route {
 
+    //return empty json array for leaderboard and picks
+    //return a list (ranked of all suggestions)
+    //return id
     @Override
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
 
 
+      //TODO: build the json
       Map<String, Object> variables =
-              ImmutableMap.of();
+              ImmutableMap.of("testKeyVote", "testValVote");
 
 
       return GSON.toJson(variables);

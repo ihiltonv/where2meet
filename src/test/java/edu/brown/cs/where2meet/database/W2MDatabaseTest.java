@@ -2,16 +2,19 @@ package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-
-import com.mongodb.DBCollection;
 
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.User;
@@ -28,43 +31,56 @@ public class W2MDatabaseTest {
   @Test
   public void testAddUser() {
     System.out.println("TestAddUser\n");
-    clearCollections();
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User test = new User("id", "name", coords);
+    User test = new User("/n/1", coords);
     W2MDatabase.addUser(test);
-    User ret = W2MDatabase.getUser("id");
-    assertEquals(ret.getName(), "name");
-    assertEquals(ret.getId(), "id");
+    User ret = W2MDatabase.loadUser(test.getId());
+    assertEquals(ret.getName(), "/n/1");
+    assertEquals(ret.getId(), test.getId());
 
   }
 
   @Test
   public void testAddEvent() {
     System.out.println("TestAddEvent\n");
-    W2MDatabase db = new W2MDatabase("testdb");
-    clearCollections();
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User uTest1 = new User("uid1", "uname1", coords);
-    User uTest2 = new User("uid2", "uname2", coords);
-    Set<String> userList = new HashSet<>();
+    User uTest1 = new User("/n/2", coords);
+    User uTest2 = new User("/n/3", coords);
+
+    while (uTest2.getId().equals(uTest1.getId())) {
+      uTest2 = new User("/n/3", coords);
+    }
+
+    Set<Long> userList = new HashSet<>();
+
     userList.add(uTest1.getId());
     userList.add(uTest2.getId());
+
     List<Double> ecoords = new ArrayList<>();
     ecoords.add(1.0);
     ecoords.add(2.0);
-    Event test = new Event("eid", "name", userList, ecoords);
+    Event test = new Event("/n/4", userList, ecoords, "date", "time");
+    Long eid = test.getId();
     db.addEvent(test);
-    Event ret = W2MDatabase.getEvent("eid");
-    assertEquals(ret.getName(), "name");
-    assertEquals(ret.getId(), "eid");
-    Set<String> users = ret.getUsers();
+
+    Event ret = W2MDatabase.getEvent(eid);
+    assertEquals(ret.getName(), "/n/4");
+    assertEquals(ret.getId(), eid);
+    Set<Long> users = ret.getUsers();
+
     assertEquals(users.size(), 2);
-    assertEquals(users.toArray()[0], "uid2");
-    assertEquals(users.toArray()[1], "uid1");
+    assertTrue(users.contains(uTest2.getId()));
+    assertTrue(users.contains(uTest1.getId()));
     List<Double> retCoords = ret.getLocation();
     assert retCoords.get(0) == 1.0;
     assert retCoords.get(1) == 2.0;
@@ -73,51 +89,181 @@ public class W2MDatabaseTest {
   @Test
   public void testAddUserWithEvent() {
     System.out.println("TestAddUserWithEvent\n");
-    W2MDatabase db = new W2MDatabase("testdb");
-    clearCollections();
-
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User uTest = new User("userid1", "uname1", coords);
+    User uTest = new User("/n/5", coords);
+    Long uid = uTest.getId();
     W2MDatabase.addUser(uTest);
-    Event eTest1 = new Event("eid1", "ename1");
-    Event eTest2 = new Event("eid2", "ename2");
+
+    Event eTest1 = new Event("/n/6", coords, "date1", "time1");
+    Event eTest2 = new Event("/n/7", coords, "date2", "time2");
+    while (eTest2.getId().equals(eTest1.getId())) {
+      eTest2 = new Event("/n/7", coords, "date2", "time2");
+    }
+
+    Long eid1 = eTest1.getId();
+    Long eid2 = eTest2.getId();
     eTest1.addUser(uTest.getId());
     eTest2.addUser(uTest.getId());
     db.addEvent(eTest1);
     db.addEvent(eTest2);
     W2MDatabase.addUser(uTest);
 
-    User ret = W2MDatabase.getUser("userid1");
-    assertEquals(ret.getName(), "uname1");
-    assertEquals(ret.getId(), "userid1");
-    Set<String> events = ret.getEvents();
-    Set<String> userSet = new HashSet<>();
+    User ret = W2MDatabase.getUser(uid);
+    assertEquals(ret.getName(), "/n/5");
+    assertEquals(ret.getId(), uid);
+    Set<Long> events = ret.getEvents();
+    Set<Long> userSet = new HashSet<>();
     userSet.add(uTest.getId());
     assertEquals(events.size(), 2);
-    String e1 = (String) events.toArray()[1];
-    String e2 = (String) events.toArray()[0];
-    assertEquals(e2, "eid2");
-    assertEquals(e1, "eid1");
-    Event event1 = W2MDatabase.getEvent(e1);
-    Event event2 = W2MDatabase.getEvent(e2);
-    assertEquals(event1.getName(), "ename1");
-    assertEquals(event2.getName(), "ename2");
-    Set<String> eusers1 = event1.getUsers();
-    Set<String> eusers2 = event2.getUsers();
+    assertTrue(events.contains(eid1));
+    assertTrue(events.contains(eid2));
+    Event event1 = W2MDatabase.getEvent(eid1);
+    Event event2 = W2MDatabase.getEvent(eid2);
+    assertEquals(event1.getName(), "/n/6");
+    assertEquals(event2.getName(), "/n/7");
+    Set<Long> eusers1 = event1.getUsers();
+    Set<Long> eusers2 = event2.getUsers();
     assertEquals(eusers1.size(), 1);
     assertEquals(eusers2.size(), 1);
-    assertTrue(eusers1.contains("userid1"));
-    assertTrue(eusers2.contains("userid1"));
+    assertTrue(eusers1.contains(uid));
+    assertTrue(eusers2.contains(uid));
   }
 
-  private void clearCollections() {
-    W2MDatabase db = new W2MDatabase("testdb");
-    DBCollection eventColl = db.getCollection("events");
-    eventColl.drop();
-    DBCollection userColl = db.getCollection("users");
-    userColl.drop();
+  @Test
+  public void testUpdateUser() {
+    System.out.println("TestUpdateUser\n");
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    User uTest1 = new User("/n/1", coords);
+    W2MDatabase.addUser(uTest1);
+    Long uid = uTest1.getId();
+    Event eTest1 = new Event("/e/1", coords, "date", "time");
+    Long eid = eTest1.getId();
+    db.addEvent(eTest1);
+    eTest1.addUser(uid);
+    User ret = W2MDatabase.getUserWithEvent(uid, eid);
+    assertEquals(ret.getCategory(), "");
+    assertEquals(ret.getPrice(), 1);
+    assert ret.getRating() == 5;
+    assert ret.getDist() == 1;
+
+    uTest1.setCategory("test");
+    uTest1.setDist(2.0);
+    uTest1.setPrice(2);
+    uTest1.setRating(4);
+    W2MDatabase.updateUser(uTest1, eTest1.getId());
+    ret = W2MDatabase.getUserWithEvent(uid, eid);
+
+    assertEquals(ret.getCategory(), "test");
+    assertEquals(ret.getPrice(), 2);
+    assert ret.getRating() == 4;
+    assert ret.getDist() == 2.0;
+  }
+
+  @Test
+  public void testGetIdFromName() {
+    System.out.println("TestGetIdFromName\n");
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    db.cleardb();
+    db.createdb();
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    User uTest1 = new User("/n/1", coords);
+    Long uid = uTest1.getId();
+    Event eTest1 = new Event("/e/1", coords, "date", "time");
+    Long eid = eTest1.getId();
+
+    while (uid.equals(eid)) {
+      eTest1 = new Event("/e/1", coords, "date", "time");
+      eid = eTest1.getId();
+    }
+    W2MDatabase.addUser(uTest1);
+    db.addEvent(eTest1);
+    Long id = W2MDatabase.getIdFromName("/n/1", eid);
+    assertNull(id);
+
+    eTest1.addUser(uid);
+    id = W2MDatabase.getIdFromName("/n/1", eid);
+    assertEquals(id, uid);
+
+  }
+
+  @Test
+  public void testDeleteEvents() {
+    System.out.println("TestDeleteEvents\n");
+    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    Connection conn = db.getConn();
+    db.cleardb();
+    db.createdb();
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    Event test1 = new Event("test1", coords, "date", "time");
+
+    Long e1 = test1.getId();
+
+    User uTest1 = new User("username", coords);
+    Long u = uTest1.getId();
+    test1.addUser(u);
+    db.addEvent(test1);
+    int count = 0;
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT COUNT(*) FROM events WHERE id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+    assertEquals(count, 1);
+
+    try (PreparedStatement prep = conn.prepareStatement(
+        "SELECT COUNT(*) FROM events_users WHERE event_id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+
+    assertEquals(count, 1);
+
+    db.deleteEvent(e1);
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT COUNT(*) FROM events WHERE id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+    assertEquals(count, 0);
+
+    try (PreparedStatement prep = conn.prepareStatement(
+        "SELECT COUNT(*) FROM events_users WHERE event_id = ?")) {
+      prep.setLong(1, e1);
+      try (ResultSet rs = prep.executeQuery()) {
+        count = rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      count = 0;
+    }
+
+    assertEquals(count, 0);
   }
 
 }

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import '../../../css/App.css';
 import Modal from '../../components/Modal/Modal.js'
 
@@ -22,8 +22,24 @@ export default class AddEventPage extends Component {
         });
     };
 
-    goToEvent = () => {
+    goToEvent = (name, lat, lon, date, time) => {
         this.props.history.push('/event');
+        fetch('/event', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                lat: lat,
+                lon: lon,
+                date: date,
+                time: time,
+            })
+        }).then(function (response) {
+            //TODO: handle response here
+        })
     };
 
     render() {

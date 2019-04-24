@@ -3,6 +3,7 @@ package edu.brown.cs.where2meet.event;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
 
 /**
  * A class to model users for the application.
@@ -11,25 +12,50 @@ import java.util.Set;
 public class User {
 
   private String name;
-  private String id;
+  private Long id;
   private Set<Long> events;
   private List<Double> coordinates;
+  private int price;
+  private double dist;
+  private double rating;
+  private String category;
+  private Suggestion[] suggestions;
 
   /**
    * Constructor for a user.
    *
-   * @param id
-   *          the id of the user
    * @param name
    *          the name of the user
    * @param coords
    *          the coordinates of the user's location
    */
-  public User(String id, String name, List<Double> coords) {
+  public User(String name, List<Double> coords) {
     this.name = name;
-    this.id = id;
+    this.id = System.currentTimeMillis();
     this.events = new HashSet<>();
     this.coordinates = coords;
+    resetFilters();
+
+    instantiateSuggestions();
+  }
+
+  /**
+   * Constructor for the user.
+   *
+   * @param name
+   *          the name of the user
+   * @param events
+   *          the events that the user is in.
+   * @param coords
+   *          the coordinates of the user's location.
+   */
+  public User(String name, Set<Long> events, List<Double> coords) {
+    this.name = name;
+    this.id = System.currentTimeMillis();
+    this.events = events;
+    this.coordinates = coords;
+    instantiateSuggestions();
+    resetFilters();
 
   }
 
@@ -45,12 +71,29 @@ public class User {
    * @param coords
    *          the coordinates of the user's location.
    */
-  public User(String id, String name, Set<Long> events, List<Double> coords) {
+  public User(Long id, String name, Set<Long> events, List<Double> coords) {
     this.name = name;
     this.id = id;
     this.events = events;
     this.coordinates = coords;
+    instantiateSuggestions();
+    resetFilters();
+  }
 
+  /**
+   * Resets the filter values for a user.
+   */
+  public void resetFilters() {
+    this.category = "";
+    this.price = 1;
+    this.rating = 5;
+    this.dist = 1;
+  }
+
+  public void updateFilters(int price, double dist, int rating) {
+    this.price = price;
+    this.dist = dist;
+    this.rating = rating;
   }
 
   /**
@@ -67,7 +110,7 @@ public class User {
    *
    * @return the id of the user.
    */
-  public String getId() {
+  public Long getId() {
     return this.id;
   }
 
@@ -137,6 +180,135 @@ public class User {
    */
   public List<Double> getLocation() {
     return this.coordinates;
+  }
+
+  /**
+   * Gets the price filter.
+   *
+   * @return the value for the price filter.
+   */
+  public int getPrice() {
+    return price;
+  }
+
+  /**
+   * Sets the value for the price filter.
+   *
+   * @param price
+   *          the new value for the price filter
+   */
+  public void setPrice(int price) {
+    this.price = price;
+  }
+
+  /**
+   * Gets the value for the dist filter.
+   *
+   * @return the value for the distance filter
+   */
+  public double getDist() {
+    return dist;
+  }
+
+  /**
+   * Sets the value of the dist filter.
+   *
+   * @param dist
+   *          the new value of the dist filter.
+   */
+  public void setDist(double dist) {
+    this.dist = dist;
+  }
+
+  /**
+   * Gets the value of the rating filter.
+   *
+   * @return the value of the rating filter.
+   */
+  public double getRating() {
+    return rating;
+  }
+
+  /**
+   * Sets the value of the rating filter.
+   *
+   * @param rating
+   *          the new value of the rating filter.
+   */
+  public void setRating(double rating) {
+    this.rating = rating;
+  }
+
+  /**
+   * Gets the value of the category filter.
+   *
+   * @return the value of the category filter.
+   */
+  public String getCategory() {
+    return category;
+  }
+
+  /**
+   * Sets the value of the category filter.
+   *
+   * @param category
+   *          the new value of the category filter.
+   */
+  public void setCategory(String category) {
+    this.category = category;
+  }
+
+  /**
+   * Gets the suggestion at a specified rank (1 through 3).
+   *
+   * @param rank
+   *          the rank of the suggestion
+   * @return the suggestion at the specified rank.
+   */
+  public Suggestion getSuggestion(int rank) {
+    return suggestions[rank];
+  }
+
+  /**
+   * Gets the suggestion list.
+   *
+   * @return the list of suggestions for the event.
+   */
+  public Suggestion[] getSuggestions() {
+    return this.suggestions;
+  }
+
+  /**
+   * Sets the suggestion list.
+   *
+   * @param suggestions
+   *          the array to which suggestions is set.
+   */
+  public void setSuggestions(Suggestion[] suggestions) {
+    this.suggestions = suggestions;
+  }
+
+  /**
+   *
+   * Sets a specific suggestion in the array.
+   *
+   * @param s
+   *          the new suggestion.
+   * @param rank
+   *          the position in the array to replace.
+   */
+  public void setSuggestion(Suggestion s, int rank) {
+    this.suggestions[rank] = s;
+  }
+
+  /**
+   * Instantiates the suggestion array.
+   */
+  private void instantiateSuggestions() {
+    this.suggestions = new Suggestion[3];
+    this.suggestions[0] = new Suggestion();
+    this.suggestions[1] = new Suggestion();
+    this.suggestions[2] = new Suggestion();
   }
 
 }
