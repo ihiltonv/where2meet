@@ -7,7 +7,6 @@ import './InputForm.css';
 
 
 class modal extends React.Component {
-
     render() {
         return (
             <div>

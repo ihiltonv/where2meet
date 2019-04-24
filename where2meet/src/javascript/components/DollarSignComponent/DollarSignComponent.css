@@ -1,0 +1,8 @@
+.dollar-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.dollar {
+    color: goldenrod;
+}

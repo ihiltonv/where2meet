@@ -1,0 +1,35 @@
+.expandContainer {
+    width: 90%;
+}
+
+.expandHeader {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    color: black;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.expandButton {
+    height: 20px;
+    width: 20px;
+    border-style: hidden;
+    text-align: center;
+    font-size: 20px;
+}
+
+.line {
+    border-style: solid;
+    border-width: 0px;
+    border-bottom-width: 1px;
+    width: 100%;
+    background-color: black;
+}
+
+.expandButton:hover {
+    color: #61dafb;
+}
