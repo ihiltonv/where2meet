@@ -41,14 +41,11 @@ public final class Main {
     this.wmu = new W2MUniverse();
     // Parse command line arguments
     OptionParser parser = new OptionParser();
-    parser.accepts("gui");
     parser.accepts("port").withRequiredArg().ofType(Integer.class)
         .defaultsTo(DEFAULT_PORT);
     OptionSet options = parser.parse(args);
 
-    if (options.has("gui")) {
-      runSparkServer((int) options.valueOf("port"));
-    }
+    runSparkServer((int) options.valueOf("port"));
 
   }
 
