@@ -1,12 +1,17 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import '../../../css/App.css';
 import Modal from '../../components/Modal/Modal.js'
+import API from '../../utils/API'
+
+let config = {
+    headers: {'Access-Control-Allow-Origin': '*'}
+};
 
 export default class AddEventPage extends Component {
     constructor() {
         super();
         this.state = {
-            isShowing: false
+            isShowing: false,
         }
     };
 
@@ -23,23 +28,39 @@ export default class AddEventPage extends Component {
     };
 
     goToEvent = (name, lat, lon, date, time) => {
-        this.props.history.push('/event');
-        fetch('/event', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+
+        if ((lat === undefined || lon === undefined || name === "" || date === "" || time === "")) {
+            alert("Please enter all fields!");
+        } else {
+            let body = {
                 name: name,
                 lat: lat,
                 lon: lon,
                 date: date,
                 time: time,
+            };
+            console.log(body);
+            API.post('/event', body).then(function (response) {
+                console.log(response);
             })
-        }).then(function (response) {
-            //TODO: handle response here
-        })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+
+
+        // this.props.history.push('/event');
+        // fetch('/event', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json',
+        //     },
+        //
+        // }).then(function (response) {
+        //     //TODO: handle response here
+        // })
+
     };
 
     render() {
