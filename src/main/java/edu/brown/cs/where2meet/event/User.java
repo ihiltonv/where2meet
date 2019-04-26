@@ -3,6 +3,7 @@ package edu.brown.cs.where2meet.event;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
 
 /**
  * A class to model users for the application.
@@ -34,8 +35,8 @@ public class User {
     this.events = new HashSet<>();
     this.coordinates = coords;
     resetFilters();
-    instantiateSuggestions();
 
+    instantiateSuggestions();
   }
 
   /**
@@ -87,7 +88,12 @@ public class User {
     this.price = 1;
     this.rating = 5;
     this.dist = 1;
+  }
 
+  public void updateFilters(int price, double dist, int rating) {
+    this.price = price;
+    this.dist = dist;
+    this.rating = rating;
   }
 
   /**

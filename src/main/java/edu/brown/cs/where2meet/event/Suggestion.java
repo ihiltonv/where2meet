@@ -1,6 +1,7 @@
 package edu.brown.cs.where2meet.event;
 
-import static org.junit.Assert.assertEquals;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Wrapper class for data for a suggestion.
@@ -194,16 +195,22 @@ public class Suggestion {
 
   @Override
   public String toString() {
-    String res = this.price + "\"" + this.votes + "\"" + this.rating + "\""
-        + this.location + "\"" + this.url + "\"" + this.category + "\""
-        + this.photo;
 
-    return res;
+    JsonObject obj = new JsonObject();
+    obj.addProperty("price", this.price);
+    obj.addProperty("votes", this.votes);
+    obj.addProperty("rating", this.rating);
+    obj.addProperty("location", this.location);
+    obj.addProperty("url", this.url);
+    obj.addProperty("category", this.category);
+    obj.addProperty("photo", this.photo);
+
+    return obj.toString();
   }
 
   /**
-   * Takes a string produced by Suggestion.toString() and turns it into a
-   * Suggestion object.
+   * Takes a string produced to a json object by Suggestion.toString() and turns
+   * it into a Suggestion object.
    *
    * @param sugg
    *          the string to be translated into a Suggestion.
@@ -212,19 +219,15 @@ public class Suggestion {
   public static Suggestion toSugg(String sugg) {
 
     Suggestion res = new Suggestion();
-    String[] fields = sugg.split("\"");
-    try {
-      assertEquals(fields.length, MAX_LEN);
-      res.setPrice(Integer.valueOf(fields[0]));
-      res.setVotes(Integer.valueOf(fields[1]));
-      res.setRating(Double.valueOf(fields[2]));
-      res.setLocation(fields[3]);
-      res.setUrl(fields[4]);
-      res.setCategory(fields[5]);
-      res.setPhoto(fields[6]);
-    } catch (AssertionError a) {
-      return res;
-    }
+    JsonObject ret = (JsonObject) new JsonParser().parse(sugg);
+    res.setPrice(ret.get("price").getAsInt());
+    res.setVotes(ret.get("votes").getAsInt());
+    res.setRating(ret.get("rating").getAsDouble());
+    res.setCategory(ret.get("category").getAsString());
+    res.setLocation(ret.get("location").getAsString());
+    res.setUrl(ret.get("url").getAsString());
+    res.setPhoto(ret.get("photo").getAsString());
+
     return res;
 
   }

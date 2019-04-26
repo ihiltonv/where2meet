@@ -1,21 +1,92 @@
-/*LeaderBoard Styles*/
-.leaderBoardContainer {
-    width: 42.5vw;
-    height: 100%;
+.body {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-start;
+}
+
+.groupName {
+    min-height: 10vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: black;
+    font-family: Helvetica;
+    letter-spacing: 4px;
+    font-size: 200%;
+    border-radius: 10px;
+}
+
+/* Filters styles */
+.filtersContainer {
+    position: relative;
+    width: 20vw;
+    height: 100vh;
+    overflow: scroll;
+    text-align: center;
+    background-color: #fdfdfd;
+    box-shadow: 1px 1px 5px grey;
+}
+
+.filtersTitle {
+    letter-spacing: 4px;
+    font-size: 25px;
+}
+
+.filtersRow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.filter {
+    width: 90%;
+    height: 100px;
+    margin-bottom: 10px;
+    background-color: #61dafb;
+}
+
+.dollarButtonContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dollarButton {
+    border-style: solid;
+    border-radius: 10%;
+    border-width: 1px;
+    padding: 5px;
+    width: 20%;
+    margin-bottom: 20px;
+}
+
+.dollarButton:hover {
+    color: white;
+    background-color: goldenrod;
+}
+
+.locationSliderContainer {
+    width: 100%;
+    height: 100px;
 }
 
 /*LeaderBoard Styles*/
-.yourPicksContainer {
-    width: 42.5vw;
+.eachTable {
+    width: 100%;
     height: 100%;
 }
 
 /*tables styles */
 .tablesContainer {
     display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: stretch;
+    height: 100vh;
+    width: 20vw;
+    flex-direction: column;
+    overflow: scroll;
 }
 
 .tableTitle {
@@ -29,37 +100,52 @@
 /* name and location input styles */
 .InputContainer {
     display: flex;
-    flex-direction: row;
-    position: absolute;
-    margin-top: 20px;
-    margin-left: 5vw;
+    flex-direction: column;
+    position: relative;
+    margin-top: 10px;
     letter-spacing: 1px;
-    height: 30vw;
-    justify-content: space-between;
-    align-items: stretch;
+    justify-content: space-evenly;
 }
 
-.InputContainer div {
-    font-size: 30px;
+
+.inputField {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 2px;
+    font-size: 15px;
+    font-weight: bold;
 }
 
-.name-input {
-    width: 30vw;
-    height: 8vh;
-    border-radius: 10px;
-    text-align: left;
-    padding-left: 10px;
+.inputTitle {
+    align-self: flex-start;
+    margin-left: 20px;
     letter-spacing: 4px;
-    font-size: 25px;
+    color: black;
 }
 
+.nameInput {
+    width: 90%;
+    height: 35px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: thin;
+    border-color: #757575;
+    text-align: center;
+    letter-spacing: 1px;
+    font-size: 15px;
+    font-weight: bold;
+}
 
 /* Suggestions Table Styles*/
 
 .suggestionsBoardContainer {
-    margin-top: 100px;
-    width: 90vw;
-    margin-left: 5vw;
+    position: relative;
+    width: 60vw;
+    height: 100vh;
+    overflow: scroll;
 }
 
 /* choiceButtons*/

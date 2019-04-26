@@ -2,12 +2,17 @@ package edu.brown.cs.where2meet.main;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-
+import com.google.gson.JsonObject;
 import edu.brown.cs.where2meet.event.Event;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import spark.*;
+import spark.ExceptionHandler;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.File;
@@ -41,15 +46,11 @@ public final class Main {
     this.wmu = new W2MUniverse();
     // Parse command line arguments
     OptionParser parser = new OptionParser();
-    parser.accepts("gui");
     parser.accepts("port").withRequiredArg().ofType(Integer.class)
-        .defaultsTo(DEFAULT_PORT);
-    OptionSet options = parser.parse(args);
+        .defaultsTo(Main.DEFAULT_PORT);
+    OptionSet options = parser.parse(this.args);
 
-    if (options.has("gui")) {
-      runSparkServer((int) options.valueOf("port"));
-    }
-
+    runSparkServer((int) options.valueOf("port"));
   }
 
   private static FreeMarkerEngine createEngine() {
@@ -59,7 +60,7 @@ public final class Main {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
       System.out.printf("ERROR: Unable use %s for template loading.%n",
-              templates);
+          templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -67,10 +68,37 @@ public final class Main {
 
   private void runSparkServer(int port) {
     Spark.port(port);
-    Spark.externalStaticFileLocation("src/main/resources/static");
+    //Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
-    FreeMarkerEngine freeMarker = createEngine();
+    Spark.options("/*",
+        (request, response) -> {
+
+          String accessControlRequestHeaders = request
+              .headers("Access-Control-Request-Headers");
+          if (accessControlRequestHeaders != null) {
+            response.header("Access-Control-Allow-Headers",
+                accessControlRequestHeaders);
+          }
+
+          String accessControlRequestMethod = request
+              .headers("Access-Control-Request-Method");
+          if (accessControlRequestMethod != null) {
+            response.header("Access-Control-Allow-Methods",
+                accessControlRequestMethod);
+          }
+
+          return "OK";
+        });
+
+    Spark.before((request, response) -> response.header("Access-Control-Allow-Origin", "*"));
+
+//    Spark.after((Filter) (request, response) -> {
+//      response.header("Access-Control-Allow-Origin", "*");
+//      response.header("Access-Control-Allow-Methods", "GET");
+//      response.header("Access-Control-Allow-Methods", "POST");
+//    });
+    //FreeMarkerEngine freeMarker = Main.createEngine();
 
     //Calls we want:
     //
@@ -92,12 +120,19 @@ public final class Main {
 
     @Override
     public String handle(Request req, Response res) {
-      QueryParamsMap qm = req.queryMap();
-      String name = qm.value("name");
-      double lat = Double.parseDouble(qm.value("lat"));
-      double lon = Double.parseDouble(qm.value("lon"));
-      String date = qm.value("date");
-      String time = qm.value("time");
+      Map qm = req.params();
+      // get the JSON String
+      String data = req.body();
+
+      // get the string as an object
+      JsonObject json = Main.GSON.fromJson(data, JsonObject.class);
+
+      // get the actual data
+      String name = json.get("name").getAsString();
+      double lat = json.get("lat").getAsDouble();
+      double lon = json.get("lon").getAsDouble();
+      String date = json.get("date").getAsString();
+      String time = json.get("time").getAsString();
 
       List<Double> coordinates = new ArrayList<>();
       coordinates.add(lat);
@@ -112,10 +147,10 @@ public final class Main {
 
       //TODO: Build the json
       Map<String, Object> variables =
-              ImmutableMap.of("testKeyEvent", "testValEvent");
+          ImmutableMap.of("testKeyEvent", "testValEvent");
 
 
-      return GSON.toJson(variables);
+      return Main.GSON.toJson(variables);
     }
   }
 
@@ -135,10 +170,10 @@ public final class Main {
 
       //TODO: build the json
       Map<String, Object> variables =
-              ImmutableMap.of("testKeyVote", "testValVote");
+          ImmutableMap.of("testKeyVote", "testValVote");
 
 
-      return GSON.toJson(variables);
+      return Main.GSON.toJson(variables);
     }
   }
 

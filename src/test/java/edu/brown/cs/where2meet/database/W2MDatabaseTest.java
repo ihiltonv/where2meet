@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.brown.cs.where2meet.event.Event;
@@ -21,19 +23,32 @@ import edu.brown.cs.where2meet.event.User;
 
 public class W2MDatabaseTest {
 
+  public static W2MDatabase db;
+
+  @BeforeClass
+  public static void SetUpDb() {
+    db = new W2MDatabase("data/testdb2.sqlite3");
+    db.createdb();
+  }
+
+  @AfterClass
+  public static void dropDb() {
+    db.cleardb();
+  }
+
   @Test
   public void testConstructor() {
     System.out.println("TestConstructor\n");
-    W2MDatabase db = new W2MDatabase("testdb");
+    db = new W2MDatabase("data/testdb2.sqlite3");
     assertNotNull(db);
   }
 
   @Test
   public void testAddUser() {
     System.out.println("TestAddUser\n");
-    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
-    db.cleardb();
-    db.createdb();
+    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
+    // db.cleardb();
+    // db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
@@ -48,9 +63,9 @@ public class W2MDatabaseTest {
   @Test
   public void testAddEvent() {
     System.out.println("TestAddEvent\n");
-    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
-    db.cleardb();
-    db.createdb();
+    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
+    // db.cleardb();
+    // db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
@@ -89,9 +104,9 @@ public class W2MDatabaseTest {
   @Test
   public void testAddUserWithEvent() {
     System.out.println("TestAddUserWithEvent\n");
-    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
-    db.cleardb();
-    db.createdb();
+    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
+    // db.cleardb();
+    // db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
@@ -137,9 +152,9 @@ public class W2MDatabaseTest {
   @Test
   public void testUpdateUser() {
     System.out.println("TestUpdateUser\n");
-    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
-    db.cleardb();
-    db.createdb();
+    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
+    // db.cleardb();
+    // db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
@@ -172,13 +187,13 @@ public class W2MDatabaseTest {
   @Test
   public void testGetIdFromName() {
     System.out.println("TestGetIdFromName\n");
-    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
-    db.cleardb();
-    db.createdb();
+    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
+    // db.cleardb();
+    // db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User uTest1 = new User("/n/1", coords);
+    User uTest1 = new User("username", coords);
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
     Long eid = eTest1.getId();
@@ -189,11 +204,11 @@ public class W2MDatabaseTest {
     }
     W2MDatabase.addUser(uTest1);
     db.addEvent(eTest1);
-    Long id = W2MDatabase.getIdFromName("/n/1", eid);
+    Long id = W2MDatabase.getIdFromName("username", eid);
     assertNull(id);
 
     eTest1.addUser(uid);
-    id = W2MDatabase.getIdFromName("/n/1", eid);
+    id = W2MDatabase.getIdFromName("username", eid);
     assertEquals(id, uid);
 
   }
@@ -201,10 +216,10 @@ public class W2MDatabaseTest {
   @Test
   public void testDeleteEvents() {
     System.out.println("TestDeleteEvents\n");
-    W2MDatabase db = new W2MDatabase("data/testdb.sqlite3");
+    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
     Connection conn = db.getConn();
-    db.cleardb();
-    db.createdb();
+    // db.cleardb();
+    // db.createdb();
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
