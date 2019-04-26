@@ -5,6 +5,6 @@
 .mvn-classpath
 
 .idea/*
-
+/.idea/*
 /.idea/
 
