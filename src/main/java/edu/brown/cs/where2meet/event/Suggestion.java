@@ -16,6 +16,7 @@ public class Suggestion {
   private String url;
   private String category;
   private String photo;
+  private String venue;
   private static final int MAX_LEN = 7;
 
   /**
@@ -29,6 +30,7 @@ public class Suggestion {
     this.url = "url";
     this.category = "cat";
     this.photo = "photo";
+    this.venue = "venue";
   }
 
   /**
@@ -48,9 +50,11 @@ public class Suggestion {
    *          the category string
    * @param photo
    *          the url of the photo
+   * @param venue
+   *          the name of the venue
    */
   public Suggestion(int price, int votes, double rating, String location,
-      String url, String category, String photo) {
+      String url, String category, String photo, String venue) {
     this.price = price;
     this.votes = votes;
     this.rating = rating;
@@ -58,6 +62,7 @@ public class Suggestion {
     this.url = url;
     this.category = category;
     this.photo = photo;
+    this.venue = venue;
   }
 
   /**
@@ -204,6 +209,7 @@ public class Suggestion {
     obj.addProperty("url", this.url);
     obj.addProperty("category", this.category);
     obj.addProperty("photo", this.photo);
+    obj.addProperty("venue", this.venue);
 
     return obj.toString();
   }
@@ -227,9 +233,25 @@ public class Suggestion {
     res.setLocation(ret.get("location").getAsString());
     res.setUrl(ret.get("url").getAsString());
     res.setPhoto(ret.get("photo").getAsString());
+    res.setVenue(ret.get("venue").getAsString());
 
     return res;
 
+  }
+
+  /**
+   * @return the venue
+   */
+  public String getVenue() {
+    return venue;
+  }
+
+  /**
+   * @param venue
+   *          the venue to set
+   */
+  public void setVenue(String venue) {
+    this.venue = venue;
   }
 
 }
