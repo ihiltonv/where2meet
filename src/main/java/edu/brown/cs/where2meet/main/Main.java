@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.brown.cs.where2meet.event.Event;
-import edu.brown.cs.where2meet.event.Venue;
+import edu.brown.cs.where2meet.event.Suggestion;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -168,8 +168,8 @@ public final class Main {
       String name = "Group Name"; // get the name of the group
       String time = "10:30"; // make sure the time is in this format, in military time so.. 11pm will be 23:00
       String date = "2019-05-12"; // again, need to be in this form
-      List<Venue> leaderBoardList = new ArrayList<>(); // please send the stored list of votes
-      List<Venue> initialSuggestionsList = new ArrayList<>(); // give a default range of suggestions, will do filtering in client
+      List<Suggestion> leaderBoardList = new ArrayList<>(); // please send the stored list of votes
+      List<Suggestion> initialSuggestionsList = new ArrayList<>(); // give a default range of suggestions, will do filtering in client
 
       Map<String, Object> variables = new
           ImmutableMap.Builder<String, Object>()

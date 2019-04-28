@@ -1,8 +1,10 @@
 import React from 'react';
 import 'rheostat/initialize';
 import Geosuggest from 'react-geosuggest';
-
+import StarRatings from 'react-star-ratings'
 import ThemedStyleSheet from 'react-with-styles/lib/ThemedStyleSheet';
+import Select from 'react-select';
+import makeAnimated from 'react-select/lib/animated';
 
 import DefaultTheme from 'rheostat/lib/themes/DefaultTheme';
 import aphroditeInterface from 'react-with-styles-interface-aphrodite';
@@ -138,6 +140,18 @@ const fakeData2 = [
     },
 ];
 
+const options = [
+    {value: 'chocolate', label: 'Chocolate'},
+    {value: 'strawberry', label: 'Strawberry'},
+    {value: 'sdaf', label: 'Vanilla'},
+    {value: 'asdfa', label: 'yas'},
+    {value: 'asdfas', label: 'fsdsf'},
+    {value: 'asdfasda', label: 'fsd'},
+    {value: 'asdfa', label: 'Chocosfsslate'},
+    {value: 'sdfaf', label: 'wtesdvasd'},
+    {value: 'fsdf', label: 'sfafdas '}
+];
+
 class EventPage extends React.Component {
 
 
@@ -151,12 +165,13 @@ class EventPage extends React.Component {
             meetingLocation: "",
             priceRange: [false, false, false, false],
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
-            searchRadius: 100,
-            categories: [],
-            popularity: 5,
+            searchRadius: [1, 100],
+            selectedCategories: [],
+            categoryOptions: options,
+            popularity: 0,
             suggestionsList: [],
             leaderBoardList: [],
-            yourPicksList: [],
+            yourPicksList: fakeData2,
         };
     }
 
@@ -171,8 +186,8 @@ class EventPage extends React.Component {
                 groupName: data.groupName,
                 meetingTime: data.meetingTime,
                 meetingDate: data.meetingDate,
-                leaderBoardList: data.leaderBoardList,
-                suggestionsList: data.suggestionsList
+                leaderBoardList: fakeData2,//data.leaderBoardList,
+                suggestionsList: fakeData//data.suggestionsList
             })
         })
             .catch(function (error) {
@@ -263,21 +278,53 @@ class EventPage extends React.Component {
                         }/>
                     </div>
                     <div className={"filtersRow"}>
-                        <CollapsableContainer title={"Location Range"} filter={
+                        <CollapsableContainer title={"Search Radius"} filter={
                             <div className={"locationSliderContainer"}>
                                 <Rheostat
-                                    min={0.1}
-                                    max={10}
-                                    values={[1, 50]}
+                                    min={1}
+                                    max={100}
+                                    values={[1, 100]}
+                                    onValuesUpdated={(event) => this.setState({searchRadius: event.values})}
+                                />
+                                <div className={"searchRadiusLabelContainer"}>
+                                    <h1>{this.state.searchRadius[0] / 10.0} miles</h1>
+                                    <h1>{this.state.searchRadius[1] / 10.0} miles</h1>
+                                </div>
+                            </div>
+                        }/>
+                    </div>
+                    <div className={"filtersRow"}>
+                        <CollapsableContainer title={"Popularity"} filter={
+                            <div className={"popularitySelectorContainer"}>
+                                <StarRatings
+                                    isSelectable={true}
+                                    starHoverColor={'gold'}
+                                    starRatedColor={"gold"}
+                                    numberOfStars={5}
+                                    name='rating'
+                                    starDimension={'20px'}
+                                    starSpacing={'5px'}
+                                    changeRating={(rating) => this.setState({popularity: rating})}
+                                    rating={this.state.popularity}
                                 />
                             </div>
                         }/>
                     </div>
                     <div className={"filtersRow"}>
-                        <CollapsableContainer title={"Categories"} filter={<div>Something else</div>}/>
-                    </div>
-                    <div className={"filtersRow"}>
-                        <CollapsableContainer title={"Popularity"} filter={<div>Something else</div>}/>
+                        <CollapsableContainer title={"Categories"} filter={
+                            <div className={"categoryOptionsContainer"}>
+                                <Select
+                                    options={this.state.categoryOptions}
+                                    onChange={(selectedOption) => {
+                                        console.log(selectedOption);
+                                        this.setState({selectedCategories: selectedOption})
+                                    }}
+                                    closeMenuOnSelect={false}
+                                    components={makeAnimated()}
+                                    isMulti
+                                />
+                            </div>
+                        }/>
                     </div>
                 </div>
                 {/*suggestions list*/}
@@ -285,7 +332,7 @@ class EventPage extends React.Component {
                     <div className={"tableTitle"}>
                         Some Suggestions
                     </div>
-                    <SuggestionsTable showRank={false} data={fakeData}/>
+                    <SuggestionsTable showRank={false} data={this.state.suggestionsList}/>
                 </div>
                 {/*top suggestions list*/}
                 <div className={"tablesContainer"}>
@@ -293,18 +340,16 @@ class EventPage extends React.Component {
                         <div className={"tableTitle"}>
                             LeaderBoard
                         </div>
-                        <LeaderboardTable showRank={true} data={fakeData2}/>
+                        <LeaderboardTable showRank={true} data={this.state.leaderBoardList}/>
                     </div>
                     <div className={"eachTable"}>
                         <div className={"tableTitle"}>
                             Your Picks
                         </div>
-                        <LeaderboardTable showRank={true} data={fakeData2}/>
+                        <LeaderboardTable showRank={true} data={this.state.yourPicksList}/>
                     </div>
                 </div>
             </div>
-
-
         )
     }
 }
