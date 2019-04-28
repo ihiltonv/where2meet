@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import edu.brown.cs.where2meet.database.W2MDatabase;
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.event.SuggestionComparator;
 import edu.brown.cs.where2meet.event.User;
 
 @WebSocket
@@ -103,23 +104,33 @@ public class EventWebSocket {
       newSugg.setVotes(newSugg.getVotes() + userVotes);
 
       Suggestion[] userSuggestions = user.getSuggestions();
-      Suggestion[] eventSuggestions = event.getSuggestions();
+
       int rank = (userVotes + 1) / 2;
       user.setSuggestion(newSugg, rank);
+      W2MDatabase.updateUser(user, eid);
+
       Suggestion oldSugg = userSuggestions[rank];
       oldSugg.setVotes(oldSugg.getVotes() - userVotes);
 
-      if (eventSuggestions[0].getVotes() < newSugg.getVotes()) {
-        event.setSuggestion(newSugg, 0);
-        event.setSuggestion(eventSuggestions[0], 1);
-        event.setSuggestion(eventSuggestions[1], 2);
-
-      } else if (eventSuggestions[1].getVotes() < newSugg.getVotes()) {
-        event.setSuggestion(newSugg, 1);
-        event.setSuggestion(eventSuggestions[1], 2);
-      } else if (eventSuggestions[2].getVotes() < newSugg.getVotes()) {
-        event.setSuggestion(newSugg, 2);
+      List<Suggestion> eventSuggestions = event.getSuggestions();
+      int ind = eventSuggestions.indexOf(newSugg);
+      if (ind >= 0) {
+        eventSuggestions.set(ind, newSugg);
+      } else {
+        eventSuggestions.add(newSugg);
       }
+
+      ind = eventSuggestions.indexOf(oldSugg);
+      if (ind >= 0) {
+        eventSuggestions.set(ind, oldSugg);
+      } else {
+        eventSuggestions.add(oldSugg);
+      }
+
+      SuggestionComparator comp = new SuggestionComparator();
+      eventSuggestions.sort(comp);
+      event.setSuggestions(eventSuggestions);
+      W2MDatabase.updateEvent(event);
 
       // TODO: Send updated list of suggestions to the frontend
     }
