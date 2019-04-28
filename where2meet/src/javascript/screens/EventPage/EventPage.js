@@ -16,6 +16,7 @@ import '../../components/Modal/Geosuggest.css'
 import LeaderboardTable from "../../components/LeaderboardTable/LeaderboardTable";
 import SuggestionsTable from "../../components/SuggestionsTable/SuggestionsTable";
 import CollapsableContainer from "../../components/CollapsableContainer/CollapsableContainer";
+import API from "../../utils/API";
 
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
@@ -143,30 +144,75 @@ class EventPage extends React.Component {
     constructor() {
         super();
         this.state = {
-            GroupName: "Weekend Shenanigans",
+            groupName: "Weekend Shenanigans",
+            userName: "",
+            meetingTime: "",
+            meetingDate: "",
+            meetingLocation: "",
+            priceRange: [false, false, false, false],
+            dollarButtonColor: ["goldenrod", "white", "white", "white"],
+            searchRadius: 100,
+            categories: [],
+            popularity: 5,
+            suggestionsList: [],
+            leaderBoardList: [],
+            yourPicksList: [],
         };
     }
+
+    componentDidMount() {
+        let eventId = this.props.match.params.id;
+        console.log(eventId);
+        // get the required data from the database
+        API.get(`/event/${eventId}`).then((response) => {
+            console.log(response.data);
+            let data = response.data;
+            this.setState({
+                groupName: data.groupName,
+                meetingTime: data.meetingTime,
+                meetingDate: data.meetingDate,
+                leaderBoardList: data.leaderBoardList,
+                suggestionsList: data.suggestionsList
+            })
+        })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+
+    submitName = (event) => {
+        this.setState({userName: event.target.value});
+        console.log(event)
+    };
+
+    changeDollarButtonState = (event) => {
+        let dollarArray = this.state.priceRange;
+        dollarArray[event.target.value] = dollarArray[event.target.value] ? false : true;
+        this.setState({priceRange: dollarArray});
+    };
 
     render() {
         return (
             <div className={"body"}>
                 {/*filters sidebar*/}
                 <div className={"filtersContainer"}>
+                    {/*Initial inputs*/}
                     <header className="groupName">
-                        {this.state.GroupName}
+                        {this.state.groupName}
                     </header>
                     <div className="InputContainer">
                         <div className={"inputField"}>
                             <div className={"inputTitle"}>Your Name:</div>
-                            <input className="nameInput" id={"nameInput"} type={"text"} placeholder=" "/>
+                            <input className="nameInput" id={"nameInput"} type={"text"} placeholder=" "
+                                   value={this.state.userName} onChange={this.submitName}/>
                         </div>
                         <div className={"inputField"}>
                             <div className={"inputTitle"}>Meeting Time:</div>
-                            <input className="nameInput" id={"nameInput"} type={"time"} value="10:20"/>
+                            <input className="nameInput" id={"nameInput"} type={"time"} value={this.state.meetingTime}/>
                         </div>
                         <div className={"inputField"}>
                             <div className={"inputTitle"}>Meeting Date:</div>
-                            <input className="nameInput" id={"nameInput"} type={"date"} value="2019-05-12"/>
+                            <input className="nameInput" id={"nameInput"} type={"date"} value={this.state.meetingDate}/>
                         </div>
                         <div className={"inputField"}>
                             <div className={"inputTitle"}> Location:
@@ -174,16 +220,45 @@ class EventPage extends React.Component {
                             <Geosuggest placeholder={""} id={"geoSuggest"} style={{'input': geoSuggestInputStyle}}/>
                         </div>
                     </div>
+                    {/*Filters*/}
                     <div className={"filtersTitle"}>
                         Filters
                     </div>
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Price Range"} filter={
                             <div className={"dollarButtonContainer"}>
-                                <button className={"dollarButton"}>$</button>
-                                <button className={"dollarButton"}>$$</button>
-                                <button className={"dollarButton"}>$$$</button>
-                                <button className={"dollarButton"}>$$$$</button>
+                                <button className={"dollarButton"} value={0}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "background-color": this.state.priceRange[0] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[0] ? "white" : "black"
+                                        }}
+                                >$
+                                </button>
+                                <button className={"dollarButton"} value={1}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "background-color": this.state.priceRange[1] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[1] ? "white" : "black"
+                                        }}
+                                >$$
+                                </button>
+                                <button className={"dollarButton"} value={2}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "background-color": this.state.priceRange[2] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[2] ? "white" : "black"
+                                        }}
+                                >$$$
+                                </button>
+                                <button className={"dollarButton"} value={3}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "background-color": this.state.priceRange[3] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[3] ? "white" : "black"
+                                        }}
+                                >$$$$
+                                </button>
                             </div>
                         }/>
                     </div>
@@ -191,8 +266,8 @@ class EventPage extends React.Component {
                         <CollapsableContainer title={"Location Range"} filter={
                             <div className={"locationSliderContainer"}>
                                 <Rheostat
-                                    min={1}
-                                    max={50}
+                                    min={0.1}
+                                    max={10}
                                     values={[1, 50]}
                                 />
                             </div>
