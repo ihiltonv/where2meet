@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './css/index.css';
 
 import * as serviceWorker from './javascript/serviceWorker';
-import { Route, BrowserRouter as Router } from 'react-router-dom'
+import {BrowserRouter as Router, Route} from 'react-router-dom'
 
 import AddEventPage from "./javascript/screens/AddEventPage/AddEventPage";
 import EventPage from './javascript/screens/EventPage/EventPage'
@@ -11,8 +11,8 @@ import EventPage from './javascript/screens/EventPage/EventPage'
 const routing = (
     <Router>
         <div>
-            <Route exact path="/" component={AddEventPage} />
-            <Route path="/event" component={EventPage} />
+            <Route exact path="/" component={AddEventPage}/>
+            <Route path="/events/:id" component={EventPage}/>
         </div>
     </Router>
 );

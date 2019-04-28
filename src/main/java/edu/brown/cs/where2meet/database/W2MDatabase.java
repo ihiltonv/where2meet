@@ -84,7 +84,7 @@ public class W2MDatabase {
    * @param event
    *          the event whose data is to be added.
    */
-  public void addEvent(Event event) {
+  public static void addEvent(Event event) {
     Long id = event.getId();
     String name = event.getName();
     List<Double> coords = event.getLocation();
@@ -516,7 +516,7 @@ public class W2MDatabase {
 
   /**
    * Gets the connection for this database for testing purposes.
-   * 
+   *
    * @return the connection of this database.
    */
   public Connection getConn() {
