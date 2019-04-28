@@ -92,7 +92,7 @@ class modal extends React.Component {
                     <div className="modal-footer">
                         <button className="btn-cancel" onClick={this.props.close}>CLOSE</button>
                         <button className="btn-continue"
-                                onClick={() => this.props.goToEvent(this.state.groupName, this.state.meetingLocation.lat, this.state.meetingLocation.lng, this.state.meetingTime, this.state.meetingTime)}>CONTINUE
+                                onClick={() => this.props.goToEvent(this.state.groupName, this.state.meetingLocation.lat, this.state.meetingLocation.lng, this.state.meetingDate, this.state.meetingTime)}>CONTINUE
                         </button>
                     </div>
 
