@@ -224,7 +224,6 @@ public class Suggestion {
     for (Suggestion sugg : s) {
       jarray.add(sugg.toString());
     }
-    System.out.println(jarray.toString());
 
     return jarray.toString();
   }
@@ -261,10 +260,27 @@ public class Suggestion {
     JsonElement jel = jparse.parse(array);
     JsonArray jarray = jel.getAsJsonArray();
     for (JsonElement e : jarray) {
-      suggestions.add(Suggestion.toSugg(e.toString()));
+      suggestions.add(Suggestion.toSugg(e));
     }
 
     return suggestions;
+  }
+
+  private static Suggestion toSugg(JsonElement s) {
+
+    Suggestion res = new Suggestion();
+    String stripped = s.getAsString();
+    JsonObject ret = (JsonObject) new JsonParser().parse(stripped);
+    res.setPrice(ret.get("price").getAsInt());
+    res.setVotes(ret.get("votes").getAsInt());
+    res.setRating(ret.get("rating").getAsDouble());
+    res.setCategory(ret.get("category").getAsString());
+    res.setLocation(ret.get("location").getAsString());
+    res.setUrl(ret.get("url").getAsString());
+    res.setPhoto(ret.get("photo").getAsString());
+    res.setVenue(ret.get("venue").getAsString());
+
+    return res;
   }
 
   /**

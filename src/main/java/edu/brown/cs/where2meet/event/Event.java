@@ -303,4 +303,9 @@ public class Event {
   public void setSuggestion(Suggestion s, int rank) {
     this.suggestions.set(rank, s);
   }
+
+  public void addSuggestion(Suggestion s) {
+    this.suggestions.add(s);
+    this.suggestions.sort(new SuggestionComparator());
+  }
 }

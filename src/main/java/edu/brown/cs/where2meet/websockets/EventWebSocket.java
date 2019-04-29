@@ -121,7 +121,10 @@ public class EventWebSocket {
       }
 
       ind = eventSuggestions.indexOf(oldSugg);
-      if (ind >= 0) {
+      if (oldSugg.getVotes() == 0 && ind >= 0) {
+        eventSuggestions.remove(ind);
+
+      } else if (ind >= 0) {
         eventSuggestions.set(ind, oldSugg);
       } else {
         eventSuggestions.add(oldSugg);

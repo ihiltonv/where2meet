@@ -128,6 +128,19 @@ public class W2MDatabase {
       } catch (SQLException err) {
         System.out.println(err);
       }
+
+      try (PreparedStatement prep = conn
+          .prepareStatement("SELECT s1 FROM events WHERE id = ?")) {
+        prep.setLong(1, id);
+        try (ResultSet rs = prep.executeQuery()) {
+          while (rs.next()) {
+            e.setSuggestions(Suggestion.getStringAsList(rs.getString(1)));
+          }
+        }
+      } catch (SQLException err) {
+
+      }
+
       return e;
     } catch (ExecutionException e) {
       System.out.print("ERROR: could not retrieve event");

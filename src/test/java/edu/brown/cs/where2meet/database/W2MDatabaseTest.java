@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
 
 public class W2MDatabaseTest {
@@ -86,7 +87,7 @@ public class W2MDatabaseTest {
     ecoords.add(2.0);
     Event test = new Event("/n/4", userList, ecoords, "date", "time");
     Long eid = test.getId();
-    db.addEvent(test);
+    W2MDatabase.addEvent(test);
 
     Event ret = W2MDatabase.getEvent(eid);
     assertEquals(ret.getName(), "/n/4");
@@ -124,8 +125,8 @@ public class W2MDatabaseTest {
     Long eid2 = eTest2.getId();
     eTest1.addUser(uTest.getId());
     eTest2.addUser(uTest.getId());
-    db.addEvent(eTest1);
-    db.addEvent(eTest2);
+    W2MDatabase.addEvent(eTest1);
+    W2MDatabase.addEvent(eTest2);
     W2MDatabase.addUser(uTest);
 
     User ret = W2MDatabase.getUser(uid);
@@ -163,7 +164,7 @@ public class W2MDatabaseTest {
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
     Long eid = eTest1.getId();
-    db.addEvent(eTest1);
+    W2MDatabase.addEvent(eTest1);
     eTest1.addUser(uid);
     User ret = W2MDatabase.getUserWithEvent(uid, eid);
     assertEquals(ret.getCategory(), "");
@@ -203,7 +204,7 @@ public class W2MDatabaseTest {
       eid = eTest1.getId();
     }
     W2MDatabase.addUser(uTest1);
-    db.addEvent(eTest1);
+    W2MDatabase.addEvent(eTest1);
     Long id = W2MDatabase.getIdFromName("username", eid);
     assertNull(id);
 
@@ -230,7 +231,7 @@ public class W2MDatabaseTest {
     User uTest1 = new User("username", coords);
     Long u = uTest1.getId();
     test1.addUser(u);
-    db.addEvent(test1);
+    W2MDatabase.addEvent(test1);
     int count = 0;
     try (PreparedStatement prep = conn
         .prepareStatement("SELECT COUNT(*) FROM events WHERE id = ?")) {
@@ -279,6 +280,50 @@ public class W2MDatabaseTest {
     }
 
     assertEquals(count, 0);
+  }
+
+  @Test
+  public void testSuggestionPreservation() {
+    System.out.println("testSuggestionPreservation\n");
+
+    List<Double> ecoords = new ArrayList<>();
+    ecoords.add(1.0);
+    ecoords.add(2.0);
+    Event test = new Event("/n/4", ecoords, "date", "time");
+    Long eid = test.getId();
+    W2MDatabase.addEvent(test);
+    Event ret = W2MDatabase.getEvent(eid);
+    List<Suggestion> sugg = ret.getSuggestions();
+    assertEquals(sugg.size(), 0);
+
+    Suggestion s = new Suggestion();
+    s.setVenue("A");
+    s.setVotes(1);
+
+    test.addSuggestion(s);
+    assertEquals(test.getSuggestions().size(), 1);
+    W2MDatabase.updateEvent(test);
+    ret = W2MDatabase.getEvent(eid);
+    sugg = ret.getSuggestions();
+    assertEquals(sugg.size(), 1);
+    assertEquals(sugg.get(0).getVenue(), "A");
+
+    s = new Suggestion();
+    s.setVenue("B");
+    s.setVotes(2);
+
+    test.addSuggestion(s);
+    assertEquals(test.getSuggestions().size(), 2);
+    assertEquals(test.getSuggestions().get(1).getVenue(), "A");
+    assertEquals(test.getSuggestions().get(0).getVenue(), "B");
+
+    W2MDatabase.updateEvent(test);
+    ret = W2MDatabase.getEvent(eid);
+    sugg = ret.getSuggestions();
+    assertEquals(sugg.size(), 2);
+    assertEquals(sugg.get(0).getVenue(), "B");
+    assertEquals(sugg.get(1).getVenue(), "A");
+
   }
 
 }
