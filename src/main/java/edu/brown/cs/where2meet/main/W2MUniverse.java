@@ -15,11 +15,12 @@ public class W2MUniverse {
 
 
   public W2MUniverse() {
-    String db = "";
+    String db = "data/w2m.sqlite3";
     this.fsc = new FSConnection();
     this.wmd = new W2MDatabase(db);
     this.ucl = new UserCacheLoader();
     this.ecl = new EventCacheLoader();
+    this.wmd.createdb();
   }
 
 

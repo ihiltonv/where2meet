@@ -147,7 +147,7 @@ public final class Main {
 
       //TODO: Build the json
       Map<String, Object> variables =
-          ImmutableMap.of("id", "someRealID");
+          ImmutableMap.of("id", event.getId());
 
 
       return Main.GSON.toJson(variables);
@@ -155,7 +155,7 @@ public final class Main {
   }
 
   /**
-   * This class handles the creation of new events.
+   * This class handles data retrieval for existing events
    */
   public static class GetEventDataHandler implements Route {
 
