@@ -7,8 +7,6 @@ import edu.brown.cs.where2meet.foursquare.FSConnection;
 
 public class W2MUniverse {
 
-  EventCacheLoader ecl;
-  UserCacheLoader ucl;
   W2MDatabase wmd;
   FSConnection fsc;
 
@@ -18,8 +16,6 @@ public class W2MUniverse {
     String db = "data/w2m.sqlite3";
     this.fsc = new FSConnection();
     this.wmd = new W2MDatabase(db);
-    this.ucl = new UserCacheLoader();
-    this.ecl = new EventCacheLoader();
     this.wmd.createdb();
   }
 
