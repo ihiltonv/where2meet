@@ -1,5 +1,10 @@
 package edu.brown.cs.where2meet.event;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -17,7 +22,7 @@ public class Suggestion {
   private String category;
   private String photo;
   private String venue;
-  private static final int MAX_LEN = 7;
+  // private static final int MAX_LEN = 7;
 
   /**
    * Empty constructor.
@@ -214,6 +219,15 @@ public class Suggestion {
     return obj.toString();
   }
 
+  public static String suggToString(List<Suggestion> s) {
+    JsonArray jarray = new JsonArray();
+    for (Suggestion sugg : s) {
+      jarray.add(sugg.toString());
+    }
+
+    return jarray.toString();
+  }
+
   /**
    * Takes a string produced to a json object by Suggestion.toString() and turns
    * it into a Suggestion object.
@@ -239,6 +253,36 @@ public class Suggestion {
 
   }
 
+  public static List<Suggestion> getStringAsList(String array) {
+    List<Suggestion> suggestions = new ArrayList<>();
+
+    JsonParser jparse = new JsonParser();
+    JsonElement jel = jparse.parse(array);
+    JsonArray jarray = jel.getAsJsonArray();
+    for (JsonElement e : jarray) {
+      suggestions.add(Suggestion.toSugg(e));
+    }
+
+    return suggestions;
+  }
+
+  private static Suggestion toSugg(JsonElement s) {
+
+    Suggestion res = new Suggestion();
+    String stripped = s.getAsString();
+    JsonObject ret = (JsonObject) new JsonParser().parse(stripped);
+    res.setPrice(ret.get("price").getAsInt());
+    res.setVotes(ret.get("votes").getAsInt());
+    res.setRating(ret.get("rating").getAsDouble());
+    res.setCategory(ret.get("category").getAsString());
+    res.setLocation(ret.get("location").getAsString());
+    res.setUrl(ret.get("url").getAsString());
+    res.setPhoto(ret.get("photo").getAsString());
+    res.setVenue(ret.get("venue").getAsString());
+
+    return res;
+  }
+
   /**
    * @return the venue
    */
@@ -252,6 +296,79 @@ public class Suggestion {
    */
   public void setVenue(String venue) {
     this.venue = venue;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((category == null) ? 0 : category.hashCode());
+    result = prime * result + ((location == null) ? 0 : location.hashCode());
+    result = prime * result + ((photo == null) ? 0 : photo.hashCode());
+    result = prime * result + price;
+    long temp;
+    temp = Double.doubleToLongBits(rating);
+    result = prime * result + (int) (temp ^ (temp >>> 32));
+    result = prime * result + ((url == null) ? 0 : url.hashCode());
+    result = prime * result + ((venue == null) ? 0 : venue.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    Suggestion other = (Suggestion) obj;
+    if (category == null) {
+      if (other.category != null) {
+        return false;
+      }
+    } else if (!category.equals(other.category)) {
+      return false;
+    }
+    if (location == null) {
+      if (other.location != null) {
+        return false;
+      }
+    } else if (!location.equals(other.location)) {
+      return false;
+    }
+    if (photo == null) {
+      if (other.photo != null) {
+        return false;
+      }
+    } else if (!photo.equals(other.photo)) {
+      return false;
+    }
+    if (price != other.price) {
+      return false;
+    }
+    if (Double.doubleToLongBits(rating) != Double
+        .doubleToLongBits(other.rating)) {
+      return false;
+    }
+    if (url == null) {
+      if (other.url != null) {
+        return false;
+      }
+    } else if (!url.equals(other.url)) {
+      return false;
+    }
+    if (venue == null) {
+      if (other.venue != null) {
+        return false;
+      }
+    } else if (!venue.equals(other.venue)) {
+      return false;
+    }
+    return true;
   }
 
 }

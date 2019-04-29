@@ -42,7 +42,6 @@ export default class AddEventPage extends Component {
             console.log(body);
             API.post('/event', body).then((response) => {
                 let id = response.data.id;
-                // TODO: handle the response
                 this.props.history.push(`/events/${id}`);
             })
                 .catch(function (error) {

@@ -1,10 +1,21 @@
 import React from 'react';
 import Geosuggest from 'react-geosuggest';
-import {browserHistory} from "react-router";
+import Select from 'react-select';
+import makeAnimated from 'react-select/lib/animated';
 import './Modal.css';
 import './Geosuggest.css';
 import './InputForm.css';
 
+const categoryOptions = [
+    {value: 'food', label: 'Food'},
+    {value: 'drinks', label: 'Drinks'},
+    {value: 'coffee', label: 'Coffee'},
+    {value: 'shops', label: 'Shops'},
+    {value: 'arts', label: 'Arts'},
+    {value: 'outdoors', label: 'Outdoors'},
+    {value: 'sights', label: 'Sights'},
+    {value: 'trending', label: 'Trending'},
+];
 
 class modal extends React.Component {
     constructor() {
@@ -14,6 +25,7 @@ class modal extends React.Component {
             meetingTime: "",
             meetingDate: "",
             meetingLocation: "",
+            selectedCategories: []
         }
     }
 
@@ -62,20 +74,6 @@ class modal extends React.Component {
                             <label>Meeting Date</label>
                         </div>
 
-
-                        {/*<div className="floating-label">*/}
-                        {/*<select className="floating-select" onClick="this.setAttribute('value', this.value);" value="">*/}
-                        {/*<option value=""></option>*/}
-                        {/*<option value="1">Alabama</option>*/}
-                        {/*<option value="2">Boston</option>*/}
-                        {/*<option value="3">Ohaio</option>*/}
-                        {/*<option value="4">New York</option>*/}
-                        {/*<option value="5">Washington</option>*/}
-                        {/*</select>*/}
-                        {/*<span className="highlight"></span>*/}
-                        {/*<label>Select</label>*/}
-                        {/*</div>*/}
-
                         <div className="floating-label">
                             <Geosuggest className="floating-input" id={"geoSuggest"} placeholder={"Meeting Location"}
                                         onClick={() => {
@@ -88,6 +86,17 @@ class modal extends React.Component {
                             <span className="highlight"></span>
                             <label id="locationLabel" hidden={true}>Meeting Location</label>
                         </div>
+
+                        <Select
+                            options={categoryOptions}
+                            onChange={(selectedOption) => {
+                                console.log(selectedOption);
+                                this.setState({selectedCategories: selectedOption})
+                            }}
+                            closeMenuOnSelect={false}
+                            components={makeAnimated()}
+                            
+                        />
                     </div>
                     <div className="modal-footer">
                         <button className="btn-cancel" onClick={this.props.close}>CLOSE</button>
