@@ -205,6 +205,7 @@ class EventPage extends React.Component {
         dollarArray[event.target.value] = dollarArray[event.target.value] ? false : true;
         this.setState({priceRange: dollarArray});
     };
+    
 
     render() {
         return (
