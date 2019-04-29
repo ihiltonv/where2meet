@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import edu.brown.cs.where2meet.database.W2MDatabase;
 import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
+import edu.brown.cs.where2meet.database.W2MDatabase;
 
 /**
  * A class to hold data for the events.
@@ -22,8 +22,8 @@ public class Event {
   private String time;
   private Set<Venue> venues;
   private VenueRanker topRanker;
-  private Suggestion[] suggestions;
-
+  // private Suggestion[] suggestions;
+  private List<Suggestion> suggestions;
 
   /**
    * Constructor for an Event.
@@ -120,13 +120,12 @@ public class Event {
    * Instantiates the suggestion array.
    */
   private void instantiateSuggestions() {
-    this.suggestions = new Suggestion[3];
-    this.suggestions[0] = new Suggestion();
-    this.suggestions[1] = new Suggestion();
-    this.suggestions[2] = new Suggestion();
+    this.suggestions = new ArrayList<>();
+
   }
 
-  public void updateVotes(Venue o1, Venue o2, Venue o3, Venue n1, Venue n2, Venue n3) {
+  public void updateVotes(Venue o1, Venue o2, Venue o3, Venue n1, Venue n2,
+      Venue n3) {
     this.topRanker.updateRankRelative(o1, -5.0);
     this.topRanker.updateRankRelative(o2, -3.0);
     this.topRanker.updateRankRelative(o2, -1.0);
@@ -139,13 +138,13 @@ public class Event {
   public Set<Venue> filterVenues(User u) {
     Set<Venue> result = new HashSet<>();
     for (Venue venue : venues) {
-      if (venue.getPrice() <= u.getPrice() && venue.getDistance() <= u.getDist() && venue.getPopularity() >= u.getRating()){
+      if (venue.getPrice() <= u.getPrice() && venue.getDistance() <= u.getDist()
+          && venue.getPopularity() >= u.getRating()) {
         result.add(venue);
       }
     }
     return result;
   }
-
 
   @Override
   public int hashCode() {
@@ -270,7 +269,7 @@ public class Event {
    * @return the suggestion at the specified rank.
    */
   public Suggestion getSuggestion(int rank) {
-    return suggestions[rank];
+    return suggestions.get(rank);
   }
 
   /**
@@ -278,7 +277,7 @@ public class Event {
    *
    * @return the list of suggestions for the event.
    */
-  public Suggestion[] getSuggestions() {
+  public List<Suggestion> getSuggestions() {
     return this.suggestions;
   }
 
@@ -288,7 +287,7 @@ public class Event {
    * @param suggestions
    *          the array to which suggestions is set.
    */
-  public void setSuggestions(Suggestion[] suggestions) {
+  public void setSuggestions(List<Suggestion> suggestions) {
     this.suggestions = suggestions;
   }
 
@@ -302,6 +301,6 @@ public class Event {
    *          the position in the array to replace.
    */
   public void setSuggestion(Suggestion s, int rank) {
-    this.suggestions[rank] = s;
+    this.suggestions.set(rank, s);
   }
 }

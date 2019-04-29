@@ -1,8 +1,12 @@
 package edu.brown.cs.where2meet.websockets;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -16,6 +20,9 @@ import com.google.gson.JsonObject;
 
 import edu.brown.cs.where2meet.database.W2MDatabase;
 import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.event.SuggestionComparator;
+import edu.brown.cs.where2meet.event.User;
 
 @WebSocket
 public class EventWebSocket {
@@ -23,12 +30,19 @@ public class EventWebSocket {
   private static final Gson GSON = new Gson();
   private static final Queue<Session> sessions = new ConcurrentLinkedQueue<>();
   private static int nextId = 0;
+  private static final Map<Long, ConcurrentLinkedQueue<Session>> eventMap = new ConcurrentHashMap<>();
+  private static final Map<Session, Thread> threadMap = new ConcurrentHashMap();
 
   /**
    * CONNECT: event_id: event id event_name: event name event_lat: event lat
    * event_lng: event longitude event_time: event's time event_date: event's
    * date user_name: user name user_lat: user latitude user_lng: user longitude
+   *
+   * UPDATE: event_id: event id, user_id: user id, votes: the votes to assign to
+   * the new suggestion, suggestion: the new suggestion to which votes are
+   * assigned.
    */
+
   private static enum MESSAGE_TYPE {
     CONNECT, UPDATE
   }
@@ -47,23 +61,79 @@ public class EventWebSocket {
     ecoords.add(e_lat);
     ecoords.add(e_lng);
     Event newEvent = null;
-    if (eid.intValue() == 0) {
-      newEvent = new Event(eName, ecoords, date, time);
-      W2MDatabase.addEvent(newEvent);
-    } else {
+    if (eventMap.keySet().contains(eid)) {
       newEvent = W2MDatabase.getEvent(eid);
+      eventMap.get(eid).add(session);
+    } else {
+      newEvent = new Event(eName, ecoords, date, time);
+      eventMap.put(eid, new ConcurrentLinkedQueue<Session>());
+      eventMap.get(eid).add(session);
     }
+
     sessions.add(session);
+    // TODO: start running the thread for the user
+    Thread thread = new Thread();
+    threadMap.put(session, thread);
 
   }
 
   @OnWebSocketClose
   public void closed(Session session, int statusCode, String reason) {
     sessions.remove(session);
+    threadMap.remove(session);
+    Collection<ConcurrentLinkedQueue<Session>> values = eventMap.values();
+    Iterator<ConcurrentLinkedQueue<Session>> iter = values.iterator();
+    while (iter.hasNext()) {
+      ConcurrentLinkedQueue<Session> q = iter.next();
+      q.remove(session);
+    }
+    // TODO: close the thread for the user
   }
 
   @OnWebSocketMessage
   public void message(Session session, String message) {
+    JsonObject received = GSON.fromJson(message, JsonObject.class);
+    if (received.get("type").getAsInt() == MESSAGE_TYPE.UPDATE.ordinal()) {
+      int userVotes = received.get("votes").getAsInt();
+      Long uid = received.get("user").getAsLong();
+      Long eid = received.get("event").getAsLong();
+      User user = W2MDatabase.getUserWithEvent(uid, eid);
+      Event event = W2MDatabase.getEvent(eid);
+      Suggestion newSugg = Suggestion
+          .toSugg(received.get("suggestion").getAsString());
+      newSugg.setVotes(newSugg.getVotes() + userVotes);
+
+      Suggestion[] userSuggestions = user.getSuggestions();
+
+      int rank = (userVotes + 1) / 2;
+      user.setSuggestion(newSugg, rank);
+      W2MDatabase.updateUser(user, eid);
+
+      Suggestion oldSugg = userSuggestions[rank];
+      oldSugg.setVotes(oldSugg.getVotes() - userVotes);
+
+      List<Suggestion> eventSuggestions = event.getSuggestions();
+      int ind = eventSuggestions.indexOf(newSugg);
+      if (ind >= 0) {
+        eventSuggestions.set(ind, newSugg);
+      } else {
+        eventSuggestions.add(newSugg);
+      }
+
+      ind = eventSuggestions.indexOf(oldSugg);
+      if (ind >= 0) {
+        eventSuggestions.set(ind, oldSugg);
+      } else {
+        eventSuggestions.add(oldSugg);
+      }
+
+      SuggestionComparator comp = new SuggestionComparator();
+      eventSuggestions.sort(comp);
+      event.setSuggestions(eventSuggestions);
+      W2MDatabase.updateEvent(event);
+
+      // TODO: Send updated list of suggestions to the frontend
+    }
 
   }
 
