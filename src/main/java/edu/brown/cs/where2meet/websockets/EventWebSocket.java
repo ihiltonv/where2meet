@@ -48,6 +48,14 @@ public class EventWebSocket {
     CONNECT, UPDATE, SCORING
   }
 
+  /**
+   *
+   * @param session
+   *          the connecting session.
+   *
+   * @param message
+   *          the message with the connection.
+   */
   public void connected(Session session, String message) {
     JsonObject received = GSON.fromJson(message, JsonObject.class);
     assert received.get("type").getAsInt() == MESSAGE_TYPE.CONNECT.ordinal();

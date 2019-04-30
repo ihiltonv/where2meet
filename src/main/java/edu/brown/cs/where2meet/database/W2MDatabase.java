@@ -420,8 +420,8 @@ public class W2MDatabase {
     String date = event.getDate();
     String time = event.getTime();
     try (PreparedStatement prep = conn.prepareStatement(
-        "UPDATE events SET name = ?, latitude = ?, longitude = ?, date = ?, time = ?, "
-            + "s1 = ? WHERE id = ?")) {
+        "UPDATE events SET name = ?, latitude = ?, longitude = ?, "
+            + "date = ?, time = ?, s1 = ? WHERE id = ?")) {
       prep.setLong(7, id);
       prep.setString(1, name);
       prep.setDouble(2, coords.get(0));
