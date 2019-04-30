@@ -5,13 +5,14 @@ import com.google.gson.JsonParser;
 
 /**
  * Wrapper class for data for a suggestion.
- *
  */
 public class Suggestion {
 
   private int price;
   private int votes;
   private double rating;
+  private double lat;
+  private double lon;
   private String location;
   private String url;
   private String category;
@@ -26,6 +27,8 @@ public class Suggestion {
     this.price = 0;
     this.votes = 0;
     this.rating = 0;
+    this.lat = 0;
+    this.lon = 0;
     this.location = "loc";
     this.url = "url";
     this.category = "cat";
@@ -35,29 +38,26 @@ public class Suggestion {
 
   /**
    * Constructor for a suggestion.
-   *
-   * @param price
-   *          the price value.
-   * @param votes
-   *          the votes value
-   * @param rating
-   *          the rating value
-   * @param location
-   *          the location string
-   * @param url
-   *          the url
-   * @param category
-   *          the category string
-   * @param photo
-   *          the url of the photo
-   * @param venue
-   *          the name of the venue
+   * @param price    the price value.
+   * @param votes    the votes value
+   * @param rating   the rating value
+   * @param lat      the latitude of the suggestion
+   * @param lon      the longitude of the venue
+   * @param location the location string
+   * @param url      the url
+   * @param category the category string
+   * @param photo    the url of the photo
+   * @param venue    the name of the venue
    */
-  public Suggestion(int price, int votes, double rating, String location,
-      String url, String category, String photo, String venue) {
+  //TODO fix checkstyle error!
+  public Suggestion(int price, int votes, double rating, double lat, double lon,
+                    String location, String url, String category, String photo,
+                    String venue) {
     this.price = price;
     this.votes = votes;
     this.rating = rating;
+    this.lat = lat;
+    this.lon = lon;
     this.location = location;
     this.url = url;
     this.category = category;
@@ -67,18 +67,15 @@ public class Suggestion {
 
   /**
    * gets the price.
-   *
    * @return the price
    */
   public int getPrice() {
-    return price;
+    return this.price;
   }
 
   /**
    * sets the price.
-   *
-   * @param price
-   *          the price to set
+   * @param price the price to set
    */
   public void setPrice(int price) {
     this.price = price;
@@ -86,18 +83,15 @@ public class Suggestion {
 
   /**
    * gets the votes.
-   *
    * @return the votes
    */
   public int getVotes() {
-    return votes;
+    return this.votes;
   }
 
   /**
    * sets the votes.
-   *
-   * @param votes
-   *          the votes to set
+   * @param votes the votes to set
    */
   public void setVotes(int votes) {
     this.votes = votes;
@@ -105,37 +99,65 @@ public class Suggestion {
 
   /**
    * gets the rating.
-   *
    * @return the rating
    */
   public double getRating() {
-    return rating;
+    return this.rating;
   }
+
 
   /**
    * sets the rating.
-   *
-   * @param rating
-   *          the rating to set
+   * @param rating the rating to set
    */
   public void setRating(double rating) {
     this.rating = rating;
   }
 
   /**
+   * gets the latitude
+   * @return the latitude
+   */
+  public double getLat() {
+    return this.lat;
+  }
+
+  /**
+   * sets the latitude
+   * @param lat the latitude
+   */
+  public void setLat(double lat) {
+    this.lat = lat;
+  }
+
+
+  /**
+   * gets the longitude
+   * @return the longitude
+   */
+  public double getLon() {
+    return this.lon;
+  }
+
+  /**
+   * sets the longitude
+   * @param lon the longitude
+   */
+  public void setLon(double lon) {
+    this.lon = lon;
+  }
+
+  /**
    * gets the location.
-   *
    * @return the location
    */
   public String getLocation() {
-    return location;
+    return this.location;
   }
 
   /**
    * sets the location.
-   *
-   * @param location
-   *          the location to set
+   * @param location the location to set
    */
   public void setLocation(String location) {
     this.location = location;
@@ -143,18 +165,15 @@ public class Suggestion {
 
   /**
    * gets the url.
-   *
    * @return the url
    */
   public String getUrl() {
-    return url;
+    return this.url;
   }
 
   /**
    * sets the url.
-   *
-   * @param url
-   *          the url to set
+   * @param url the url to set
    */
   public void setUrl(String url) {
     this.url = url;
@@ -162,18 +181,15 @@ public class Suggestion {
 
   /**
    * gets the category.
-   *
    * @return the category
    */
   public String getCategory() {
-    return category;
+    return this.category;
   }
 
   /**
    * sets the category.
-   *
-   * @param category
-   *          the category to set
+   * @param category the category to set
    */
   public void setCategory(String category) {
     this.category = category;
@@ -181,18 +197,15 @@ public class Suggestion {
 
   /**
    * gets the photo.
-   *
    * @return the photo
    */
   public String getPhoto() {
-    return photo;
+    return this.photo;
   }
 
   /**
    * sets the photo.
-   *
-   * @param photo
-   *          the photo to set
+   * @param photo the photo to set
    */
   public void setPhoto(String photo) {
     this.photo = photo;
@@ -217,9 +230,7 @@ public class Suggestion {
   /**
    * Takes a string produced to a json object by Suggestion.toString() and turns
    * it into a Suggestion object.
-   *
-   * @param sugg
-   *          the string to be translated into a Suggestion.
+   * @param sugg the string to be translated into a Suggestion.
    * @return a Suggestion object with the data from the string.
    */
   public static Suggestion toSugg(String sugg) {
@@ -243,12 +254,11 @@ public class Suggestion {
    * @return the venue
    */
   public String getVenue() {
-    return venue;
+    return this.venue;
   }
 
   /**
-   * @param venue
-   *          the venue to set
+   * @param venue the venue to set
    */
   public void setVenue(String venue) {
     this.venue = venue;
