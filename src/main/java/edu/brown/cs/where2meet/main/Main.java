@@ -60,8 +60,8 @@ public final class Main {
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
-      System.out.printf("ERROR: Unable use %s for template loading.%n",
-          templates);
+      System.out
+          .printf("ERROR: Unable use %s for template loading.%n", templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -72,26 +72,26 @@ public final class Main {
     //Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
-    Spark.options("/*",
-        (request, response) -> {
-          String accessControlRequestHeaders = request
-              .headers("Access-Control-Request-Headers");
-          if (accessControlRequestHeaders != null) {
-            response.header("Access-Control-Allow-Headers",
-                accessControlRequestHeaders);
-          }
+    Spark.options("/*", (request, response) -> {
+      String accessControlRequestHeaders =
+          request.headers("Access-Control-Request-Headers");
+      if (accessControlRequestHeaders != null) {
+        response.header("Access-Control-Allow-Headers",
+            accessControlRequestHeaders);
+      }
 
-          String accessControlRequestMethod = request
-              .headers("Access-Control-Request-Method");
-          if (accessControlRequestMethod != null) {
-            response.header("Access-Control-Allow-Methods",
-                accessControlRequestMethod);
-          }
+      String accessControlRequestMethod =
+          request.headers("Access-Control-Request-Method");
+      if (accessControlRequestMethod != null) {
+        response
+            .header("Access-Control-Allow-Methods", accessControlRequestMethod);
+      }
 
-          return "OK";
-        });
+      return "OK";
+    });
 
-    Spark.before((request, response) -> response.header("Access-Control-Allow-Origin", "*"));
+    Spark.before((request, response) -> response
+        .header("Access-Control-Allow-Origin", "*"));
 
 //    Spark.after((Filter) (request, response) -> {
 //      response.header("Access-Control-Allow-Origin", "*");
@@ -146,8 +146,7 @@ public final class Main {
 
 
       //TODO: Build the json
-      Map<String, Object> variables =
-          ImmutableMap.of("id", event.getId());
+      Map<String, Object> variables = ImmutableMap.of("id", event.getId());
 
 
       return Main.GSON.toJson(variables);
@@ -165,22 +164,23 @@ public final class Main {
       String id = req.params(":id");
 
       //TODO: from the database, get the following info
-      Event event = this.Main.wmu.wmd.getEvent(Long.parseLong(id));
+      Event event = Main.wmu.wmd.getEvent(Long.parseLong(id));
       String name = event.getName(); // get the name of the group
-      String time = event.getTime(); // make sure the time is in this format, in military time so.. 11pm will be 23:00
+      String time = event
+          .getTime(); // make sure the time is in this format, in military
+      // time so.. 11pm will be 23:00
       String date = event.getDate(); // again, need to be in this form
-      List<Suggestion> leaderBoardList = new ArrayList<>(); // please send the stored list of votes
-      List<Suggestion> initialSuggestionsList = new ArrayList<>(); // give a default range of suggestions, will do filtering in client
+      List<Suggestion> leaderBoardList =
+          new ArrayList<>(); // please send the stored list of votes
+      List<Suggestion> initialSuggestionsList =
+          new ArrayList<>(); // give a default range of suggestions, will do
+      // filtering in client
 
-      Map<String, Object> variables = new
-          ImmutableMap.Builder<String, Object>()
-          .put("eventID", id)
-          .put("groupName", name)
-          .put("meetingTime", time)
-          .put("meetingDate", date)
-          .put("leaderBoardList", leaderBoardList)
-          .put("suggestionsList", initialSuggestionsList)
-          .build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().put("eventID", id)
+              .put("groupName", name).put("meetingTime", time)
+              .put("meetingDate", date).put("leaderBoardList", leaderBoardList)
+              .put("suggestionsList", initialSuggestionsList).build();
 
 
       return Main.GSON.toJson(variables);
@@ -212,7 +212,6 @@ public final class Main {
 
   /**
    * Display an error page when an exception occurs in the server.
-   *
    * @author jj
    */
   private static class ExceptionPrinter implements ExceptionHandler {
