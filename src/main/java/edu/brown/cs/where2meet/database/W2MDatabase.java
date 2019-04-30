@@ -91,17 +91,15 @@ public class W2MDatabase {
     String date = event.getDate();
     String time = event.getTime();
     try (PreparedStatement prep = conn
-        .prepareStatement("INSERT INTO events VALUES(?,?,?,?,?,?,?,?,?)")) {
+        .prepareStatement("INSERT INTO events VALUES(?,?,?,?,?,?,?)")) {
       prep.setLong(1, id);
       prep.setString(2, name);
       prep.setDouble(3, coords.get(0));
       prep.setDouble(4, coords.get(1));
       prep.setString(5, date);
       prep.setString(6, time);
-      Suggestion[] s = event.getSuggestions();
-      prep.setString(7, s[0].toString());
-      prep.setString(8, s[1].toString());
-      prep.setString(9, s[2].toString());
+      List<Suggestion> s = event.getSuggestions();
+      prep.setString(7, Suggestion.suggToString(s));
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -130,6 +128,19 @@ public class W2MDatabase {
       } catch (SQLException err) {
         System.out.println(err);
       }
+
+      try (PreparedStatement prep = conn
+          .prepareStatement("SELECT s1 FROM events WHERE id = ?")) {
+        prep.setLong(1, id);
+        try (ResultSet rs = prep.executeQuery()) {
+          while (rs.next()) {
+            e.setSuggestions(Suggestion.getStringAsList(rs.getString(1)));
+          }
+        }
+      } catch (SQLException err) {
+
+      }
+
       return e;
     } catch (ExecutionException e) {
       System.out.print("ERROR: could not retrieve event");
@@ -273,7 +284,7 @@ public class W2MDatabase {
     double lng = 0;
     String date = "";
     String time = "";
-    Suggestion[] suggestions = new Suggestion[3];
+    List<Suggestion> suggestions = new ArrayList<>();
 
     try (PreparedStatement prep = conn
         .prepareStatement("SELECT * FROM events WHERE id = ?;")) {
@@ -285,9 +296,7 @@ public class W2MDatabase {
           lng = rs.getDouble(4);
           date = rs.getString(5);
           time = rs.getString(6);
-          suggestions[0] = Suggestion.toSugg(rs.getString(7));
-          suggestions[1] = Suggestion.toSugg(rs.getString(8));
-          suggestions[2] = Suggestion.toSugg(rs.getString(9));
+          suggestions = Suggestion.getStringAsList(rs.getString(7));
 
         }
       }
@@ -412,17 +421,16 @@ public class W2MDatabase {
     String time = event.getTime();
     try (PreparedStatement prep = conn.prepareStatement(
         "UPDATE events SET name = ?, latitude = ?, longitude = ?, date = ?, time = ?, "
-            + "s1 = ?, s2 = ?, s3 = ? WHERE id = ?")) {
-      prep.setLong(9, id);
+            + "s1 = ? WHERE id = ?")) {
+      prep.setLong(7, id);
       prep.setString(1, name);
       prep.setDouble(2, coords.get(0));
       prep.setDouble(3, coords.get(1));
       prep.setString(4, date);
       prep.setString(5, time);
-      Suggestion[] s = event.getSuggestions();
-      prep.setString(6, s[0].toString());
-      prep.setString(7, s[1].toString());
-      prep.setString(8, s[2].toString());
+      List<Suggestion> s = event.getSuggestions();
+      prep.setString(6, Suggestion.suggToString(s));
+
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -446,7 +454,7 @@ public class W2MDatabase {
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'events'"
             + "('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, "
             + "'longitude' INTEGER, 'date' TEXT, 'time' TEXT, 's1'"
-            + " TEXT, 's2' TEXT, 's3' TEXT);")) {
+            + " TEXT);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println();

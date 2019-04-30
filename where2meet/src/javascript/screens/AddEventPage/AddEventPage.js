@@ -40,27 +40,14 @@ export default class AddEventPage extends Component {
                 time: time,
             };
             console.log(body);
-            API.post('/event', body).then(function (response) {
-                console.log(response);
+            API.post('/event', body).then((response) => {
+                let id = response.data.id;
+                this.props.history.push(`/events/${id}`);
             })
                 .catch(function (error) {
                     console.log(error);
                 });
         }
-
-
-        // this.props.history.push('/event');
-        // fetch('/event', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json',
-        //     },
-        //
-        // }).then(function (response) {
-        //     //TODO: handle response here
-        // })
-
     };
 
     render() {

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.Suggestion;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -73,7 +74,6 @@ public final class Main {
 
     Spark.options("/*",
         (request, response) -> {
-
           String accessControlRequestHeaders = request
               .headers("Access-Control-Request-Headers");
           if (accessControlRequestHeaders != null) {
@@ -110,6 +110,7 @@ public final class Main {
 
     // Setup Spark Routes
     Spark.post("/event", new EventHandler());
+    Spark.get("/event/:id", new GetEventDataHandler());
     Spark.post("/vote", new EventHandler());
   }
 
@@ -120,7 +121,6 @@ public final class Main {
 
     @Override
     public String handle(Request req, Response res) {
-      Map qm = req.params();
       // get the JSON String
       String data = req.body();
 
@@ -147,7 +147,40 @@ public final class Main {
 
       //TODO: Build the json
       Map<String, Object> variables =
-          ImmutableMap.of("testKeyEvent", "testValEvent");
+          ImmutableMap.of("id", event.getId());
+
+
+      return Main.GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class handles data retrieval for existing events
+   */
+  public static class GetEventDataHandler implements Route {
+
+    @Override
+    public String handle(Request req, Response res) {
+      // get the id from the url
+      String id = req.params(":id");
+
+      //TODO: from the database, get the following info
+      Event event = this.Main.wmu.wmd.getEvent(Long.parseLong(id));
+      String name = event.getName(); // get the name of the group
+      String time = event.getTime(); // make sure the time is in this format, in military time so.. 11pm will be 23:00
+      String date = event.getDate(); // again, need to be in this form
+      List<Suggestion> leaderBoardList = new ArrayList<>(); // please send the stored list of votes
+      List<Suggestion> initialSuggestionsList = new ArrayList<>(); // give a default range of suggestions, will do filtering in client
+
+      Map<String, Object> variables = new
+          ImmutableMap.Builder<String, Object>()
+          .put("eventID", id)
+          .put("groupName", name)
+          .put("meetingTime", time)
+          .put("meetingDate", date)
+          .put("leaderBoardList", leaderBoardList)
+          .put("suggestionsList", initialSuggestionsList)
+          .build();
 
 
       return Main.GSON.toJson(variables);
