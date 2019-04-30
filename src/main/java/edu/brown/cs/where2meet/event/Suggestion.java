@@ -219,6 +219,19 @@ public class Suggestion {
     return obj.toString();
   }
 
+  public JsonObject getAsJsonObject() {
+    JsonObject obj = new JsonObject();
+    obj.addProperty("price", this.price);
+    obj.addProperty("votes", this.votes);
+    obj.addProperty("rating", this.rating);
+    obj.addProperty("location", this.location);
+    obj.addProperty("url", this.url);
+    obj.addProperty("category", this.category);
+    obj.addProperty("photo", this.photo);
+    obj.addProperty("venue", this.venue);
+    return obj;
+  }
+
   public static String suggToString(List<Suggestion> s) {
     JsonArray jarray = new JsonArray();
     for (Suggestion sugg : s) {
