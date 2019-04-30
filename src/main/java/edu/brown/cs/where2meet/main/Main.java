@@ -165,7 +165,7 @@ public final class Main {
       String id = req.params(":id");
 
       //TODO: from the database, get the following info
-      Event event = this.Main.wmu.wmd.getEvent(Long.parseLong(id));
+      Event event = Main.wmu.wmd.getEvent(Long.parseLong(id));
       String name = event.getName(); // get the name of the group
       String time = event.getTime(); // make sure the time is in this format, in military time so.. 11pm will be 23:00
       String date = event.getDate(); // again, need to be in this form
