@@ -232,6 +232,11 @@ public class Suggestion {
     return obj.toString();
   }
 
+  /**
+   * Gets a suggestion represented as a JsonObject.
+   *
+   * @return a JsonObject with the data from the caller.
+   */
   public JsonObject getAsJsonObject() {
     JsonObject obj = new JsonObject();
     obj.addProperty("price", this.price);
@@ -245,6 +250,13 @@ public class Suggestion {
     return obj;
   }
 
+  /**
+   * Turns a list of suggestions into a string.
+   *
+   * @param s
+   *          the suggestion list to translate.
+   * @return a string representing a JsonArray of the contents of the list.
+   */
   public static String suggToString(List<Suggestion> s) {
     JsonArray jarray = new JsonArray();
     for (Suggestion sugg : s) {
@@ -277,6 +289,14 @@ public class Suggestion {
 
   }
 
+  /**
+   * Translates a string representing a list of suggestions into a list of
+   * suggestions.
+   *
+   * @param array
+   *          the string to translate
+   * @return A list of suggestions.
+   */
   public static List<Suggestion> getStringAsList(String array) {
     List<Suggestion> suggestions = new ArrayList<>();
 
@@ -290,21 +310,18 @@ public class Suggestion {
     return suggestions;
   }
 
+  /**
+   * Translates a JsonElement into a Suggestion object.
+   *
+   * @param s
+   *          the JsonElement to translate.
+   * @return A suggestion Object with the data from s.
+   */
   private static Suggestion toSugg(JsonElement s) {
 
     Suggestion res = new Suggestion();
     String stripped = s.getAsString();
-    JsonObject ret = (JsonObject) new JsonParser().parse(stripped);
-    res.setPrice(ret.get("price").getAsInt());
-    res.setVotes(ret.get("votes").getAsInt());
-    res.setRating(ret.get("rating").getAsDouble());
-    res.setCategory(ret.get("category").getAsString());
-    res.setLocation(ret.get("location").getAsString());
-    res.setUrl(ret.get("url").getAsString());
-    res.setPhoto(ret.get("photo").getAsString());
-    res.setVenue(ret.get("venue").getAsString());
-
-    return res;
+    return Suggestion.toSugg(stripped);
   }
 
   /**

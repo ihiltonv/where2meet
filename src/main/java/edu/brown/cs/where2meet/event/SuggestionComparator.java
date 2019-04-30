@@ -2,6 +2,10 @@ package edu.brown.cs.where2meet.event;
 
 import java.util.Comparator;
 
+/**
+ * Class used to rank suggestions according to votes.
+ *
+ */
 public class SuggestionComparator implements Comparator<Suggestion> {
 
   @Override
