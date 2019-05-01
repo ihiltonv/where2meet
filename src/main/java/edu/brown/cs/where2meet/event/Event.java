@@ -233,8 +233,19 @@ public class Event {
   // return cumVotes;
   // }
 
+  /**This method ranks each of the suggestions
+   * and returns and ordered list of them.
+   *
+   * @return a list of suggestions, from best to worst
+   */
   public List<Suggestion> getBestSuggestions() {
-    return this.suggestions;
+
+    VenueRanker vr = new VenueRanker();
+    for (Suggestion sug : suggestions) {
+      vr.updateRank(sug, sug.suggScore(this));
+    }
+
+    return vr.getRanked();
   }
 
   /**
