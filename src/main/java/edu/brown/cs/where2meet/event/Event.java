@@ -239,13 +239,14 @@ public class Event {
    * @return a list of suggestions, from best to worst
    */
   public List<Suggestion> getBestSuggestions() {
+    return this.suggestions;
 
-    VenueRanker vr = new VenueRanker();
-    for (Suggestion sug : suggestions) {
-      vr.updateRank(sug, sug.suggScore(this));
-    }
-
-    return vr.getRanked();
+//    VenueRanker vr = new VenueRanker();
+//    for (Suggestion sug : suggestions) {
+//      vr.updateRank(sug, sug.suggScore(this));
+//    }
+//
+//    return vr.getRanked();
   }
 
   /**
