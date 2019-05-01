@@ -237,7 +237,6 @@ public final class Main {
       JsonObject json = Main.GSON.fromJson(data, JsonObject.class);
 
       Long eventID = json.get("event").getAsLong();
-
       String username = json.get("user").getAsString();
 
       boolean error = false;

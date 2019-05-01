@@ -81,12 +81,14 @@ class EventPage extends React.Component {
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
             let data = response.data;
+            console.log(data);
             this.setState({
                 groupName: data.groupName,
                 meetingTime: data.meetingTime,
                 meetingDate: data.meetingDate,
                 suggestionsList: data.suggestionsList,
-                filteredSuggestionList: data.suggestionsList
+                filteredSuggestionList: data.suggestionsList,
+                categoryOptions: data.cats
             })
         })
             .catch(function (error) {

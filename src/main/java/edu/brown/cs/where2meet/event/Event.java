@@ -1,15 +1,14 @@
 package edu.brown.cs.where2meet.event;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
 import edu.brown.cs.where2meet.database.W2MDatabase;
 import edu.brown.cs.where2meet.networking.YelpConnection;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A class to hold data for the events.
@@ -32,17 +31,13 @@ public class Event {
   /**
    * Constructor for an Event.
    *
-   * @param name
-   *          the name of the event.
-   * @param coordinates
-   *          the coordinates that the event should be near
-   * @param date
-   *          a String representing the date of the event
-   * @param time
-   *          a String representing the time of the event
+   * @param name        the name of the event.
+   * @param coordinates the coordinates that the event should be near
+   * @param date        a String representing the date of the event
+   * @param time        a String representing the time of the event
    */
   public Event(String name, List<Double> coordinates, String date,
-      String time) {
+               String time) {
     this.id = System.currentTimeMillis();
     this.name = name;
     this.users = new HashSet<>();
@@ -57,19 +52,14 @@ public class Event {
   /**
    * A constructor for the Event.
    *
-   * @param name
-   *          the name of the event.
-   * @param users
-   *          the users in the event.
-   * @param coordinates
-   *          the coordinates of the event's location.
-   * @param date
-   *          a String representing the event's date
-   * @param time
-   *          a String representing the event's time
+   * @param name        the name of the event.
+   * @param users       the users in the event.
+   * @param coordinates the coordinates of the event's location.
+   * @param date        a String representing the event's date
+   * @param time        a String representing the event's time
    */
   public Event(String name, Set<Long> users, List<Double> coordinates,
-      String date, String time) {
+               String date, String time) {
     this.id = System.currentTimeMillis();
     this.name = name;
     this.users = new HashSet<>();
@@ -88,21 +78,15 @@ public class Event {
   /**
    * A constructor for the Event.
    *
-   * @param id
-   *          the id of the event.
-   * @param name
-   *          the name of the event.
-   * @param users
-   *          the users in the event.
-   * @param coordinates
-   *          the coordinates of the event's location.
-   * @param date
-   *          a String representing the event's date
-   * @param time
-   *          a String representing the event's time
+   * @param id          the id of the event.
+   * @param name        the name of the event.
+   * @param users       the users in the event.
+   * @param coordinates the coordinates of the event's location.
+   * @param date        a String representing the event's date
+   * @param time        a String representing the event's time
    */
   public Event(Long id, String name, Set<Long> users, List<Double> coordinates,
-      String date, String time) {
+               String date, String time) {
     this.id = id;
     this.name = name;
     this.users = new HashSet<>();
@@ -116,9 +100,8 @@ public class Event {
 
   /**
    * Instantiates the suggestion list.
-   * 
-   * @param categories
-   *          the categories of the venues to search
+   *
+   * @param categories the categories of the venues to search
    */
 
   public void instantiateSuggestions(List<String> categories) {
@@ -131,7 +114,8 @@ public class Event {
   }
 
 
-  /**This function returns a json array of
+  /**
+   * This function returns a json array of
    * all of the categories that are present in the
    * suggestions list.
    *
@@ -140,8 +124,8 @@ public class Event {
   public JsonArray getAllCats() {
     HashSet<String> allCats = new HashSet<>();
     JsonArray ja = new JsonArray();
-    for (Suggestion sug : suggestions) {
-      if (allCats.contains(sug.getCategory())) {
+    for (Suggestion sug : this.suggestions) {
+      if (!allCats.contains(sug.getCategory())) {
         allCats.add(sug.getCategory());
         JsonObject newEntry = new JsonObject();
         newEntry.addProperty("value", sug.getCategory());
@@ -202,8 +186,7 @@ public class Event {
   /**
    * Adds a user to the event.
    *
-   * @param u
-   *          the user to add
+   * @param u the user to add
    */
   public void addUser(Long u) {
     if (!this.users.contains(u)) {
@@ -215,7 +198,8 @@ public class Event {
     }
   }
 
-  /**This method ranks each of the suggestions
+  /**
+   * This method ranks each of the suggestions
    * and returns and ordered list of them.
    *
    * @return a list of suggestions, from best to worst
@@ -223,7 +207,7 @@ public class Event {
   public List<Suggestion> getBestSuggestions() {
 
     VenueRanker vr = new VenueRanker();
-    for (Suggestion sug : suggestions) {
+    for (Suggestion sug : this.suggestions) {
       vr.updateRank(sug, sug.suggScore(this));
     }
     return vr.getRanked();
@@ -286,8 +270,7 @@ public class Event {
   /**
    * Gets the suggestion at a specified rank (1 through 3).
    *
-   * @param rank
-   *          the rank of the suggestion
+   * @param rank the rank of the suggestion
    * @return the suggestion at the specified rank.
    */
   public Suggestion getSuggestion(int rank) {
@@ -306,8 +289,7 @@ public class Event {
   /**
    * Sets the suggestion list.
    *
-   * @param suggestions
-   *          the array to which suggestions is set.
+   * @param suggestions the array to which suggestions is set.
    */
   public void setSuggestions(List<Suggestion> suggestions) {
     this.suggestions = suggestions;
@@ -316,10 +298,8 @@ public class Event {
   /**
    * Sets a specific suggestion in the array.
    *
-   * @param s
-   *          the new suggestion.
-   * @param rank
-   *          the position in the array to replace.
+   * @param s    the new suggestion.
+   * @param rank the position in the array to replace.
    */
   public void setSuggestion(Suggestion s, int rank) {
     this.suggestions.set(rank, s);
