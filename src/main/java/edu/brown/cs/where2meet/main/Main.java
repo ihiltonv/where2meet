@@ -110,7 +110,7 @@ public final class Main {
 
     // Setup Spark Routes
     Spark.post("/event", new EventHandler(this.wmu));
-    Spark.get("/event/:id", new GetEventDataHandler(this.wmu));
+    Spark.post("/event/:id", new GetEventDataHandler(this.wmu));
     Spark.post("/vote", new VoteHandler());
   }
 
