@@ -10,7 +10,7 @@ class CollapsableContainer extends React.Component {
     constructor() {
         super();
         this.state = {
-            priceFilterIsOpen: false
+            priceFilterIsOpen: true
         };
     }
 

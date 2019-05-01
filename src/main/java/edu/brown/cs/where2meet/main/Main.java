@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.event.User;
 import edu.brown.cs.where2meet.websockets.EventWebSocket;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
@@ -104,14 +105,6 @@ public final class Main {
     // });
     // FreeMarkerEngine freeMarker = Main.createEngine();
 
-    // Calls we want:
-    //
-    // new event
-    // new votes
-    //
-    //
-    //
-
     // Setup Spark Routes
     Spark.post("/event", new EventHandler(wmu));
     Spark.get("/event/:id", new GetEventDataHandler(wmu));
@@ -159,15 +152,16 @@ public final class Main {
       List suggestions = new ArrayList();
 
       // TODO: Build the json
+
       Map<String, Object> variables = ImmutableMap.of("id", event.getId(),
-          "suggestionsList", suggestions);
+          "suggestionsList", suggestions, "error", false, "errorMsg", "");
 
       return Main.GSON.toJson(variables);
     }
   }
 
   /**
-   * This class handles data retrieval for existing events
+   * This class handles data retrieval for existing events.
    */
   public static class GetEventDataHandler implements Route {
 
@@ -186,23 +180,35 @@ public final class Main {
 
       Event event = this.wmu.wmd.getEvent(Long.parseLong(id));
 
-      String name = event.getName(); // get the name of the group
-      String time = event.getTime(); // make sure the time is in this format, in
-                                     // military
-      // time so.. 11pm will be 23:00
-      String date = event.getDate(); // again, need to be in this form
+      String name = "";
+      String time = "";
+      String date = "";
+      List<Suggestion> initialSuggestionsList = new ArrayList<>();
+      List<Double> location = new ArrayList<>();
+      if (event == null) {
+        error = true;
+        errorMsg = "No event found with ID " + id;
+      } else {
 
-      List<Suggestion> initialSuggestionsList = new ArrayList<>(); // give a
-                                                                   // default
-                                                                   // range of
-                                                                   // suggestions,
-                                                                   // will do
-      // filtering in client
+        name = event.getName(); // get the name of the group
+        time = event.getTime(); // make sure the time is in this format, in
+        // military
+        // time so.. 11pm will be 23:00
+        date = event.getDate(); // again, need to be in this form
+        location = event.getLocation();
+
+        initialSuggestionsList = event.getBestSuggestions(); // give a default
+                                                             // range of
+                                                             // suggestions,
+                                                             // will do
+        // filtering in client
+      }
 
       Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
           .put("eventID", id).put("groupName", name).put("meetingTime", time)
           .put("meetingDate", date)
-          .put("suggestionsList", initialSuggestionsList).put("error", error)
+          .put("suggestionsList", initialSuggestionsList)
+          .put("location", location).put("error", error)
           .put("errorMsg", errorMsg).build();
 
       return Main.GSON.toJson(variables);
@@ -210,7 +216,9 @@ public final class Main {
   }
 
   /**
-   * This class handles a user voting in a specific event.
+   * <<<<<<< HEAD This class handles a user voting in a specific event. =======
+   * This class handles the creation of a new user for a specific event. >>>>>>>
+   * abc8ae73fd6264bf8cd91aca30bd6034155c9bc3
    */
   public static class UserHandler implements Route {
 
@@ -223,14 +231,30 @@ public final class Main {
     @Override
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
-      String eventID = qm.value("event");
-      String userID = qm.value("user");
+      Long eventID = Long.parseLong(qm.value("event"));
+      String username = qm.value("user");
 
       boolean error = false;
       String errorMsg = "";
+      Long uID = 0L;
+      boolean existingUser = true;
 
-      Map<String, Object> variables = ImmutableMap.of("testKeyVote",
-          "testValVote");
+      Event event = this.wmu.wmd.getEvent(eventID);
+
+      if (event == null) {
+        error = true;
+        errorMsg = "No event found with ID " + eventID;
+      } else {
+        User u = this.wmu.wmd.getUserFromName(username, eventID);
+        if (u == null) {
+          existingUser = false;
+          u = new User(username);
+        }
+        uID = u.getId();
+      }
+
+      Map<String, Object> variables = ImmutableMap.of("userID", uID,
+          "existingUser", existingUser, "error", error, "errorMsg", errorMsg);
 
       return Main.GSON.toJson(variables);
     }

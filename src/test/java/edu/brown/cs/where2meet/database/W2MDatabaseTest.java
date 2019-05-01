@@ -2,6 +2,7 @@ package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
@@ -221,7 +222,7 @@ public class W2MDatabaseTest {
     // W2MDatabase.addEvent(eTest1);
 
     User id = W2MDatabase.getUserFromName("username", eid);
-    assertNotNull(id);
+    assertNull(id);
 
     eTest1.addUser(uid);
     id = W2MDatabase.getUserFromName("username", eid);

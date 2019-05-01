@@ -1,6 +1,5 @@
 import React from 'react';
 import 'rheostat/initialize';
-import Geosuggest from 'react-geosuggest';
 import StarRatings from 'react-star-ratings'
 import ThemedStyleSheet from 'react-with-styles/lib/ThemedStyleSheet';
 import Select from 'react-select';
@@ -26,6 +25,7 @@ ThemedStyleSheet.registerTheme(DefaultTheme);
 
 const fakeData = [
     {
+        "id": "1",
         "venue": 'Frozen Yogurt',
         "votes": "10",
         "rating": 4.5,
@@ -35,6 +35,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "2",
         "venue": 'Ice Cream',
         "votes": "8",
         "rating": 4.3,
@@ -44,6 +45,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "3",
         "venue": 'Cake',
         "votes": "6",
         "rating": 3,
@@ -53,6 +55,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "4",
         "venue": 'Frozen Yogurt',
         "votes": "10",
         "rating": 4.5,
@@ -62,6 +65,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "5",
         "venue": 'Ice Cream',
         "votes": "8",
         "rating": 4.3,
@@ -71,6 +75,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "6",
         "venue": 'Cake',
         "votes": "6",
         "rating": 3,
@@ -80,6 +85,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "7",
         "venue": 'Frozen Yogurt',
         "votes": "10",
         "rating": 4.5,
@@ -89,6 +95,7 @@ const fakeData = [
         "category": "dessert"
     },
     {
+        "id": "8",
         "venue": 'Ice Cream',
         "votes": "8",
         "rating": 4.3,
@@ -99,6 +106,7 @@ const fakeData = [
         "photo": "photourl"
     },
     {
+        "id": "9",
         "venue": 'Cake',
         "votes": "6",
         "rating": 3,
@@ -111,6 +119,7 @@ const fakeData = [
 
 const fakeData2 = [
     {
+        "id": "1",
         "venue": 'Frozen yoghurt',
         "votes": "10",
         "rating": 4.5,
@@ -121,6 +130,7 @@ const fakeData2 = [
 
     },
     {
+        "id": "2",
         "venue": 'Ice Cream',
         "votes": "8",
         "rating": 4.3,
@@ -130,6 +140,7 @@ const fakeData2 = [
         "category": "dessert"
     },
     {
+        "id": "3",
         "venue": 'Cake',
         "votes": "6",
         "rating": 3,
@@ -160,8 +171,8 @@ class EventPage extends React.Component {
         this.state = {
             groupName: "Weekend Shenanigans",
             userName: "",
-            meetingTime: "",
-            meetingDate: "",
+            meetingTime: "10:30",
+            meetingDate: "2019-10-5",
             meetingLocation: "",
             priceRange: [false, false, false, false],
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
@@ -170,13 +181,20 @@ class EventPage extends React.Component {
             categoryOptions: options,
             popularity: 0,
             suggestionsList: [],
-            leaderBoardList: [],
-            yourPicksList: fakeData2,
+            filteredSuggestionList: [],
+            leaderBoardList: [{}, {}, {}],
+            yourPicksList: [{}, {}, {}],
         };
+    }
+
+    getDataFromServer(username) {
+        this.setState({username})
+        API.post("")
     }
 
     componentDidMount() {
         let eventId = this.props.match.params.id;
+
         console.log(eventId);
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
@@ -186,8 +204,8 @@ class EventPage extends React.Component {
                 groupName: data.groupName,
                 meetingTime: data.meetingTime,
                 meetingDate: data.meetingDate,
-                leaderBoardList: fakeData2,//data.leaderBoardList,
-                suggestionsList: fakeData//data.suggestionsList
+                suggestionsList: data.suggestionsList,
+                filteredSuggestionList: data.suggestionsList
             })
         })
             .catch(function (error) {
@@ -200,12 +218,43 @@ class EventPage extends React.Component {
         console.log(event)
     };
 
+    buttonClicked = (event) => {
+        const val = event.target.value;
+        const id = event.target.id;
+        console.log(event.target.value);
+        console.log(event.target.id);
+        if (this.state.userName === "") {
+            alert("hello")
+        } else {
+            const suggestion = fakeData.filter(suggestion => suggestion.id === id);
+            let oldList = this.state.yourPicksList;
+            if (val === '5') {
+                oldList[0] = suggestion[0];
+            } else if (val === '3') {
+                oldList[1] = suggestion[0];
+
+            } else {
+                oldList[2] = suggestion[0];
+
+            }
+            console.log(oldList);
+            this.setState({yourPicksList: oldList})
+
+        }
+    };
+
+    /*methods for suggestions*/
+    filterSuggestions = () => {
+        /*filter by dollarButton*/
+        let result;
+    };
+
     changeDollarButtonState = (event) => {
         let dollarArray = this.state.priceRange;
         dollarArray[event.target.value] = dollarArray[event.target.value] ? false : true;
         this.setState({priceRange: dollarArray});
     };
-    
+
 
     render() {
         return (
@@ -216,26 +265,27 @@ class EventPage extends React.Component {
                     <header className="groupName">
                         {this.state.groupName}
                     </header>
-                    <div className="InputContainer">
-                        <div className={"inputField"}>
-                            <div className={"inputTitle"}>Your Name:</div>
-                            <input className="nameInput" id={"nameInput"} type={"text"} placeholder=" "
-                                   value={this.state.userName} onChange={this.submitName}/>
-                        </div>
-                        <div className={"inputField"}>
-                            <div className={"inputTitle"}>Meeting Time:</div>
-                            <input className="nameInput" id={"nameInput"} type={"time"} value={this.state.meetingTime}/>
-                        </div>
-                        <div className={"inputField"}>
-                            <div className={"inputTitle"}>Meeting Date:</div>
-                            <input className="nameInput" id={"nameInput"} type={"date"} value={this.state.meetingDate}/>
-                        </div>
-                        <div className={"inputField"}>
-                            <div className={"inputTitle"}> Location:
-                            </div>
-                            <Geosuggest placeholder={""} id={"geoSuggest"} style={{'input': geoSuggestInputStyle}}/>
-                        </div>
+                    <div>
+                        Meeting Time: {this.state.meetingTime}
                     </div>
+                    <div>
+                        Meeting Date: {this.state.meetingDate}
+                    </div>
+                    {/*<div className="InputContainer">*/}
+                    {/*<div className={"inputField"}>*/}
+                    {/*<div className={"inputTitle"}> Your Name</div>*/}
+                    {/*<input className="nameInput" id={"nameInput"} type={"text"} placeholder=" "*/}
+                    {/*value={this.state.userName} onChange={this.submitName}/>*/}
+                    {/*</div>*/}
+                    {/*<div className={"inputField"}>*/}
+                    {/*<div className={"inputTitle"}>Meeting Time:</div>*/}
+                    {/*<input className="nameInput" id={"nameInput"} type={"time"} value={this.state.meetingTime}/>*/}
+                    {/*</div>*/}
+                    {/*<div className={"inputField"}>*/}
+                    {/*<div className={"inputTitle"}>Meeting Date:</div>*/}
+                    {/*<input className="nameInput" id={"nameInput"} type={"date"} value={this.state.meetingDate}/>*/}
+                    {/*</div>*/}
+                    {/*</div>*/}
                     {/*Filters*/}
                     <div className={"filtersTitle"}>
                         Filters
@@ -333,7 +383,8 @@ class EventPage extends React.Component {
                     <div className={"tableTitle"}>
                         Some Suggestions
                     </div>
-                    <SuggestionsTable showRank={false} data={this.state.suggestionsList}/>
+                    <SuggestionsTable buttonClicked={this.buttonClicked} showRank={false}
+                                      data={this.state.filteredSuggestionList}/>
                 </div>
                 {/*top suggestions list*/}
                 <div className={"tablesContainer"}>
