@@ -63,7 +63,7 @@ public class VenueRanker {
   private class VenueScore implements Comparable<VenueScore>{
     private double score;
     private Suggestion venue;
-    private Long id;
+    private String id;
 
     public VenueScore(Suggestion venue, double score) {
       this.score = score;
@@ -75,7 +75,7 @@ public class VenueRanker {
       return this.score;
     }
 
-    public Long getId() {
+    public String getId() {
       return id;
     }
 

@@ -52,12 +52,6 @@ public class Suggestion {
    *          the votes value
    * @param rating
    *          the rating value
-   * @param lat
-   *          the latitude of the suggestion
-   * @param lon
-   *          the longitude of the venue
-   * @param location
-   *          the location string
    * @param url
    *          the url
    * @param category

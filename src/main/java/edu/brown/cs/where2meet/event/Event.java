@@ -1,7 +1,6 @@
 package edu.brown.cs.where2meet.event;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,13 +24,12 @@ public class Event {
   private VenueRanker topRanker;
   // private Suggestion[] suggestions;
   private List<Suggestion> suggestions;
-  // private HashMap<Long, HashMap<Long, Integer>> votes;
 
   private static final int DEFAULT_RADIUS = 8050;
 
   /**
    * Constructor for an Event.
-   * 
+   *
    * @param name
    *          the name of the event.
    * @param coordinates
@@ -52,14 +50,11 @@ public class Event {
 
     this.venues = new HashSet<>();
     this.topRanker = new VenueRanker();
-
-    instantiateSuggestions();
-
   }
 
   /**
    * A constructor for the Event.
-   * 
+   *
    * @param name
    *          the name of the event.
    * @param users
@@ -86,13 +81,11 @@ public class Event {
     this.venues = new HashSet<>();
     this.topRanker = new VenueRanker();
 
-    instantiateSuggestions();
-
   }
 
   /**
    * A constructor for the Event.
-   * 
+   *
    * @param id
    *          the id of the event.
    * @param name
@@ -117,17 +110,18 @@ public class Event {
     this.coordinates = coordinates;
     this.date = date;
     this.time = time;
-    instantiateSuggestions();
   }
 
   /**
    * Instantiates the suggestion list.
+   * 
+   * @param categories
+   *          the categories of the venues to search
    */
-  private void instantiateSuggestions() {
-    // TODO: figure out what type of venue we're looking for
-    this.suggestions = YelpConnection.exploreQuery(this.coordinates.get(0),
-        this.coordinates.get(1), Arrays.asList("food"), Event.DEFAULT_RADIUS);
 
+  public void instantiateSuggestions(List<String> categories) {
+    this.suggestions = YelpConnection.exploreQuery(this.coordinates.get(0),
+        this.coordinates.get(1), categories, Event.DEFAULT_RADIUS);
   }
 
   @Override
@@ -179,7 +173,7 @@ public class Event {
 
   /**
    * Adds a user to the event.
-   * 
+   *
    * @param u
    *          the user to add
    */
@@ -188,7 +182,7 @@ public class Event {
       this.users.add(u);
       User user = W2MDatabase.getUser(u);
       user.addEvent(this.id);
-      // this.votes.put(u, new HashMap<>());
+
       W2MDatabase.addUserToEvent(user, this.id);
     }
   }
@@ -239,13 +233,13 @@ public class Event {
   // return cumVotes;
   // }
 
-  public List<Suggestion> getAllSuggestions() {
+  public List<Suggestion> getBestSuggestions() {
     return new ArrayList<>();
   }
 
   /**
    * Gets the user set of the event.
-   * 
+   *
    * @return the set of users for the event.
    */
   public Set<Long> getUsers() {
@@ -254,7 +248,7 @@ public class Event {
 
   /**
    * Gets the id of the event.
-   * 
+   *
    * @return the id of the event
    */
   public Long getId() {
@@ -263,7 +257,7 @@ public class Event {
 
   /**
    * Gets the name of the event.
-   * 
+   *
    * @return the name of the event.
    */
   public String getName() {
@@ -272,7 +266,7 @@ public class Event {
 
   /**
    * Gets the coordinates of the event's location.
-   * 
+   *
    * @return a list of the coordinates of the event.
    */
   public List<Double> getLocation() {
@@ -281,7 +275,7 @@ public class Event {
 
   /**
    * Gets the date of the event.
-   * 
+   *
    * @return a string with the date of the event.
    */
   public String getDate() {
@@ -290,7 +284,7 @@ public class Event {
 
   /**
    * Gets the time of the event.
-   * 
+   *
    * @return a string with the time of the event.
    */
   public String getTime() {
@@ -299,7 +293,7 @@ public class Event {
 
   /**
    * Gets the suggestion at a specified rank (1 through 3).
-   * 
+   *
    * @param rank
    *          the rank of the suggestion
    * @return the suggestion at the specified rank.
@@ -310,7 +304,7 @@ public class Event {
 
   /**
    * Gets the suggestion list.
-   * 
+   *
    * @return the list of suggestions for the event.
    */
   public List<Suggestion> getSuggestions() {
@@ -319,7 +313,7 @@ public class Event {
 
   /**
    * Sets the suggestion list.
-   * 
+   *
    * @param suggestions
    *          the array to which suggestions is set.
    */
@@ -329,7 +323,7 @@ public class Event {
 
   /**
    * Sets a specific suggestion in the array.
-   * 
+   *
    * @param s
    *          the new suggestion.
    * @param rank
