@@ -1,9 +1,7 @@
 package edu.brown.cs.where2meet.event;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.HashMap;
 
 /**
  * A class to model users for the application.
@@ -30,6 +28,7 @@ public class User {
     this.name = name;
     this.id = System.currentTimeMillis();
     this.events = new HashSet<>();
+
     resetFilters();
 
     instantiateSuggestions();
@@ -162,7 +161,6 @@ public class User {
     }
     return true;
   }
-
 
   /**
    * Gets the price filter.
