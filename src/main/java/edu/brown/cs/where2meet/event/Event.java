@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * A class to hold data for the events.
@@ -24,6 +26,7 @@ public class Event {
   private VenueRanker topRanker;
   // private Suggestion[] suggestions;
   private List<Suggestion> suggestions;
+  private HashMap<Long, HashMap<Long, Integer>> votes;
 
   private static final int DEFAULT_RADIUS = 8050;
 
@@ -111,28 +114,6 @@ public class Event {
 
   }
 
-  public void updateVotes(Venue o1, Venue o2, Venue o3, Venue n1, Venue n2,
-                          Venue n3) {
-    this.topRanker.updateRankRelative(o1, -5.0);
-    this.topRanker.updateRankRelative(o2, -3.0);
-    this.topRanker.updateRankRelative(o2, -1.0);
-    this.topRanker.updateRankRelative(o2, 1.0);
-    this.topRanker.updateRankRelative(o2, 3.0);
-    this.topRanker.updateRankRelative(o2, 5.0);
-
-  }
-
-  public Set<Venue> filterVenues(User u) {
-    Set<Venue> result = new HashSet<>();
-    for (Venue venue : this.venues) {
-      if (venue.getPrice() <= u.getPrice() && venue.getDistance() <= u.getDist()
-          && venue.getPopularity() >= u.getRating()) {
-        result.add(venue);
-      }
-    }
-    return result;
-  }
-
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -189,8 +170,59 @@ public class Event {
       this.users.add(u);
       User user = W2MDatabase.getUser(u);
       user.addEvent(this.id);
+      this.votes.put(u, new HashMap<>());
       W2MDatabase.addUserToEvent(user, this.id);
     }
+  }
+
+//  /** This function allows a user to vote for three
+//   * different suggestions for this specific event.
+//   *
+//   * @param u - a user id
+//   * @param v1 - a suggestion id (first choice)
+//   * @param v2 - a suggestion id (second choice)
+//   * @param v3 - a suggestion id (third choice)
+//   */
+//  public void castVotes(Long u, Long v1, Long v2, Long v3) {
+//    //TODO: add suggestion ids
+////    List<Long> suggIds = new ArrayList<>();
+////    for (Suggestion x : this.suggestions) {
+////      suggIds.add(x.getId());
+////    }
+////    assert(this.suggestions.contains(v1));
+////    assert(this.suggestions.contains(v2));
+////    assert(this.suggestions.contains(v3));
+//    this.addUser(u);
+//    HashMap<Long, Integer> voteSelection = new HashMap<>();
+//    voteSelection.put(v1, 5);
+//    voteSelection.put(v2, 3);
+//    voteSelection.put(v3, 1);
+//    this.votes.put(u, voteSelection);
+//  }
+
+//  /**This function returns a mapping of the suggestion
+//   * ideas to the cumulative number of votes they have
+//   * received.
+//   *
+//   * @return
+//   */
+//  public HashMap<Long, Integer> cumVotes() {
+//    HashMap<Long, Integer> cumVotes = new HashMap<>();
+//    for (Suggestion x : this.suggestions) {
+//      //instantiate the mapping with 0 votes per suggestion
+//      cumVotes.put(x.getId(), 0);
+//    }
+//    for (Long k : this.votes.keySet()) {
+//      for (Long s : this.votes.get(k).keySet()) {
+//        //add the new vote count to the total
+//        cumVotes.put(s, cumVotes.get(s)+this.votes.get(k).get(s));
+//      }
+//    }
+//    return cumVotes;
+//  }
+
+  public List<Suggestion> getAllSuggestions() {
+    return new ArrayList<>();
   }
 
   /**

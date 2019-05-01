@@ -14,7 +14,6 @@ public class User {
   private String name;
   private Long id;
   private Set<Long> events;
-  private List<Double> coordinates;
   private int price;
   private double dist;
   private double rating;
@@ -26,14 +25,11 @@ public class User {
    *
    * @param name
    *          the name of the user
-   * @param coords
-   *          the coordinates of the user's location
    */
-  public User(String name, List<Double> coords) {
+  public User(String name) {
     this.name = name;
     this.id = System.currentTimeMillis();
     this.events = new HashSet<>();
-    this.coordinates = coords;
     resetFilters();
 
     instantiateSuggestions();
@@ -46,14 +42,11 @@ public class User {
    *          the name of the user
    * @param events
    *          the events that the user is in.
-   * @param coords
-   *          the coordinates of the user's location.
    */
-  public User(String name, Set<Long> events, List<Double> coords) {
+  public User(String name, Set<Long> events) {
     this.name = name;
     this.id = System.currentTimeMillis();
     this.events = events;
-    this.coordinates = coords;
     instantiateSuggestions();
     resetFilters();
 
@@ -68,14 +61,11 @@ public class User {
    *          the name of the user
    * @param events
    *          the events that the user is in.
-   * @param coords
-   *          the coordinates of the user's location.
    */
-  public User(Long id, String name, Set<Long> events, List<Double> coords) {
+  public User(Long id, String name, Set<Long> events) {
     this.name = name;
     this.id = id;
     this.events = events;
-    this.coordinates = coords;
     instantiateSuggestions();
     resetFilters();
   }
@@ -173,14 +163,6 @@ public class User {
     return true;
   }
 
-  /**
-   * gets the coordinates of the user's location.
-   *
-   * @return the coordinates of the user's location.
-   */
-  public List<Double> getLocation() {
-    return this.coordinates;
-  }
 
   /**
    * Gets the price filter.
