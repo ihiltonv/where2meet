@@ -226,7 +226,7 @@ public class W2MDatabase {
     }
 
     if (uid == null) {
-      return new User(name);
+      return null;
     }
     return W2MDatabase.getUser(uid);
 

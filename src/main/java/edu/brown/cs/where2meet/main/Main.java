@@ -97,13 +97,6 @@ public final class Main {
     // });
     // FreeMarkerEngine freeMarker = Main.createEngine();
 
-    // Calls we want:
-    //
-    // new event
-    // new votes
-    //
-    //
-    //
 
     // Setup Spark Routes
     Spark.post("/event", new EventHandler(wmu));
@@ -152,14 +145,14 @@ public final class Main {
       List suggestions = new ArrayList();
 
       // TODO: Build the json
-      Map<String, Object> variables = ImmutableMap.of("id", event.getId(), "suggestionsList", suggestions);
+      Map<String, Object> variables = ImmutableMap.of("id", event.getId(), "suggestionsList", suggestions, "error", false, "errorMsg", "");
 
       return Main.GSON.toJson(variables);
     }
   }
 
   /**
-   * This class handles data retrieval for existing events
+   * This class handles data retrieval for existing events.
    */
   public static class GetEventDataHandler implements Route {
 
@@ -177,16 +170,25 @@ public final class Main {
       String id = req.params(":id");
 
       Event event = this.wmu.wmd.getEvent(Long.parseLong(id));
+      String name = "";
+      String time = "";
+      String date = "";
+      List<Suggestion> initialSuggestionsList = new ArrayList<>();
+      if (event == null) {
+        error = true;
+        errorMsg = "No event found with ID " + id;
+      } else {
 
-      String name = event.getName(); // get the name of the group
-      String time = event.getTime(); // make sure the time is in this format, in
-                                     // military
-      // time so.. 11pm will be 23:00
-      String date = event.getDate(); // again, need to be in this form
+        name = event.getName(); // get the name of the group
+        time = event.getTime(); // make sure the time is in this format, in
+        // military
+        // time so.. 11pm will be 23:00
+        date = event.getDate(); // again, need to be in this form
 
-      List<Suggestion> initialSuggestionsList =
-          new ArrayList<>(); // give a default range of suggestions, will do
-      // filtering in client
+        initialSuggestionsList =
+                event.getBestSuggestions(); // give a default range of suggestions, will do
+        // filtering in client
+      }
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>().put("eventID", id)
@@ -202,8 +204,8 @@ public final class Main {
   }
 
   /**
-   * This class handles a user voting in a specific
-   * event.
+   * This class handles the creation of a new user for
+   * a specific event.
    */
   public static class UserHandler implements Route {
 
@@ -217,15 +219,31 @@ public final class Main {
     @Override
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
-      String eventID = qm.value("event");
-      String userID = qm.value("user");
+      Long eventID = Long.parseLong(qm.value("event"));
+      String username = qm.value("user");
 
       boolean error = false;
       String errorMsg = "";
+      Long uID = 0L;
+      boolean existingUser = true;
+
+      Event event = this.wmu.wmd.getEvent(eventID);
+
+      if (event == null) {
+        error = true;
+        errorMsg = "No event found with ID " + eventID;
+      } else {
+        User u = this.wmu.wmd.getUserFromName(username, eventID);
+        if (u == null) {
+          existingUser = false;
+          u = new User(username);
+        }
+        uID = u.getId();
+      }
 
 
       Map<String, Object> variables =
-          ImmutableMap.of("testKeyVote", "testValVote");
+          ImmutableMap.of("userID", uID, "existingUser", existingUser, "error", error, "errorMsg", errorMsg);
 
 
       return Main.GSON.toJson(variables);
