@@ -56,9 +56,6 @@ public final class Main {
     OptionSet options = parser.parse(this.args);
 
     runSparkServer((int) options.valueOf("port"));
-    //TODO: stop clearing the db
-    this.wmu.wmd.cleardb();
-    this.wmu.wmd.createdb();
   }
 
   private static FreeMarkerEngine createEngine() {
