@@ -33,15 +33,15 @@ class SuggestionsTable extends React.Component {
                                     </div>
                                     <div className={"voteButtonContainer"}>
                                         <button id={data.id} className={"voteButton"}
-                                                style={{"background-color": "gold"}} value={5}
+                                                style={{"backgroundColor": "gold"}} value={5}
                                                 onClick={this.props.buttonClicked}>1
                                         </button>
                                         <button id={data.id} className={"voteButton"}
-                                                style={{"background-color": "silver"}} value={3}
+                                                style={{"backgroundColor": "silver"}} value={3}
                                                 onClick={this.props.buttonClicked}>2
                                         </button>
                                         <button id={data.id} className={"voteButton"}
-                                                style={{"background-color": "#cc6633"}} value={1}
+                                                style={{"backgroundColor": "#cc6633"}} value={1}
                                                 onClick={this.props.buttonClicked}>3
                                         </button>
                                     </div>

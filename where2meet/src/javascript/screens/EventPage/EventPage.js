@@ -176,7 +176,7 @@ class EventPage extends React.Component {
             meetingLocation: "",
             priceRange: [false, false, false, false],
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
-            searchRadius: [null, null],
+            searchRadius: [0, 100],
             selectedCategories: [],
             categoryOptions: options,
             popularity: 0,
@@ -357,7 +357,7 @@ class EventPage extends React.Component {
                                 <button className={"dollarButton"} value={0}
                                         onClick={this.changeDollarButtonState}
                                         style={{
-                                            "background-color": this.state.priceRange[0] ? "goldenrod" : "white",
+                                            "backgroundColor": this.state.priceRange[0] ? "goldenrod" : "white",
                                             "color": this.state.priceRange[0] ? "white" : "black"
                                         }}
                                 >$
@@ -365,7 +365,7 @@ class EventPage extends React.Component {
                                 <button className={"dollarButton"} value={1}
                                         onClick={this.changeDollarButtonState}
                                         style={{
-                                            "background-color": this.state.priceRange[1] ? "goldenrod" : "white",
+                                            "backgroundColor": this.state.priceRange[1] ? "goldenrod" : "white",
                                             "color": this.state.priceRange[1] ? "white" : "black"
                                         }}
                                 >$$
@@ -373,7 +373,7 @@ class EventPage extends React.Component {
                                 <button className={"dollarButton"} value={2}
                                         onClick={this.changeDollarButtonState}
                                         style={{
-                                            "background-color": this.state.priceRange[2] ? "goldenrod" : "white",
+                                            "backgroundColor": this.state.priceRange[2] ? "goldenrod" : "white",
                                             "color": this.state.priceRange[2] ? "white" : "black"
                                         }}
                                 >$$$
@@ -381,7 +381,7 @@ class EventPage extends React.Component {
                                 <button className={"dollarButton"} value={3}
                                         onClick={this.changeDollarButtonState}
                                         style={{
-                                            "background-color": this.state.priceRange[3] ? "goldenrod" : "white",
+                                            "backgroundColor": this.state.priceRange[3] ? "goldenrod" : "white",
                                             "color": this.state.priceRange[3] ? "white" : "black"
                                         }}
                                 >$$$$
