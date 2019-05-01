@@ -98,9 +98,6 @@ public class EventWebSocket {
     }
 
     session.getRemote().sendString(GSON.toJson(leaderboard));
-    // TODO: start running the thread for the user
-    // Thread thread = new Thread();
-    // threadMap.put(session, thread);
 
   }
 

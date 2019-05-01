@@ -7,7 +7,8 @@ const MESSAGE_TYPE = {
 let conn;
 
 const setup_live_scores = () => {
-    conn = new WebSocket(`wss://${window.location.host}/leaderboard`);
+    console.log("Connecting");
+    conn = new WebSocket("ws://localhost:3000/voting");
 
   conn.onerror = err => {
     console.log('Connection error:', err);
@@ -22,12 +23,13 @@ const setup_live_scores = () => {
   };
 }
 
+console.log("launching");
 setup_live_scores();
 
 //TODO: add this to wherever the user updates the leaderboard.
-function updateLeaderboard(votes, user, event){
+function updateLeaderboard(votes, user_id, event_id, suggestion){
     let obj = '{"type":'+string(MESSAGE_TYPE.UPDATE)+',"votes:"'+string(votes)+
-    ',"user:"'+string(user)+',"event":'+string(event)+ '}';
+    ',"user:"'+string(user)+',"event":'+string(event_id)+ ',"suggestion":'+string(suggestion)+'}';
     let msg = JSON.parse(JSON.stringify(obj));
     conn.send(obj);
 
@@ -35,13 +37,9 @@ function updateLeaderboard(votes, user, event){
 }
 
 //TODO: add this to werever the user is created(after modal is filled out).
-function send_connection(event, user){
+function send_connection(event_id){
     let obj = '{"type": ' + string(MESSAGE_TYPE.CONNECT) +', "event_id":' +
-      string(event.id)',"event_name":'+string(event.name)',"event_lat":'+
-      string(event.lat)+',"event_lng":'+string(event.lng)',"event_date:"'+
-      string(event.date)+',"event_time":'+string(event.time)+',"user_name:"'+
-      string(user.name)+',"user_lat":'+string(user.lat)+',"user_lng":'+
-      string(user.lng)+'}';
+      string(event_id)'}';
 
       let msg = JSON.parse(JSON.stringify(obj));
       conn.send(obj);
