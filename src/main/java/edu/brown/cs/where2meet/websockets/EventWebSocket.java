@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
@@ -45,6 +46,12 @@ public class EventWebSocket {
 
   private static enum MESSAGE_TYPE {
     CONNECT, UPDATE, SCORING
+  }
+
+  @OnWebSocketConnect
+  public void connection(Session session) {
+    sessions.add(session);
+    System.out.println("CONNECTED");
   }
 
   /**
@@ -90,7 +97,6 @@ public class EventWebSocket {
       leaderboard.addProperty("s3", "no value");
     }
 
-    sessions.add(session);
     session.getRemote().sendString(GSON.toJson(leaderboard));
     // TODO: start running the thread for the user
     // Thread thread = new Thread();

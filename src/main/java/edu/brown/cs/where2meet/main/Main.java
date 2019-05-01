@@ -51,7 +51,8 @@ public final class Main {
     this.wmu = new W2MUniverse();
     // Parse command line arguments
     OptionParser parser = new OptionParser();
-    parser.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(Main.DEFAULT_PORT);
+    parser.accepts("port").withRequiredArg().ofType(Integer.class)
+        .defaultsTo(Main.DEFAULT_PORT);
     OptionSet options = parser.parse(this.args);
 
     runSparkServer((int) options.valueOf("port"));
@@ -66,7 +67,8 @@ public final class Main {
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
-      System.out.printf("ERROR: Unable use %s for template loading.%n", templates);
+      System.out.printf("ERROR: Unable use %s for template loading.%n",
+          templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -79,20 +81,25 @@ public final class Main {
     Spark.exception(Exception.class, new ExceptionPrinter());
 
     Spark.options("/*", (request, response) -> {
-      String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+      String accessControlRequestHeaders = request
+          .headers("Access-Control-Request-Headers");
       if (accessControlRequestHeaders != null) {
-        response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
+        response.header("Access-Control-Allow-Headers",
+            accessControlRequestHeaders);
       }
 
-      String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+      String accessControlRequestMethod = request
+          .headers("Access-Control-Request-Method");
       if (accessControlRequestMethod != null) {
-        response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
+        response.header("Access-Control-Allow-Methods",
+            accessControlRequestMethod);
       }
 
       return "OK";
     });
 
-    Spark.before((request, response) -> response.header("Access-Control-Allow-Origin", "*"));
+    Spark.before((request, response) -> response
+        .header("Access-Control-Allow-Origin", "*"));
 
     // Spark.after((Filter) (request, response) -> {
     // response.header("Access-Control-Allow-Origin", "*");
@@ -101,12 +108,11 @@ public final class Main {
     // });
     // FreeMarkerEngine freeMarker = Main.createEngine();
 
-
     // Setup Spark Routes
     Spark.post("/event", new EventHandler(wmu));
     Spark.get("/event/:id", new GetEventDataHandler(wmu));
     Spark.post("/newuser", new UserHandler(wmu));
-    Spark.webSocket("/leaderboard", EventWebSocket.class);
+
   }
 
   /**
@@ -149,7 +155,9 @@ public final class Main {
       List suggestions = new ArrayList();
 
       // TODO: Build the json
-      Map<String, Object> variables = ImmutableMap.of("id", event.getId(), "suggestionsList", suggestions, "error", false, "errorMsg", "");
+
+      Map<String, Object> variables = ImmutableMap.of("id", event.getId(),
+          "suggestionsList", suggestions, "error", false, "errorMsg", "");
 
       return Main.GSON.toJson(variables);
     }
@@ -174,6 +182,7 @@ public final class Main {
       String id = req.params(":id");
 
       Event event = this.wmu.wmd.getEvent(Long.parseLong(id));
+
       String name = "";
       String time = "";
       String date = "";
@@ -192,28 +201,28 @@ public final class Main {
         date = event.getDate(); // again, need to be in this form
         location = event.getLocation();
 
-        initialSuggestionsList =
-                event.getBestSuggestions(); // give a default range of suggestions, will do
+        initialSuggestionsList = event.getBestSuggestions(); // give a default
+                                                             // range of
+                                                             // suggestions,
+                                                             // will do
         // filtering in client
       }
 
-      Map<String, Object> variables =
-          new ImmutableMap.Builder<String, Object>().put("eventID", id)
-              .put("groupName", name).put("meetingTime", time)
-              .put("meetingDate", date)
-              .put("suggestionsList", initialSuggestionsList)
-              .put("location", location)
-              .put("error", error)
-              .put("errorMsg", errorMsg).build();
-
+      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
+          .put("eventID", id).put("groupName", name).put("meetingTime", time)
+          .put("meetingDate", date)
+          .put("suggestionsList", initialSuggestionsList)
+          .put("location", location).put("error", error)
+          .put("errorMsg", errorMsg).build();
 
       return Main.GSON.toJson(variables);
     }
   }
 
   /**
-   * This class handles the creation of a new user for
-   * a specific event.
+   * <<<<<<< HEAD This class handles a user voting in a specific event. =======
+   * This class handles the creation of a new user for a specific event. >>>>>>>
+   * abc8ae73fd6264bf8cd91aca30bd6034155c9bc3
    */
   public static class UserHandler implements Route {
 
@@ -222,7 +231,6 @@ public final class Main {
     public UserHandler(W2MUniverse wmu) {
       this.wmu = wmu;
     }
-
 
     @Override
     public String handle(Request req, Response res) {
@@ -249,10 +257,8 @@ public final class Main {
         uID = u.getId();
       }
 
-
-      Map<String, Object> variables =
-          ImmutableMap.of("userID", uID, "existingUser", existingUser, "error", error, "errorMsg", errorMsg);
-
+      Map<String, Object> variables = ImmutableMap.of("userID", uID,
+          "existingUser", existingUser, "error", error, "errorMsg", errorMsg);
 
       return Main.GSON.toJson(variables);
     }
