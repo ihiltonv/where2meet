@@ -32,10 +32,17 @@ class SuggestionsTable extends React.Component {
                                         </a>
                                     </div>
                                     <div className={"voteButtonContainer"}>
-                                        <button className={"voteButton"} style={{"background-color": "gold"}}>1</button>
-                                        <button className={"voteButton"} style={{"background-color": "silver"}}>2
+                                        <button id={data.id} className={"voteButton"}
+                                                style={{"background-color": "gold"}} value={5}
+                                                onClick={this.props.buttonClicked}>1
                                         </button>
-                                        <button className={"voteButton"} style={{"background-color": "#cc6633"}}>3
+                                        <button id={data.id} className={"voteButton"}
+                                                style={{"background-color": "silver"}} value={3}
+                                                onClick={this.props.buttonClicked}>2
+                                        </button>
+                                        <button id={data.id} className={"voteButton"}
+                                                style={{"background-color": "#cc6633"}} value={1}
+                                                onClick={this.props.buttonClicked}>3
                                         </button>
                                     </div>
                                 </div>
