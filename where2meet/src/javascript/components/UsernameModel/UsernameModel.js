@@ -18,7 +18,7 @@ class UsernameModel extends React.Component {
                          opacity: this.props.show ? '1' : '0'
                      }}>
                     <div className="modal-header">
-                        <h3>Create an Event!</h3>
+                        <h3>Please Give Us Your Name!</h3>
                         <span className="close-modal-btn" onClick={this.props.close}>×</span>
                     </div>
                     <div className="modal-body">
@@ -34,7 +34,7 @@ class UsernameModel extends React.Component {
                     <div className="modal-footer">
                         <button className="btn-cancel" onClick={this.props.close}>CLOSE</button>
                         <button className="btn-continue"
-                                onClick={() => this.props.getDataFromServer(this.state.username)}>CONTINUE
+                                onClick={() => this.props.submitName(this.state.username)}>CONTINUE
                         </button>
                     </div>
 

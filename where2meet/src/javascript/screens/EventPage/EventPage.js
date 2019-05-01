@@ -18,6 +18,7 @@ import LeaderboardTable from "../../components/LeaderboardTable/LeaderboardTable
 import SuggestionsTable from "../../components/SuggestionsTable/SuggestionsTable";
 import CollapsableContainer from "../../components/CollapsableContainer/CollapsableContainer";
 import API from "../../utils/API";
+import UsernameModel from "../../components/UsernameModel/UsernameModel";
 
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
@@ -40,14 +41,16 @@ class EventPage extends React.Component {
     constructor() {
         super();
         this.state = {
+            opacity: 1,
             groupName: "Weekend Shenanigans",
-            userName: "name",
+            userName: "",
+            isNameModelShowing: false,
             meetingTime: "10:30",
             meetingDate: "2019-10-5",
             meetingLocation: "",
             priceRange: [false, false, false, false],
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
-            searchRadius: [0, 100],
+            searchRadius: [0, 0],
             selectedCategories: [],
             categoryOptions: options,
             popularity: 0,
@@ -57,6 +60,20 @@ class EventPage extends React.Component {
             yourPicksList: [{}, {}, {}],
         };
     }
+
+    openModalHandler = () => {
+        this.setState({
+            isNameModelShowing: true,
+            opacity: "rgba(255,255,255,0.5)"
+        });
+    };
+
+    closeModalHandler = () => {
+        this.setState({
+            isNameModelShowing: false,
+            opacity: "rgba(255,255,255,0)"
+        });
+    };
 
     getDataFromServer(username) {
         this.setState({username});
@@ -84,9 +101,10 @@ class EventPage extends React.Component {
             });
     }
 
-    submitName = (event) => {
-        this.setState({userName: event.target.value});
-        console.log(event)
+    submitName = (name) => {
+        console.log(name);
+        this.setState({userName: name});
+        this.closeModalHandler();
     };
 
     buttonClicked = (event) => {
@@ -95,7 +113,7 @@ class EventPage extends React.Component {
         console.log(event.target.value);
         console.log(event.target.id);
         if (this.state.userName === "") {
-            alert("hello")
+            this.openModalHandler()
         } else {
             console.log(this.state.filteredSuggestionList);
             const suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
@@ -169,34 +187,28 @@ class EventPage extends React.Component {
     render() {
         return (
             <div className={"body"}>
+                {this.state.isNameModelShowing && <div style={{
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: this.state.opacity,
+                    position: "absolute",
+                    zIndex: 100
+                }}/>}
                 {/*filters sidebar*/}
                 <div className={"filtersContainer"}>
                     {/*Initial inputs*/}
                     <header className="groupName">
                         {this.state.groupName}
                     </header>
+                    {this.state.userName !== "" && <h2>
+                        Welcome! {this.state.userName}
+                    </h2>}
                     <div>
                         Meeting Time: {this.state.meetingTime}
                     </div>
                     <div>
                         Meeting Date: {this.state.meetingDate}
                     </div>
-                    {/*<div className="InputContainer">*/}
-                    {/*<div className={"inputField"}>*/}
-                    {/*<div className={"inputTitle"}> Your Name</div>*/}
-                    {/*<input className="nameInput" id={"nameInput"} type={"text"} placeholder=" "*/}
-                    {/*value={this.state.userName} onChange={this.submitName}/>*/}
-                    {/*</div>*/}
-                    {/*<div className={"inputField"}>*/}
-                    {/*<div className={"inputTitle"}>Meeting Time:</div>*/}
-                    {/*<input className="nameInput" id={"nameInput"} type={"time"} value={this.state.meetingTime}/>*/}
-                    {/*</div>*/}
-                    {/*<div className={"inputField"}>*/}
-                    {/*<div className={"inputTitle"}>Meeting Date:</div>*/}
-                    {/*<input className="nameInput" id={"nameInput"} type={"date"} value={this.state.meetingDate}/>*/}
-                    {/*</div>*/}
-                    {/*</div>*/}
-                    {/*Filters*/}
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Categories"} filter={
                             <div className={"categoryOptionsContainer"}>
@@ -298,6 +310,11 @@ class EventPage extends React.Component {
                     <div className={"tableTitle"}>
                         Some Suggestions
                     </div>
+                    <UsernameModel
+                        submitName={this.submitName}
+                        show={this.state.isNameModelShowing}
+                        close={this.closeModalHandler}
+                    />
                     <SuggestionsTable buttonClicked={this.buttonClicked} showRank={false}
                                       data={this.state.filteredSuggestionList}/>
                 </div>
