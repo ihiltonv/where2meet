@@ -86,6 +86,13 @@
 }
 
 .voteButton:active {
+    outline: none;
+    border: none;
+    opacity: 1;
+}
+
+.voteButton:focus {
+    outline: 0;
     opacity: 1;
 }
 
