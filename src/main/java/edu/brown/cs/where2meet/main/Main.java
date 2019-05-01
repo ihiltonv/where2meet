@@ -72,6 +72,7 @@ public final class Main {
 
   private void runSparkServer(int port) {
     Spark.port(port);
+    Spark.webSocket("/leaderboard", EventWebSocket.class);
     // Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
@@ -112,7 +113,6 @@ public final class Main {
     //
 
     // Setup Spark Routes
-    Spark.webSocket("/leaderboard", EventWebSocket.class);
     Spark.post("/event", new EventHandler(wmu));
     Spark.get("/event/:id", new GetEventDataHandler(wmu));
     Spark.post("/vote", new EventHandler(wmu));
