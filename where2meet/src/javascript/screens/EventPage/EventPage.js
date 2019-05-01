@@ -170,13 +170,13 @@ class EventPage extends React.Component {
         super();
         this.state = {
             groupName: "Weekend Shenanigans",
-            userName: "",
+            userName: "name",
             meetingTime: "10:30",
             meetingDate: "2019-10-5",
             meetingLocation: "",
             priceRange: [false, false, false, false],
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
-            searchRadius: [1, 100],
+            searchRadius: [null, null],
             selectedCategories: [],
             categoryOptions: options,
             popularity: 0,
@@ -188,7 +188,7 @@ class EventPage extends React.Component {
     }
 
     getDataFromServer(username) {
-        this.setState({username})
+        this.setState({username});
         API.post("")
     }
 
@@ -226,7 +226,8 @@ class EventPage extends React.Component {
         if (this.state.userName === "") {
             alert("hello")
         } else {
-            const suggestion = fakeData.filter(suggestion => suggestion.id === id);
+            console.log(this.state.filteredSuggestionList);
+            const suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
             let oldList = this.state.yourPicksList;
             if (val === '5') {
                 oldList[0] = suggestion[0];
@@ -243,16 +244,44 @@ class EventPage extends React.Component {
         }
     };
 
-    /*methods for suggestions*/
+    isFilterObjectValid = (object) => {
+        let {priceRange, searchRadius, popularity} = this.state;
+        console.log(object.dist);
+        // filter based on search radius
+        if (object.dist >= searchRadius[0] && searchRadius[1] >= object.dist) {
+            return true;
+        }
+        // filter based on price
+        for (let price in priceRange) {
+            let numPrice = parseInt(price, 10) + 1;
+            if (priceRange[price] === true) {
+                if (object.price === numPrice) {
+                    return true;
+                }
+            }
+        }
+
+        // filter based on popularity
+        if (object.rating >= popularity) {
+            console.log(popularity);
+            console.log(object.rating);
+            return true;
+        }
+
+        return false;
+
+    };
+    /*methods for filtering suggestions*/
     filterSuggestions = () => {
-        /*filter by dollarButton*/
-        let result;
+        let filteredResult = this.state.suggestionsList.filter(this.isFilterObjectValid);
+        this.setState({filteredSuggestionList: filteredResult})
     };
 
     changeDollarButtonState = (event) => {
         let dollarArray = this.state.priceRange;
         dollarArray[event.target.value] = dollarArray[event.target.value] ? false : true;
         this.setState({priceRange: dollarArray});
+        this.filterSuggestions();
     };
 
 
@@ -287,8 +316,40 @@ class EventPage extends React.Component {
                     {/*</div>*/}
                     {/*</div>*/}
                     {/*Filters*/}
-                    <div className={"filtersTitle"}>
-                        Filters
+                    <div className={"filtersRow"}>
+                        <CollapsableContainer title={"Categories"} filter={
+                            <div className={"categoryOptionsContainer"}>
+                                <Select
+                                    options={this.state.categoryOptions}
+                                    onChange={(selectedOption) => {
+                                        console.log(selectedOption);
+                                        this.setState({selectedCategories: selectedOption})
+                                    }}
+                                    closeMenuOnSelect={false}
+                                    components={makeAnimated()}
+                                    isMulti
+                                />
+                            </div>
+                        }/>
+                    </div>
+                    <div className={"filtersRow"}>
+                        <CollapsableContainer title={"Search Radius"} filter={
+                            <div className={"locationSliderContainer"}>
+                                <Rheostat
+                                    min={0}
+                                    max={100}
+                                    values={[0, 100]}
+                                    onValuesUpdated={async (event) => {
+                                        await this.setState({searchRadius: event.values});
+                                        this.filterSuggestions();
+                                    }}
+                                />
+                                <div className={"searchRadiusLabelContainer"}>
+                                    <h1>{this.state.searchRadius[0] / 10.0} miles</h1>
+                                    <h1>{this.state.searchRadius[1] / 10.0} miles</h1>
+                                </div>
+                            </div>
+                        }/>
                     </div>
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Price Range"} filter={
@@ -328,22 +389,7 @@ class EventPage extends React.Component {
                             </div>
                         }/>
                     </div>
-                    <div className={"filtersRow"}>
-                        <CollapsableContainer title={"Search Radius"} filter={
-                            <div className={"locationSliderContainer"}>
-                                <Rheostat
-                                    min={1}
-                                    max={100}
-                                    values={[1, 100]}
-                                    onValuesUpdated={(event) => this.setState({searchRadius: event.values})}
-                                />
-                                <div className={"searchRadiusLabelContainer"}>
-                                    <h1>{this.state.searchRadius[0] / 10.0} miles</h1>
-                                    <h1>{this.state.searchRadius[1] / 10.0} miles</h1>
-                                </div>
-                            </div>
-                        }/>
-                    </div>
+
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Popularity"} filter={
                             <div className={"popularitySelectorContainer"}>
@@ -355,28 +401,16 @@ class EventPage extends React.Component {
                                     name='rating'
                                     starDimension={'20px'}
                                     starSpacing={'5px'}
-                                    changeRating={(rating) => this.setState({popularity: rating})}
+                                    changeRating={async (rating) => {
+                                        await this.setState({popularity: rating});
+                                        this.filterSuggestions();
+                                    }}
                                     rating={this.state.popularity}
                                 />
                             </div>
                         }/>
                     </div>
-                    <div className={"filtersRow"}>
-                        <CollapsableContainer title={"Categories"} filter={
-                            <div className={"categoryOptionsContainer"}>
-                                <Select
-                                    options={this.state.categoryOptions}
-                                    onChange={(selectedOption) => {
-                                        console.log(selectedOption);
-                                        this.setState({selectedCategories: selectedOption})
-                                    }}
-                                    closeMenuOnSelect={false}
-                                    components={makeAnimated()}
-                                    isMulti
-                                />
-                            </div>
-                        }/>
-                    </div>
+
                 </div>
                 {/*suggestions list*/}
                 <div className={"suggestionsBoardContainer"}>

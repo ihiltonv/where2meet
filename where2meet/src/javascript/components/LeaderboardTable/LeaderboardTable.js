@@ -31,7 +31,7 @@ class LeaderboardTable extends React.Component {
                                         </a>
                                     </div>
                                 </div>
-                                <div className={"dollarVotes"}>
+                                {data.venue && <div className={"dollarVotes"}>
                                     <div className={"voteDollar"}>
                                         <div className={"votes"}>👍 {data.votes} </div>
                                         <DollarSignComponent dollars={data.price}/>
@@ -44,7 +44,7 @@ class LeaderboardTable extends React.Component {
                                         starDimension={'10px'}
                                         starSpacing={'1px'}
                                     />
-                                </div>
+                                </div>}
                             </div>
                         </div>
                     ))}
