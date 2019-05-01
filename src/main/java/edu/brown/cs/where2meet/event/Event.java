@@ -1,17 +1,18 @@
 package edu.brown.cs.where2meet.event;
 
-import java.util.ArrayList;
+import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
+import edu.brown.cs.where2meet.database.W2MDatabase;
+import edu.brown.cs.where2meet.networking.YelpConnection;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.HashMap;
-
-import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
-import edu.brown.cs.where2meet.database.W2MDatabase;
+import java.util.ArrayList;
 
 /**
  * A class to hold data for the events.
- *
  */
 public class Event {
 
@@ -27,20 +28,17 @@ public class Event {
   private List<Suggestion> suggestions;
   private HashMap<Long, HashMap<Long, Integer>> votes;
 
+  private static final int DEFAULT_RADIUS = 8050;
+
   /**
    * Constructor for an Event.
-   *
-   * @param name
-   *          the name of the event.
-   * @param coordinates
-   *          the coordinates that the event should be near
-   * @param date
-   *          a String representing the date of the event
-   * @param time
-   *          a String representing the time of the event
+   * @param name        the name of the event.
+   * @param coordinates the coordinates that the event should be near
+   * @param date        a String representing the date of the event
+   * @param time        a String representing the time of the event
    */
   public Event(String name, List<Double> coordinates, String date,
-      String time) {
+               String time) {
     this.id = System.currentTimeMillis();
     this.name = name;
     this.users = new HashSet<>();
@@ -48,8 +46,8 @@ public class Event {
     this.date = date;
     this.time = time;
 
-    venues = new HashSet<>();
-    topRanker = new VenueRanker();
+    this.venues = new HashSet<>();
+    this.topRanker = new VenueRanker();
 
     instantiateSuggestions();
 
@@ -57,20 +55,14 @@ public class Event {
 
   /**
    * A constructor for the Event.
-   *
-   * @param name
-   *          the name of the event.
-   * @param users
-   *          the users in the event.
-   * @param coordinates
-   *          the coordinates of the event's location.
-   * @param date
-   *          a String representing the event's date
-   * @param time
-   *          a String representing the event's time
+   * @param name        the name of the event.
+   * @param users       the users in the event.
+   * @param coordinates the coordinates of the event's location.
+   * @param date        a String representing the event's date
+   * @param time        a String representing the event's time
    */
   public Event(String name, Set<Long> users, List<Double> coordinates,
-      String date, String time) {
+               String date, String time) {
     this.id = System.currentTimeMillis();
     this.name = name;
     this.users = new HashSet<>();
@@ -81,8 +73,8 @@ public class Event {
     this.date = date;
     this.time = time;
 
-    venues = new HashSet<>();
-    topRanker = new VenueRanker();
+    this.venues = new HashSet<>();
+    this.topRanker = new VenueRanker();
 
     instantiateSuggestions();
 
@@ -90,22 +82,15 @@ public class Event {
 
   /**
    * A constructor for the Event.
-   *
-   * @param id
-   *          the id of the event.
-   * @param name
-   *          the name of the event.
-   * @param users
-   *          the users in the event.
-   * @param coordinates
-   *          the coordinates of the event's location.
-   * @param date
-   *          a String representing the event's date
-   * @param time
-   *          a String representing the event's time
+   * @param id          the id of the event.
+   * @param name        the name of the event.
+   * @param users       the users in the event.
+   * @param coordinates the coordinates of the event's location.
+   * @param date        a String representing the event's date
+   * @param time        a String representing the event's time
    */
   public Event(Long id, String name, Set<Long> users, List<Double> coordinates,
-      String date, String time) {
+               String date, String time) {
     this.id = id;
     this.name = name;
     this.users = new HashSet<>();
@@ -119,20 +104,24 @@ public class Event {
   }
 
   /**
-   * Instantiates the suggestion array.
+   * Instantiates the suggestion list.
    */
   private void instantiateSuggestions() {
-    this.suggestions = new ArrayList<>();
-    //TODO: get yelp suggestions
+    //TODO: figure out what type of venue we're looking for
+    this.suggestions = YelpConnection
+        .exploreQuery(this.coordinates.get(0), this.coordinates.get(1),
+            Arrays.asList("food"), Event.DEFAULT_RADIUS);
+
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((users == null) ? 0 : users.hashCode());
+    result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+    result = prime * result + ((this.name == null) ? 0 : this.name.hashCode());
+    result =
+        prime * result + ((this.users == null) ? 0 : this.users.hashCode());
     return result;
   }
 
@@ -148,25 +137,25 @@ public class Event {
       return false;
     }
     Event other = (Event) obj;
-    if (id == null) {
+    if (this.id == null) {
       if (other.id != null) {
         return false;
       }
-    } else if (!id.equals(other.id)) {
+    } else if (!this.id.equals(other.id)) {
       return false;
     }
-    if (name == null) {
+    if (this.name == null) {
       if (other.name != null) {
         return false;
       }
-    } else if (!name.equals(other.name)) {
+    } else if (!this.name.equals(other.name)) {
       return false;
     }
-    if (users == null) {
+    if (this.users == null) {
       if (other.users != null) {
         return false;
       }
-    } else if (!users.equals(other.users)) {
+    } else if (!this.users.equals(other.users)) {
       return false;
     }
     return true;
@@ -174,13 +163,11 @@ public class Event {
 
   /**
    * Adds a user to the event.
-   *
-   * @param u
-   *          the user to add
+   * @param u the user to add
    */
   public void addUser(Long u) {
-    if (!users.contains(u)) {
-      users.add(u);
+    if (!this.users.contains(u)) {
+      this.users.add(u);
       User user = W2MDatabase.getUser(u);
       user.addEvent(this.id);
       this.votes.put(u, new HashMap<>());
@@ -240,7 +227,6 @@ public class Event {
 
   /**
    * Gets the user set of the event.
-   *
    * @return the set of users for the event.
    */
   public Set<Long> getUsers() {
@@ -249,7 +235,6 @@ public class Event {
 
   /**
    * Gets the id of the event.
-   *
    * @return the id of the event
    */
   public Long getId() {
@@ -258,7 +243,6 @@ public class Event {
 
   /**
    * Gets the name of the event.
-   *
    * @return the name of the event.
    */
   public String getName() {
@@ -267,7 +251,6 @@ public class Event {
 
   /**
    * Gets the coordinates of the event's location.
-   *
    * @return a list of the coordinates of the event.
    */
   public List<Double> getLocation() {
@@ -276,7 +259,6 @@ public class Event {
 
   /**
    * Gets the date of the event.
-   *
    * @return a string with the date of the event.
    */
   public String getDate() {
@@ -285,7 +267,6 @@ public class Event {
 
   /**
    * Gets the time of the event.
-   *
    * @return a string with the time of the event.
    */
   public String getTime() {
@@ -294,18 +275,15 @@ public class Event {
 
   /**
    * Gets the suggestion at a specified rank (1 through 3).
-   *
-   * @param rank
-   *          the rank of the suggestion
+   * @param rank the rank of the suggestion
    * @return the suggestion at the specified rank.
    */
   public Suggestion getSuggestion(int rank) {
-    return suggestions.get(rank);
+    return this.suggestions.get(rank);
   }
 
   /**
    * Gets the suggestion list.
-   *
    * @return the list of suggestions for the event.
    */
   public List<Suggestion> getSuggestions() {
@@ -314,22 +292,16 @@ public class Event {
 
   /**
    * Sets the suggestion list.
-   *
-   * @param suggestions
-   *          the array to which suggestions is set.
+   * @param suggestions the array to which suggestions is set.
    */
   public void setSuggestions(List<Suggestion> suggestions) {
     this.suggestions = suggestions;
   }
 
   /**
-   *
    * Sets a specific suggestion in the array.
-   *
-   * @param s
-   *          the new suggestion.
-   * @param rank
-   *          the position in the array to replace.
+   * @param s    the new suggestion.
+   * @param rank the position in the array to replace.
    */
   public void setSuggestion(Suggestion s, int rank) {
     this.suggestions.set(rank, s);
