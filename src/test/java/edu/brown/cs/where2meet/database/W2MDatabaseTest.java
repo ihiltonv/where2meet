@@ -1,8 +1,8 @@
 package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
@@ -50,12 +50,10 @@ public class W2MDatabaseTest {
     // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
     // db.cleardb();
     // db.createdb();
-    List<Double> coords = new ArrayList<>();
-    coords.add(1.0);
-    coords.add(2.0);
-    User test = new User("/n/1", coords);
+
+    User test = new User("/n/1");
     W2MDatabase.addUser(test);
-    User ret = W2MDatabase.loadUser(test.getId());
+    User ret = W2MDatabase.getUser(test.getId());
     assertEquals(ret.getName(), "/n/1");
     assertEquals(ret.getId(), test.getId());
 
@@ -67,14 +65,12 @@ public class W2MDatabaseTest {
     // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
     // db.cleardb();
     // db.createdb();
-    List<Double> coords = new ArrayList<>();
-    coords.add(1.0);
-    coords.add(2.0);
-    User uTest1 = new User("/n/2", coords);
-    User uTest2 = new User("/n/3", coords);
+
+    User uTest1 = new User("/n/2");
+    User uTest2 = new User("/n/3");
 
     while (uTest2.getId().equals(uTest1.getId())) {
-      uTest2 = new User("/n/3", coords);
+      uTest2 = new User("/n/3");
     }
 
     Set<Long> userList = new HashSet<>();
@@ -111,7 +107,7 @@ public class W2MDatabaseTest {
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User uTest = new User("/n/5", coords);
+    User uTest = new User("/n/5");
     Long uid = uTest.getId();
     W2MDatabase.addUser(uTest);
 
@@ -159,7 +155,7 @@ public class W2MDatabaseTest {
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User uTest1 = new User("/n/1", coords);
+    User uTest1 = new User("/n/1");
     W2MDatabase.addUser(uTest1);
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
@@ -194,7 +190,7 @@ public class W2MDatabaseTest {
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
-    User uTest1 = new User("username", coords);
+    User uTest1 = new User("username");
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
     Long eid = eTest1.getId();
@@ -205,12 +201,13 @@ public class W2MDatabaseTest {
     }
     W2MDatabase.addUser(uTest1);
     W2MDatabase.addEvent(eTest1);
-    Long id = W2MDatabase.getIdFromName("username", eid);
-    assertNull(id);
+    User id = W2MDatabase.getUserFromName("username", eid);
+    assertNotNull(id);
+    assertNotEquals(id, uTest1);
 
     eTest1.addUser(uid);
-    id = W2MDatabase.getIdFromName("username", eid);
-    assertEquals(id, uid);
+    id = W2MDatabase.getUserFromName("username", eid);
+    assertEquals(id, uTest1);
 
   }
 
@@ -228,7 +225,7 @@ public class W2MDatabaseTest {
 
     Long e1 = test1.getId();
 
-    User uTest1 = new User("username", coords);
+    User uTest1 = new User("username");
     Long u = uTest1.getId();
     test1.addUser(u);
     W2MDatabase.addEvent(test1);

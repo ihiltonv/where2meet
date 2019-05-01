@@ -1,7 +1,6 @@
 package edu.brown.cs.where2meet.websockets;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -60,48 +59,7 @@ public class EventWebSocket {
     JsonObject received = GSON.fromJson(message, JsonObject.class);
     assert received.get("type").getAsInt() == MESSAGE_TYPE.CONNECT.ordinal();
     Long eid = received.get("event_id").getAsLong();
-    String eName = received.get("event_name").getAsString();
-    Double e_lat = received.get("event_lat").getAsDouble();
-    Double e_lng = received.get("event_lng").getAsDouble();
-    String date = received.get("event_date").getAsString();
-    String time = received.get("event_time").getAsString();
-
-    String uName = received.get("user_name").getAsString();
-    // Long uId = received.get("user_id").getAsLong();
-    Double u_lat = received.get("user_lat").getAsDouble();
-    Double u_lng = received.get("user_lng").getAsDouble();
-
-    // sets up event
-    List<Double> ecoords = new ArrayList<>();
-    ecoords.add(e_lat);
-    ecoords.add(e_lng);
-    Event newEvent = null;
-    if (eventMap.keySet().contains(eid)) {
-      newEvent = W2MDatabase.getEvent(eid);
-      eventMap.get(eid).add(session);
-    } else {
-      newEvent = new Event(eName, ecoords, date, time);
-      eid = newEvent.getId();
-      eventMap.put(eid, new ConcurrentLinkedQueue<Session>());
-      eventMap.get(eid).add(session);
-      W2MDatabase.addEvent(newEvent);
-    }
-
-    // sets up user
-    Long uid = W2MDatabase.getIdFromName(uName, eid);
-    User newUser = null;
-    if (uid == null) {
-      List<Double> uCoords = new ArrayList<>();
-      uCoords.add(u_lat);
-      uCoords.add(u_lng);
-      newUser = new User(uName, uCoords);
-      uid = newUser.getId();
-    } else {
-      newUser = W2MDatabase.getUser(uid);
-    }
-
-    newEvent.addUser(uid);
-    W2MDatabase.updateEvent(newEvent);
+    Long uid = received.get("user_id").getAsLong();
 
     sessions.add(session);
     // TODO: start running the thread for the user
@@ -123,7 +81,7 @@ public class EventWebSocket {
 
     Suggestion[] userSuggestions = user.getSuggestions();
 
-    int rank = (userVotes + 1) / 2;
+    int rank = 3 - ((userVotes + 1) / 2);
     user.setSuggestion(newSugg, rank);
     W2MDatabase.updateUser(user, eid);
 

@@ -4,12 +4,11 @@ import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
 import edu.brown.cs.where2meet.database.W2MDatabase;
 import edu.brown.cs.where2meet.networking.YelpConnection;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 /**
  * A class to hold data for the events.
@@ -47,9 +46,6 @@ public class Event {
 
     this.venues = new HashSet<>();
     this.topRanker = new VenueRanker();
-
-    instantiateSuggestions();
-
   }
 
   /**
@@ -75,7 +71,6 @@ public class Event {
     this.venues = new HashSet<>();
     this.topRanker = new VenueRanker();
 
-    instantiateSuggestions();
 
   }
 
@@ -99,18 +94,16 @@ public class Event {
     this.coordinates = coordinates;
     this.date = date;
     this.time = time;
-    instantiateSuggestions();
   }
 
   /**
    * Instantiates the suggestion list.
+   * @param categories the categories of the venues to search
    */
-  private void instantiateSuggestions() {
-    //TODO: figure out what type of venue we're looking for
+  public void instantiateSuggestions(List<String> categories) {
     this.suggestions = YelpConnection
         .exploreQuery(this.coordinates.get(0), this.coordinates.get(1),
-            Arrays.asList("food"), Event.DEFAULT_RADIUS);
-
+            categories, Event.DEFAULT_RADIUS);
   }
 
   @Override
@@ -219,7 +212,7 @@ public class Event {
 //    return cumVotes;
 //  }
 
-  public List<Suggestion> getAllSuggestions() {
+  public List<Suggestion> getBestSuggestions() {
     return new ArrayList<>();
   }
 
