@@ -24,6 +24,7 @@ public class Suggestion {
   private String category;
   private String photo;
   private String venue;
+  private Double dist;
   // private static final int MAX_LEN = 7;
 
   /**
@@ -36,6 +37,7 @@ public class Suggestion {
     this.rating = 0;
     this.lat = 0;
     this.lon = 0;
+    this.dist = 0.0;
     this.location = "loc";
     this.url = "url";
     this.category = "cat";
@@ -72,12 +74,31 @@ public class Suggestion {
     this.category = category;
     this.photo = photo;
     this.venue = venue;
+    this.dist = 0.0;
   }
 
   public void setLatLonLoc(double lat, double lon, String loc) {
     this.lat = lat;
     this.lon = lon;
     this.location = loc;
+  }
+
+  /** sets the dist param by calculating haversine
+   * distance to the event location.
+   *
+   * @param event - the event that this suggestion is for
+   */
+  public void setDistFromEvent(Event event) {
+    this.dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
+
+  }
+
+  /**
+   *
+   * @return the distance parameter
+   */
+  public double getDist(){
+    return this.dist;
   }
 
   /**
@@ -276,6 +297,7 @@ public class Suggestion {
     obj.addProperty("venue", this.venue);
     obj.addProperty("lat", this.lat);
     obj.addProperty("lon", this.lon);
+    obj.addProperty("distance", this.dist);
     return obj;
   }
 

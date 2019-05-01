@@ -105,6 +105,10 @@ public class YelpConnection {
         if (curr.has("name")) {
           s.setVenue(curr.get("name").getAsString());
         }
+        if (curr.has("id")) {
+          s.setId(curr.get("id").getAsString());
+        }
+        s.getId();
         results.add(s);
       }
       return results;

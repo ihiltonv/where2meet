@@ -55,6 +55,9 @@ public final class Main {
     OptionSet options = parser.parse(this.args);
 
     runSparkServer((int) options.valueOf("port"));
+    //TODO: stop clearing the db
+    this.wmu.wmd.cleardb();
+    this.wmu.wmd.createdb();
   }
 
   private static FreeMarkerEngine createEngine() {
@@ -174,6 +177,7 @@ public final class Main {
       String name = "";
       String time = "";
       String date = "";
+      double distance = 0.0;
       List<Suggestion> initialSuggestionsList = new ArrayList<>();
       List<Double> location = new ArrayList<>();
       if (event == null) {
