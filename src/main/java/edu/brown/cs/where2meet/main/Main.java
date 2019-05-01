@@ -183,6 +183,7 @@ public final class Main {
       String name = "";
       String time = "";
       String date = "";
+      double distance = 0.0;
       List<Suggestion> initialSuggestionsList = new ArrayList<>();
       List<Double> location = new ArrayList<>();
       if (event == null) {

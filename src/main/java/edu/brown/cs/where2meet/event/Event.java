@@ -122,6 +122,9 @@ public class Event {
   public void instantiateSuggestions(List<String> categories) {
     this.suggestions = YelpConnection.exploreQuery(this.coordinates.get(0),
         this.coordinates.get(1), categories, Event.DEFAULT_RADIUS);
+    for (Suggestion sug : this.suggestions) {
+      sug.setDistFromEvent(this);
+    }
   }
 
   @Override
@@ -239,14 +242,12 @@ public class Event {
    * @return a list of suggestions, from best to worst
    */
   public List<Suggestion> getBestSuggestions() {
-    return this.suggestions;
 
-//    VenueRanker vr = new VenueRanker();
-//    for (Suggestion sug : suggestions) {
-//      vr.updateRank(sug, sug.suggScore(this));
-//    }
-//
-//    return vr.getRanked();
+    VenueRanker vr = new VenueRanker();
+    for (Suggestion sug : suggestions) {
+      vr.updateRank(sug, sug.suggScore(this));
+    }
+    return vr.getRanked();
   }
 
   /**
