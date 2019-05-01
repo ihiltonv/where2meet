@@ -89,8 +89,7 @@ public class Suggestion {
    * @param event - the event that this suggestion is for
    */
   public void setDistFromEvent(Event event) {
-    this.dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
-
+    dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
   }
 
   /**
@@ -397,7 +396,7 @@ public class Suggestion {
   public double suggScore(Event event) {
 
     //Haversine distance to venue from event
-    double dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
+    this.setDistFromEvent(event);
     //Value of the venue in terms of price per cost
     double value = Math.log(this.rating / (1.0 * this.price) + 2.5);
     //A weight for the rating of the restaurant
@@ -410,7 +409,7 @@ public class Suggestion {
   }
 
   public static double haversineDist(double lat1, double lon1, double lat2, double lon2) {
-    final int radius = 6371; //kilometers
+    final double radius = 3958.8; //miles
 
 //    left part of the square root in haversine's
     double left =  Math.pow(Math.sin((lat2 - lat1) / 2.0), 2.0);
