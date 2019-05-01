@@ -465,6 +465,13 @@ public class W2MDatabase {
     } catch (SQLException e) {
       System.out.println(e);
     }
+
+    try (PreparedStatement prep = conn.prepareStatement(
+        "CREATE TABLE IF NOT EXISTS 'suggestions'('id' TEXT, 'suggestion' TEXT);")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
   }
 
   /**
@@ -488,6 +495,13 @@ public class W2MDatabase {
 
     try (PreparedStatement prep = conn
         .prepareStatement("DROP TABLE IF EXISTS events_users")) {
+      prep.execute();
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+
+    try (PreparedStatement prep = conn
+        .prepareStatement("DROP TABLE IF EXISTS suggestions")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -525,6 +539,33 @@ public class W2MDatabase {
    */
   public Connection getConn() {
     return W2MDatabase.conn;
+  }
+
+  public static void addSuggestion(Suggestion s) {
+    try (PreparedStatement prep = conn
+        .prepareStatement("INSERT INTO suggestions VALUES(?,?);")) {
+      prep.setString(1, s.getId());
+      prep.setString(2, s.toString());
+      prep.execute();
+
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+  }
+
+  public static Suggestion getSuggestion(String id) {
+    Suggestion ret = null;
+    try (PreparedStatement prep = conn
+        .prepareStatement("SELECT suggestion FROM suggestions WHERE id=?;")) {
+      try (ResultSet rs = prep.executeQuery()) {
+        while (rs.next()) {
+          ret = Suggestion.toSugg(rs.getString(1));
+        }
+      }
+    } catch (SQLException e) {
+      System.out.println(e);
+    }
+    return ret;
   }
 
 }

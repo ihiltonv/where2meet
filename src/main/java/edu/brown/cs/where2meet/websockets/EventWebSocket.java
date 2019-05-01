@@ -54,14 +54,44 @@ public class EventWebSocket {
    *
    * @param message
    *          the message with the connection.
+   * @throws IOException
    */
-  public void connected(Session session, String message) {
+  public void connected(Session session, String message) throws IOException {
     JsonObject received = GSON.fromJson(message, JsonObject.class);
     assert received.get("type").getAsInt() == MESSAGE_TYPE.CONNECT.ordinal();
     Long eid = received.get("event_id").getAsLong();
-    Long uid = received.get("user_id").getAsLong();
+
+    Event event = W2MDatabase.getEvent(eid);
+    List<Suggestion> suggestions = event.getSuggestions();
+    JsonObject leaderboard = new JsonObject();
+    leaderboard.addProperty("type", MESSAGE_TYPE.SCORING.ordinal());
+
+    int len = suggestions.size();
+    Suggestion s1 = null;
+    Suggestion s2 = null;
+    Suggestion s3 = null;
+
+    if (len >= 1) {
+      s1 = suggestions.get(0);
+      leaderboard.addProperty("s1", GSON.toJson(s1.getAsJsonObject()));
+    } else {
+      leaderboard.addProperty("s1", "no value");
+    }
+    if (len >= 2) {
+      s2 = suggestions.get(1);
+      leaderboard.addProperty("s2", GSON.toJson(s2.getAsJsonObject()));
+    } else {
+      leaderboard.addProperty("s2", "no value");
+    }
+    if (len >= 3) {
+      s3 = suggestions.get(2);
+      leaderboard.addProperty("s3", GSON.toJson(s3.getAsJsonObject()));
+    } else {
+      leaderboard.addProperty("s3", "no value");
+    }
 
     sessions.add(session);
+    session.getRemote().sendString(GSON.toJson(leaderboard));
     // TODO: start running the thread for the user
     // Thread thread = new Thread();
     // threadMap.put(session, thread);
@@ -75,8 +105,9 @@ public class EventWebSocket {
     Long eid = received.get("event").getAsLong();
     User user = W2MDatabase.getUserWithEvent(uid, eid);
     Event event = W2MDatabase.getEvent(eid);
-    Suggestion newSugg = Suggestion
-        .toSugg(received.get("suggestion").getAsString());
+    // get suggestion id rather than suggestion as a json object
+    Suggestion newSugg = W2MDatabase
+        .getSuggestion(received.get("suggestion").getAsString());
     newSugg.setVotes(newSugg.getVotes() + userVotes);
 
     Suggestion[] userSuggestions = user.getSuggestions();
@@ -111,15 +142,38 @@ public class EventWebSocket {
     event.setSuggestions(eventSuggestions);
     W2MDatabase.updateEvent(event);
 
-    Suggestion s1 = eventSuggestions.get(0);
-    Suggestion s2 = eventSuggestions.get(1);
-    Suggestion s3 = eventSuggestions.get(2);
+    Suggestion s1 = null;
+    Suggestion s2 = null;
+    Suggestion s3 = null;
+    int length = eventSuggestions.size();
+    if (length >= 1) {
+      s1 = eventSuggestions.get(0);
+    }
+    if (length >= 2) {
+      s2 = eventSuggestions.get(1);
+    }
+    if (length >= 3) {
+      s3 = eventSuggestions.get(2);
+    }
 
     JsonObject response = new JsonObject();
     response.addProperty("type", MESSAGE_TYPE.SCORING.ordinal());
-    response.addProperty("s1", GSON.toJson(s1.getAsJsonObject()));
-    response.addProperty("s2", GSON.toJson(s2.getAsJsonObject()));
-    response.addProperty("s3", GSON.toJson(s3.getAsJsonObject()));
+    if (s1 != null) {
+      response.addProperty("s1", GSON.toJson(s1.getAsJsonObject()));
+    } else {
+      response.addProperty("s1", "no value");
+    }
+    if (s2 != null) {
+      response.addProperty("s2", GSON.toJson(s2.getAsJsonObject()));
+    } else {
+      response.addProperty("s2", "no value");
+    }
+    if (s3 != null) {
+      response.addProperty("s3", GSON.toJson(s3.getAsJsonObject()));
+    } else {
+      response.addProperty("s3", "no value");
+    }
+
     for (Session s : eventMap.get(eid)) {
       s.getRemote().sendString(GSON.toJson(response));
     }
