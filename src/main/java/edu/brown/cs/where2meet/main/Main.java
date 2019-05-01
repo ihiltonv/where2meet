@@ -175,6 +175,7 @@ public final class Main {
       String time = "";
       String date = "";
       List<Suggestion> initialSuggestionsList = new ArrayList<>();
+      List<Double> location = new ArrayList<>();
       if (event == null) {
         error = true;
         errorMsg = "No event found with ID " + id;
@@ -185,6 +186,7 @@ public final class Main {
         // military
         // time so.. 11pm will be 23:00
         date = event.getDate(); // again, need to be in this form
+        location = event.getLocation();
 
         initialSuggestionsList =
                 event.getBestSuggestions(); // give a default range of suggestions, will do
@@ -196,6 +198,7 @@ public final class Main {
               .put("groupName", name).put("meetingTime", time)
               .put("meetingDate", date)
               .put("suggestionsList", initialSuggestionsList)
+              .put("location", location)
               .put("error", error)
               .put("errorMsg", errorMsg).build();
 
