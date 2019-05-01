@@ -1,10 +1,20 @@
 package edu.brown.cs.where2meet.main;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.websockets.EventWebSocket;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -15,14 +25,6 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public final class Main {
 
@@ -43,7 +45,7 @@ public final class Main {
   }
 
   private void run() {
-    //create W2MUniverse
+    // create W2MUniverse
     this.wmu = new W2MUniverse();
     // Parse command line arguments
     OptionParser parser = new OptionParser();
@@ -60,8 +62,8 @@ public final class Main {
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
-      System.out
-          .printf("ERROR: Unable use %s for template loading.%n", templates);
+      System.out.printf("ERROR: Unable use %s for template loading.%n",
+          templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -69,22 +71,22 @@ public final class Main {
 
   private void runSparkServer(int port) {
     Spark.port(port);
-    //Spark.externalStaticFileLocation("src/main/resources/static");
+    // Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
     Spark.options("/*", (request, response) -> {
-      String accessControlRequestHeaders =
-          request.headers("Access-Control-Request-Headers");
+      String accessControlRequestHeaders = request
+          .headers("Access-Control-Request-Headers");
       if (accessControlRequestHeaders != null) {
         response.header("Access-Control-Allow-Headers",
             accessControlRequestHeaders);
       }
 
-      String accessControlRequestMethod =
-          request.headers("Access-Control-Request-Method");
+      String accessControlRequestMethod = request
+          .headers("Access-Control-Request-Method");
       if (accessControlRequestMethod != null) {
-        response
-            .header("Access-Control-Allow-Methods", accessControlRequestMethod);
+        response.header("Access-Control-Allow-Methods",
+            accessControlRequestMethod);
       }
 
       return "OK";
@@ -93,14 +95,14 @@ public final class Main {
     Spark.before((request, response) -> response
         .header("Access-Control-Allow-Origin", "*"));
 
-//    Spark.after((Filter) (request, response) -> {
-//      response.header("Access-Control-Allow-Origin", "*");
-//      response.header("Access-Control-Allow-Methods", "GET");
-//      response.header("Access-Control-Allow-Methods", "POST");
-//    });
-    //FreeMarkerEngine freeMarker = Main.createEngine();
+    // Spark.after((Filter) (request, response) -> {
+    // response.header("Access-Control-Allow-Origin", "*");
+    // response.header("Access-Control-Allow-Methods", "GET");
+    // response.header("Access-Control-Allow-Methods", "POST");
+    // });
+    // FreeMarkerEngine freeMarker = Main.createEngine();
 
-    //Calls we want:
+    // Calls we want:
     //
     // new event
     // new votes
@@ -109,6 +111,7 @@ public final class Main {
     //
 
     // Setup Spark Routes
+    Spark.webSocket("/leaderboard", EventWebSocket.class);
     Spark.post("/event", new EventHandler());
     Spark.get("/event/:id", new GetEventDataHandler());
     Spark.post("/vote", new EventHandler());
@@ -140,14 +143,12 @@ public final class Main {
 
       Event event = new Event(name, coordinates, date, time);
 
-      //return empty json array for leaderboard and picks
-      //return a list (ranked of all suggestions)
-      //return id
+      // return empty json array for leaderboard and picks
+      // return a list (ranked of all suggestions)
+      // return id
 
-
-      //TODO: Build the json
+      // TODO: Build the json
       Map<String, Object> variables = ImmutableMap.of("id", event.getId());
-
 
       return Main.GSON.toJson(variables);
     }
@@ -163,48 +164,47 @@ public final class Main {
       // get the id from the url
       String id = req.params(":id");
 
-      //TODO: from the database, get the following info
+      // TODO: from the database, get the following info
       Event event = Main.wmu.wmd.getEvent(Long.parseLong(id));
       String name = event.getName(); // get the name of the group
-      String time = event
-          .getTime(); // make sure the time is in this format, in military
+      String time = event.getTime(); // make sure the time is in this format, in
+                                     // military
       // time so.. 11pm will be 23:00
       String date = event.getDate(); // again, need to be in this form
-      List<Suggestion> leaderBoardList =
-          new ArrayList<>(); // please send the stored list of votes
-      List<Suggestion> initialSuggestionsList =
-          new ArrayList<>(); // give a default range of suggestions, will do
+      List<Suggestion> leaderBoardList = new ArrayList<>(); // please send the
+                                                            // stored list of
+                                                            // votes
+      List<Suggestion> initialSuggestionsList = new ArrayList<>(); // give a
+                                                                   // default
+                                                                   // range of
+                                                                   // suggestions,
+                                                                   // will do
       // filtering in client
 
-      Map<String, Object> variables =
-          new ImmutableMap.Builder<String, Object>().put("eventID", id)
-              .put("groupName", name).put("meetingTime", time)
-              .put("meetingDate", date).put("leaderBoardList", leaderBoardList)
-              .put("suggestionsList", initialSuggestionsList).build();
-
+      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
+          .put("eventID", id).put("groupName", name).put("meetingTime", time)
+          .put("meetingDate", date).put("leaderBoardList", leaderBoardList)
+          .put("suggestionsList", initialSuggestionsList).build();
 
       return Main.GSON.toJson(variables);
     }
   }
 
   /**
-   * This class handles a user voting in a specific
-   * event.
+   * This class handles a user voting in a specific event.
    */
   public static class VoteHandler implements Route {
 
-    //return empty json array for leaderboard and picks
-    //return a list (ranked of all suggestions)
-    //return id
+    // return empty json array for leaderboard and picks
+    // return a list (ranked of all suggestions)
+    // return id
     @Override
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
 
-
-      //TODO: build the json
-      Map<String, Object> variables =
-          ImmutableMap.of("testKeyVote", "testValVote");
-
+      // TODO: build the json
+      Map<String, Object> variables = ImmutableMap.of("testKeyVote",
+          "testValVote");
 
       return Main.GSON.toJson(variables);
     }
@@ -212,6 +212,7 @@ public final class Main {
 
   /**
    * Display an error page when an exception occurs in the server.
+   * 
    * @author jj
    */
   private static class ExceptionPrinter implements ExceptionHandler {

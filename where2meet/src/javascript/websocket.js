@@ -9,7 +9,7 @@ let conn;
 //event is a js object with fields id, name, lat, lng, date, time.
 //user is a js object with fields name, lat, lng
 const setup_live_scores = (event, user) => {
-    conn = new WebSocket(`wss://${window.location.host}/scores`);
+    conn = new WebSocket(`wss://${window.location.host}/leaderboard`);
 
   conn.onerror = err => {
     console.log('Connection error:', err);

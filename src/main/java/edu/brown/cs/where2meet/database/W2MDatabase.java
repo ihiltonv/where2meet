@@ -157,18 +157,15 @@ public class W2MDatabase {
   public static void addUser(User user) {
     Long id = user.getId();
     String name = user.getName();
-    List<Double> coords = user.getLocation();
-    double lat = coords.get(0);
-    double lng = coords.get(1);
+
     try (PreparedStatement prep = conn
-        .prepareStatement("INSERT INTO users VALUES(?,?,?,?)")) {
+        .prepareStatement("INSERT INTO users VALUES(?,?)")) {
       prep.setLong(1, id);
       prep.setString(2, name);
-      prep.setDouble(3, lat);
-      prep.setDouble(4, lng);
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
+      e.printStackTrace();
     }
   }
 
@@ -194,6 +191,7 @@ public class W2MDatabase {
         }
       } catch (SQLException e) {
         System.out.println(e);
+        e.printStackTrace();
       }
       return u;
     } catch (ExecutionException e) {
@@ -211,7 +209,7 @@ public class W2MDatabase {
    *          the id of the event.
    * @return the id of the user with the corresponding name.
    */
-  public static Long getIdFromName(String name, Long event) {
+  public static User getUserFromName(String name, Long event) {
     Long uid = null;
     try (PreparedStatement prep = conn.prepareStatement(
         "SELECT u.id FROM users AS u, events_users AS eu WHERE eu.event_id = ? "
@@ -224,9 +222,13 @@ public class W2MDatabase {
       }
     } catch (SQLException e) {
       System.out.println(e);
-      return null;
+
     }
-    return uid;
+
+    if (uid == null) {
+      return new User(name);
+    }
+    return W2MDatabase.getUser(uid);
 
   }
 
@@ -323,31 +325,24 @@ public class W2MDatabase {
   public static User loadUser(Long id) {
 
     String name = "";
-    double lat = 0;
-    double lng = 0;
 
     try (PreparedStatement prep = conn
-        .prepareStatement("SELECT * FROM users WHERE id = ?;")) {
+        .prepareStatement("SELECT name FROM users WHERE id = ?;")) {
       prep.setLong(1, id);
 
       try (ResultSet rs = prep.executeQuery()) {
         while (rs.next()) {
-          name = rs.getString(2);
-          lat = rs.getDouble(3);
-          lng = rs.getDouble(4);
+          name = rs.getString(1);
+
         }
-      } catch (SQLException e) {
-        System.out.println(e);
       }
+
     } catch (SQLException e) {
       System.out.println(e);
+      e.printStackTrace();
     }
     Set<Long> events = new HashSet<>();
-
-    List<Double> coords = new ArrayList<>();
-    coords.add(lat);
-    coords.add(lng);
-    return new User(id, name, events, coords);
+    return new User(id, name, events);
   }
 
   /**
@@ -444,7 +439,7 @@ public class W2MDatabase {
   public void createdb() {
     try (PreparedStatement prep = conn
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, "
-            + "'name' TEXT, 'latitude' INTEGER, 'longitude' INTEGER);")) {
+            + "'name' TEXT);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);

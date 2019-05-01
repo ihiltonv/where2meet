@@ -1,9 +1,7 @@
 package edu.brown.cs.where2meet.event;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.HashMap;
 
 /**
  * A class to model users for the application.
@@ -14,7 +12,6 @@ public class User {
   private String name;
   private Long id;
   private Set<Long> events;
-  private List<Double> coordinates;
   private int price;
   private double dist;
   private double rating;
@@ -29,11 +26,11 @@ public class User {
    * @param coords
    *          the coordinates of the user's location
    */
-  public User(String name, List<Double> coords) {
+  public User(String name) {
     this.name = name;
     this.id = System.currentTimeMillis();
     this.events = new HashSet<>();
-    this.coordinates = coords;
+
     resetFilters();
 
     instantiateSuggestions();
@@ -49,11 +46,10 @@ public class User {
    * @param coords
    *          the coordinates of the user's location.
    */
-  public User(String name, Set<Long> events, List<Double> coords) {
+  public User(String name, Set<Long> events) {
     this.name = name;
     this.id = System.currentTimeMillis();
     this.events = events;
-    this.coordinates = coords;
     instantiateSuggestions();
     resetFilters();
 
@@ -71,11 +67,10 @@ public class User {
    * @param coords
    *          the coordinates of the user's location.
    */
-  public User(Long id, String name, Set<Long> events, List<Double> coords) {
+  public User(Long id, String name, Set<Long> events) {
     this.name = name;
     this.id = id;
     this.events = events;
-    this.coordinates = coords;
     instantiateSuggestions();
     resetFilters();
   }
@@ -171,15 +166,6 @@ public class User {
       return false;
     }
     return true;
-  }
-
-  /**
-   * gets the coordinates of the user's location.
-   *
-   * @return the coordinates of the user's location.
-   */
-  public List<Double> getLocation() {
-    return this.coordinates;
   }
 
   /**
