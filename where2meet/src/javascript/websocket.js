@@ -6,9 +6,7 @@ const MESSAGE_TYPE = {
 
 let conn;
 
-//event is a js object with fields id, name, lat, lng, date, time.
-//user is a js object with fields name, lat, lng
-const setup_live_scores = (event, user) => {
+const setup_live_scores = () => {
     conn = new WebSocket(`wss://${window.location.host}/leaderboard`);
 
   conn.onerror = err => {
@@ -20,16 +18,11 @@ const setup_live_scores = (event, user) => {
 
       switch (data.type) {
           case MESSAGE_TYPE.SCORING:
-            let s1 = JSON.parse(data.s1);
-            let s2 = JSON.parse(data.s2);
-            let s3 = JSON.parse(data.s3);
-            s1 = JSON.parse(s1);
-            s2 = JSON.parse(s2);
-            s3 = JSON.parse(s3);
-            //TODO: send suggestions to leaderboard.
-
+            //TODO: send suggestions to leaderboard
   };
 }
+
+setup_live_scores();
 
 //TODO: add this to wherever the user updates the leaderboard.
 function updateLeaderboard(votes, user, event){

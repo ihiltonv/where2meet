@@ -1,7 +1,6 @@
 package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -82,6 +81,11 @@ public class W2MDatabaseTest {
     ecoords.add(1.0);
     ecoords.add(2.0);
     Event test = new Event("/n/4", userList, ecoords, "date", "time");
+    Suggestion s1 = new Suggestion();
+    s1.setLatLonLoc(1.0, 1.0, "loc");
+    List<Suggestion> suggList = new ArrayList<>();
+    suggList.add(s1);
+    test.setSuggestions(suggList);
     Long eid = test.getId();
     W2MDatabase.addEvent(test);
 
@@ -117,6 +121,10 @@ public class W2MDatabaseTest {
       eTest2 = new Event("/n/7", coords, "date2", "time2");
     }
 
+    List<Suggestion> suggList = new ArrayList<>();
+    eTest1.setSuggestions(suggList);
+    eTest2.setSuggestions(suggList);
+
     Long eid1 = eTest1.getId();
     Long eid2 = eTest2.getId();
     eTest1.addUser(uTest.getId());
@@ -149,16 +157,21 @@ public class W2MDatabaseTest {
   @Test
   public void testUpdateUser() {
     System.out.println("TestUpdateUser\n");
-    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
-    // db.cleardb();
-    // db.createdb();
+
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
     User uTest1 = new User("/n/1");
+
+    Suggestion s1 = new Suggestion();
+    s1.setLatLonLoc(1.0, 1.0, "loc");
+    List<Suggestion> suggList = new ArrayList<>();
+    suggList.add(s1);
+
     W2MDatabase.addUser(uTest1);
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
+    eTest1.setSuggestions(suggList);
     Long eid = eTest1.getId();
     W2MDatabase.addEvent(eTest1);
     eTest1.addUser(uid);
@@ -182,28 +195,33 @@ public class W2MDatabaseTest {
   }
 
   @Test
-  public void testGetIdFromName() {
-    System.out.println("TestGetIdFromName\n");
-    // W2MDatabase db = new W2MDatabase("data/testdb2.sqlite3");
-    // db.cleardb();
-    // db.createdb();
+  public void testGetUserFromName() {
+    System.out.println("TestGetUserFromName\n");
+
     List<Double> coords = new ArrayList<>();
     coords.add(1.0);
     coords.add(2.0);
     User uTest1 = new User("username");
     Long uid = uTest1.getId();
     Event eTest1 = new Event("/e/1", coords, "date", "time");
+    Suggestion s1 = new Suggestion();
+    s1.setLatLonLoc(1.0, 1.0, "loc");
+    List<Suggestion> suggList = new ArrayList<>();
+    suggList.add(s1);
+
     Long eid = eTest1.getId();
 
     while (uid.equals(eid)) {
       eTest1 = new Event("/e/1", coords, "date", "time");
       eid = eTest1.getId();
     }
-    W2MDatabase.addUser(uTest1);
+    eTest1.setSuggestions(suggList);
     W2MDatabase.addEvent(eTest1);
+    W2MDatabase.addUser(uTest1);
+    // W2MDatabase.addEvent(eTest1);
+
     User id = W2MDatabase.getUserFromName("username", eid);
     assertNotNull(id);
-    assertNotEquals(id, uTest1);
 
     eTest1.addUser(uid);
     id = W2MDatabase.getUserFromName("username", eid);
@@ -222,6 +240,11 @@ public class W2MDatabaseTest {
     coords.add(1.0);
     coords.add(2.0);
     Event test1 = new Event("test1", coords, "date", "time");
+    Suggestion s1 = new Suggestion();
+    s1.setLatLonLoc(1.0, 1.0, "loc");
+    List<Suggestion> suggList = new ArrayList<>();
+    suggList.add(s1);
+    test1.setSuggestions(suggList);
 
     Long e1 = test1.getId();
 
@@ -287,6 +310,12 @@ public class W2MDatabaseTest {
     ecoords.add(1.0);
     ecoords.add(2.0);
     Event test = new Event("/n/4", ecoords, "date", "time");
+    Suggestion s1 = new Suggestion();
+    s1.setLatLonLoc(1.0, 1.0, "loc");
+    List<Suggestion> suggList = new ArrayList<>();
+    // suggList.add(s1);
+    test.setSuggestions(suggList);
+
     Long eid = test.getId();
     W2MDatabase.addEvent(test);
     Event ret = W2MDatabase.getEvent(eid);
