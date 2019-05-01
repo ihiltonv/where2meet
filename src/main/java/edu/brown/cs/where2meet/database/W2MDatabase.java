@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 
-import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.*;
 import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
 
@@ -157,15 +157,10 @@ public class W2MDatabase {
   public static void addUser(User user) {
     Long id = user.getId();
     String name = user.getName();
-    List<Double> coords = user.getLocation();
-    double lat = coords.get(0);
-    double lng = coords.get(1);
     try (PreparedStatement prep = conn
-        .prepareStatement("INSERT INTO users VALUES(?,?,?,?)")) {
+        .prepareStatement("INSERT INTO users VALUES(?,?)")) {
       prep.setLong(1, id);
       prep.setString(2, name);
-      prep.setDouble(3, lat);
-      prep.setDouble(4, lng);
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -347,7 +342,7 @@ public class W2MDatabase {
     List<Double> coords = new ArrayList<>();
     coords.add(lat);
     coords.add(lng);
-    return new User(id, name, events, coords);
+    return new User(id, name, events);
   }
 
   /**

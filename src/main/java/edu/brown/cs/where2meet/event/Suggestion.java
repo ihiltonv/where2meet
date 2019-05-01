@@ -338,6 +338,36 @@ public class Suggestion {
     this.venue = venue;
   }
 
+  public double suggScore(Event event) {
+
+    //Haversine distance to venue from event
+    double dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
+    //Value of the venue in terms of price per cost
+    double value = this.rating / (1.0 * this.price);
+    //A weight for the rating of the restaurant
+    double c = 0.25 * value;
+    //The distance is perceived logarithmically, so it is adjusted and inverted
+    //The adjusted distance is multiplied by a value/quality metric
+    double score = (1.0 / Math.log(dist)) * (value + c * this.rating);
+
+    return score;
+  }
+
+  public static double haversineDist(double lat1, double lon1, double lat2, double lon2) {
+    final int radius = 6371; //kilometers
+
+//    left part of the square root in haversine's
+    double left =  Math.pow(Math.sin((lat2 - lat1) / 2.0), 2.0);
+//    right part of the square root in haversine's
+    double right = Math.cos(lat1) * Math.cos(lat2)
+            * Math.pow(Math.sin((lon2 - lon1) / 2.0), 2.0);
+
+
+    double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
+
+    return dist;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
