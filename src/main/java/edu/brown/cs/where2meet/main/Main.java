@@ -186,30 +186,31 @@ public final class Main {
       double distance = 0.0;
       List<Suggestion> initialSuggestionsList = new ArrayList<>();
       List<Double> location = new ArrayList<>();
+      JsonArray cats = new JsonArray();
       if (event == null) {
         error = true;
         errorMsg = "No event found with ID " + id;
       } else {
 
         name = event.getName(); // get the name of the group
-        time = event.getTime(); // make sure the time is in this format, in
-        // military
-        // time so.. 11pm will be 23:00
-        date = event.getDate(); // again, need to be in this form
+        time = event.getTime();
+        date = event.getDate();
         location = event.getLocation();
 
-        initialSuggestionsList = event.getBestSuggestions(); // give a default
-                                                             // range of
-                                                             // suggestions,
-                                                             // will do
+        initialSuggestionsList = event.getBestSuggestions();
+        // give a default range of suggestions, will do
         // filtering in client
+
+        cats = event.getAllCats();
       }
 
       Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
           .put("eventID", id).put("groupName", name).put("meetingTime", time)
           .put("meetingDate", date)
           .put("suggestionsList", initialSuggestionsList)
-          .put("location", location).put("error", error)
+          .put("location", location)
+          .put("cats", cats)
+          .put("error", error)
           .put("errorMsg", errorMsg).build();
 
       return Main.GSON.toJson(variables);

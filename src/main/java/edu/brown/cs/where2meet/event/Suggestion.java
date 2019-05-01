@@ -399,7 +399,7 @@ public class Suggestion {
     //Haversine distance to venue from event
     double dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
     //Value of the venue in terms of price per cost
-    double value = this.rating / (1.0 * this.price);
+    double value = Math.log(this.rating / (1.0 * this.price) + 2.5);
     //A weight for the rating of the restaurant
     double c = 0.25 * value;
     //The distance is perceived logarithmically, so it is adjusted and inverted
