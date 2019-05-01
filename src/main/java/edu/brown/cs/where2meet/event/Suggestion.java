@@ -408,19 +408,29 @@ public class Suggestion {
     return score;
   }
 
-  public static double haversineDist(double lat1, double lon1, double lat2, double lon2) {
+  public static double haversineDist(Double lat1, Double lon1, Double lat2, Double lon2) {
     final double radius = 3958.8; //miles
 
 //    left part of the square root in haversine's
-    double left =  Math.pow(Math.sin((lat2 - lat1) / 2.0), 2.0);
+    double left =  Math.pow(Math.sin(degreeToRadian(lat2 - lat1) / 2.0), 2.0);
 //    right part of the square root in haversine's
-    double right = Math.cos(lat1) * Math.cos(lat2)
-            * Math.pow(Math.sin((lon2 - lon1) / 2.0), 2.0);
+    double right = Math.cos(degreeToRadian(lat1)) * Math.cos(degreeToRadian(lat2))
+            * Math.pow(Math.sin(degreeToRadian(lon2 - lon1) / 2.0), 2.0);
 
 
-    double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
+    Double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
+    
 
     return dist;
+  }
+
+  /**
+   * This function converts degrees to radians.
+   * @param degree - a degree measurement
+   * @return the degree measure in radians
+   */
+  public static double degreeToRadian(Double degree) {
+    return degree * (Math.PI/180.0);
   }
 
   @Override

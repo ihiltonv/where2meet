@@ -126,7 +126,6 @@ public class Event {
         this.coordinates.get(1), categories, Event.DEFAULT_RADIUS);
     for (Suggestion sug : this.suggestions) {
       sug.setDistFromEvent(this);
-      System.out.println(sug.getVenue());
       sug.getDist();
     }
   }
