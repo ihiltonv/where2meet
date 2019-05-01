@@ -38,27 +38,6 @@ public class VenueRanker {
     Collections.reverse(this.rankings);
   }
 
-  /**
-   * This method allows a user to input a relative change
-   * in score for an existing venue (e.g. +3) rather than
-   * an absolute score.
-   * @param v
-   * @param s
-   */
-  public void updateRankRelative(Suggestion v, Double s) {
-    Double newScore = s;
-    VenueScore update = new VenueScore(v, 0);
-    for(VenueScore ven : this.rankings) {
-      if(ven.equals(update)) {
-        newScore += ven.score();
-        this.rankings.remove(ven);
-      }
-    }
-    update = new VenueScore(v, newScore);
-    this.rankings.add(update);
-    Collections.sort(this.rankings);
-    Collections.reverse(this.rankings);
-  }
 
   private class VenueScore implements Comparable<VenueScore>{
     private double score;
