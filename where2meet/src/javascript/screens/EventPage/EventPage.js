@@ -44,6 +44,7 @@ class EventPage extends React.Component {
             opacity: 1,
             groupName: "Weekend Shenanigans",
             userName: "",
+            userID: 0,
             isNameModelShowing: false,
             meetingTime: "10:30",
             meetingDate: "2019-10-5",
@@ -75,18 +76,10 @@ class EventPage extends React.Component {
         });
     };
 
-    getDataFromServer(username) {
-        this.setState({username});
-        API.post("")
-    }
-
     componentDidMount() {
         let eventId = this.props.match.params.id;
-
-        console.log(eventId);
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
-            console.log(response.data);
             let data = response.data;
             this.setState({
                 groupName: data.groupName,
@@ -102,9 +95,35 @@ class EventPage extends React.Component {
     }
 
     submitName = (name) => {
-        console.log(name);
-        this.setState({userName: name});
-        this.closeModalHandler();
+        let eventId = this.props.match.params.id;
+        console.log(eventId);
+        let body = {
+            user: name,
+            event: eventId
+        };
+
+        API.post(`/newuser`, body).then((response) => {
+            let data = response.data;
+            console.log(data);
+            const error = data.error;
+            const existingUser = data.existingUser;
+            if (error) {
+                const msg = data.errorMsg;
+                alert(msg);
+            }
+            if (existingUser) {
+                alert("This user already exists, if it is not you, please enter another name!")
+            }
+            this.setState({
+                userName: name,
+                userID: data.userID
+            });
+            this.closeModalHandler();
+        })
+            .catch(function (error) {
+                console.log(error);
+            });
+
     };
 
     buttonClicked = (event) => {
@@ -139,8 +158,6 @@ class EventPage extends React.Component {
                 }
 
             }
-
-            console.log(oldList);
             this.setState({yourPicksList: oldList})
 
         }
@@ -166,9 +183,7 @@ class EventPage extends React.Component {
         if (object.rating >= popularity && popularity !== 0) {
             return true;
         }
-
         return false;
-
     };
     /*methods for filtering suggestions*/
     filterSuggestions = () => {

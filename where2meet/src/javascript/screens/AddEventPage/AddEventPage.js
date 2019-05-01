@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import '../../../css/App.css';
 import Modal from '../../components/Modal/Modal.js'
 import API from '../../utils/API'
 
 let config = {
-    headers: { 'Access-Control-Allow-Origin': '*' }
+    headers: {'Access-Control-Allow-Origin': '*'}
 };
 
 export default class AddEventPage extends Component {
@@ -40,7 +40,7 @@ export default class AddEventPage extends Component {
                 time: time,
                 categories: categories,
             };
-            console.log(body);
+
             API.post('/event', body).then((response) => {
                 let id = response.data.id;
                 this.props.history.push(`/events/${id}`);

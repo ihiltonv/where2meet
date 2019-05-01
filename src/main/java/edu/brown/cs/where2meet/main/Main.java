@@ -1,18 +1,9 @@
 package edu.brown.cs.where2meet.main;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
@@ -21,12 +12,19 @@ import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import spark.ExceptionHandler;
-import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public final class Main {
 
@@ -106,9 +104,9 @@ public final class Main {
     // FreeMarkerEngine freeMarker = Main.createEngine();
 
     // Setup Spark Routes
-    Spark.post("/event", new EventHandler(wmu));
-    Spark.get("/event/:id", new GetEventDataHandler(wmu));
-    Spark.post("/newuser", new UserHandler(wmu));
+    Spark.post("/event", new EventHandler(Main.wmu));
+    Spark.get("/event/:id", new GetEventDataHandler(Main.wmu));
+    Spark.post("/newuser", new UserHandler(Main.wmu));
 
   }
 
@@ -232,9 +230,15 @@ public final class Main {
 
     @Override
     public String handle(Request req, Response res) {
-      QueryParamsMap qm = req.queryMap();
-      Long eventID = Long.parseLong(qm.value("event"));
-      String username = qm.value("user");
+      // get the JSON String
+      String data = req.body();
+
+      // get the string as an object
+      JsonObject json = Main.GSON.fromJson(data, JsonObject.class);
+
+      Long eventID = json.get("event").getAsLong();
+
+      String username = json.get("user").getAsString();
 
       boolean error = false;
       String errorMsg = "";
