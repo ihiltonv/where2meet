@@ -26,7 +26,6 @@ public class Event {
   private VenueRanker topRanker;
   // private Suggestion[] suggestions;
   private List<Suggestion> suggestions;
-  private HashMap<Long, HashMap<Long, Integer>> votes;
 
   private static final int DEFAULT_RADIUS = 8050;
 
@@ -170,7 +169,6 @@ public class Event {
       this.users.add(u);
       User user = W2MDatabase.getUser(u);
       user.addEvent(this.id);
-      this.votes.put(u, new HashMap<>());
       W2MDatabase.addUserToEvent(user, this.id);
     }
   }

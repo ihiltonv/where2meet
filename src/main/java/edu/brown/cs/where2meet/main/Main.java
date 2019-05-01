@@ -110,8 +110,8 @@ public final class Main {
 
     // Setup Spark Routes
     Spark.post("/event", new EventHandler(this.wmu));
-    Spark.post("/event/:id", new GetEventDataHandler(this.wmu));
-    Spark.post("/vote", new VoteHandler());
+    Spark.get("/event/:id", new GetEventDataHandler(this.wmu));
+    Spark.post("/newuser", new UserHandler());
   }
 
   /**
@@ -175,15 +175,11 @@ public final class Main {
 
     @Override
     public String handle(Request req, Response res) {
+      boolean error = false;
+      String errorMsg = "";
       // get the id from the url
       String id = req.params(":id");
-      QueryParamsMap qm = req.queryMap();
-      String username = qm.value("userName");
-      User newUser = new User(username);
-      this.wmu.wmd.addUser(newUser);
 
-
-      //TODO: from the database, get the following info
       Event event = this.wmu.wmd.getEvent(Long.parseLong(id));
       String name = event.getName(); // get the name of the group
       String time = event
@@ -199,7 +195,8 @@ public final class Main {
               .put("groupName", name).put("meetingTime", time)
               .put("meetingDate", date)
               .put("suggestionsList", initialSuggestionsList)
-              .put("userID", newUser.getId()).build();
+              .put("error", error)
+              .put("errorMsg", errorMsg).build();
 
 
       return Main.GSON.toJson(variables);
@@ -210,19 +207,25 @@ public final class Main {
    * This class handles a user voting in a specific
    * event.
    */
-  public static class VoteHandler implements Route {
+  public static class UserHandler implements Route {
 
-    //return empty json array for leaderboard and picks
-    //return a list (ranked of all suggestions)
-    //return id
+    W2MUniverse wmu;
+
+    public UserHandler(W2MUniverse wmu) {
+      this.wmu = wmu;
+    }
+
+
     @Override
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
+      String eventID = qm.value("event");
+      String userID = qm.value("user");
 
-      //TODO: cast votes in event, handle exception
+      boolean error = false;
+      String errorMsg = "";
 
 
-      //TODO: build the json
       Map<String, Object> variables =
           ImmutableMap.of("testKeyVote", "testValVote");
 
