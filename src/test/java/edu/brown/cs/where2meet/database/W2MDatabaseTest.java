@@ -1,6 +1,7 @@
 package edu.brown.cs.where2meet.database;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -350,6 +351,40 @@ public class W2MDatabaseTest {
     assertEquals(sugg.size(), 2);
     assertEquals(sugg.get(0).getVenue(), "B");
     assertEquals(sugg.get(1).getVenue(), "A");
+
+  }
+
+  @Test
+  public void testUserExists() {
+    System.out.println("TestUserExists\n");
+
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(2.0);
+    User uTest1 = new User("username");
+    Long uid = uTest1.getId();
+    Event eTest1 = new Event("/e/1", coords, "date", "time");
+    Suggestion s1 = new Suggestion();
+    s1.setLatLonLoc(1.0, 1.0, "loc");
+    List<Suggestion> suggList = new ArrayList<>();
+    suggList.add(s1);
+
+    Long eid = eTest1.getId();
+
+    while (uid.equals(eid)) {
+      eTest1 = new Event("/e/1", coords, "date", "time");
+      eid = eTest1.getId();
+    }
+    eTest1.setSuggestions(suggList);
+    W2MDatabase.addEvent(eTest1);
+    W2MDatabase.addUser(uTest1);
+
+    boolean inDb = W2MDatabase.userExists("username", eid);
+    assertFalse(inDb);
+
+    eTest1.addUser(uid);
+    inDb = W2MDatabase.userExists("username", eid);
+    assertTrue(inDb);
 
   }
 
