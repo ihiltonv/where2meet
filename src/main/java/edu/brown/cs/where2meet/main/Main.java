@@ -2,9 +2,11 @@ package edu.brown.cs.where2meet.main;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import edu.brown.cs.where2meet.event.*;
+import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.event.User;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -121,7 +123,9 @@ public final class Main {
 
     W2MUniverse wmu;
 
-    public EventHandler(W2MUniverse wmu){ this.wmu = wmu;}
+    public EventHandler(W2MUniverse wmu) {
+      this.wmu = wmu;
+    }
 
     @Override
     public String handle(Request req, Response res) {
@@ -137,14 +141,16 @@ public final class Main {
       double lon = json.get("lon").getAsDouble();
       String date = json.get("date").getAsString();
       String time = json.get("time").getAsString();
-
-
+      JsonArray categories = json.getAsJsonArray("categories");
+      List<String> cats = new ArrayList<>();
+      categories.forEach(x -> cats.add(x.getAsString()));
       List<Double> coordinates = new ArrayList<>();
       coordinates.add(lat);
       coordinates.add(lon);
 
       //create an event and store it in the database
       Event event = new Event(name, coordinates, date, time);
+      event.instantiateSuggestions(cats);
       this.wmu.wmd.addEvent(event);
 
       List leaderboard = new ArrayList();
@@ -156,7 +162,9 @@ public final class Main {
 
 
       //TODO: Build the json
-      Map<String, Object> variables = ImmutableMap.of("id", event.getId(), "leaderboard", leaderboard, "suggestions", suggestions);
+      Map<String, Object> variables = ImmutableMap
+          .of("id", event.getId(), "leaderboard", leaderboard, "suggestions",
+              suggestions);
 
 
       return Main.GSON.toJson(variables);
@@ -170,7 +178,9 @@ public final class Main {
 
     W2MUniverse wmu;
 
-    public GetEventDataHandler(W2MUniverse wmu){ this.wmu = wmu;}
+    public GetEventDataHandler(W2MUniverse wmu) {
+      this.wmu = wmu;
+    }
 
 
     @Override
@@ -186,8 +196,8 @@ public final class Main {
       //TODO: from the database, get the following info
       Event event = this.wmu.wmd.getEvent(Long.parseLong(id));
       String name = event.getName(); // get the name of the group
-      String time = event
-          .getTime(); // make sure the time is in this format, in military
+      String time =
+          event.getTime(); // make sure the time is in this format, in military
       // time so.. 11pm will be 23:00
       String date = event.getDate(); // again, need to be in this form
       List<Suggestion> initialSuggestionsList =

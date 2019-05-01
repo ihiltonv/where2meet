@@ -29,7 +29,7 @@ export default class AddEventPage extends Component {
 
     goToEvent = (name, lat, lon, date, time, categories) => {
 
-        if ((lat === undefined || lon === undefined || name === "" || date === "" || time === "" || categories === undefined || categories.length == 0)) {
+        if ((lat === undefined || lon === undefined || name === "" || date === "" || time === "" || categories === undefined || categories.length === 0)) {
             alert("Please enter all fields!");
         } else {
             let body = {
