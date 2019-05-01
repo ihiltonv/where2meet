@@ -234,7 +234,7 @@ public class Event {
   // }
 
   public List<Suggestion> getBestSuggestions() {
-    return new ArrayList<>();
+    return this.suggestions;
   }
 
   /**
