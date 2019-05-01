@@ -23,8 +23,6 @@ public class User {
    *
    * @param name
    *          the name of the user
-   * @param coords
-   *          the coordinates of the user's location
    */
   public User(String name) {
     this.name = name;
@@ -43,8 +41,6 @@ public class User {
    *          the name of the user
    * @param events
    *          the events that the user is in.
-   * @param coords
-   *          the coordinates of the user's location.
    */
   public User(String name, Set<Long> events) {
     this.name = name;
@@ -64,8 +60,6 @@ public class User {
    *          the name of the user
    * @param events
    *          the events that the user is in.
-   * @param coords
-   *          the coordinates of the user's location.
    */
   public User(Long id, String name, Set<Long> events) {
     this.name = name;

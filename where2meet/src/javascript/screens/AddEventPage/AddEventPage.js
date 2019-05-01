@@ -1,10 +1,10 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import '../../../css/App.css';
 import Modal from '../../components/Modal/Modal.js'
 import API from '../../utils/API'
 
 let config = {
-    headers: {'Access-Control-Allow-Origin': '*'}
+    headers: { 'Access-Control-Allow-Origin': '*' }
 };
 
 export default class AddEventPage extends Component {
@@ -27,9 +27,9 @@ export default class AddEventPage extends Component {
         });
     };
 
-    goToEvent = (name, lat, lon, date, time) => {
+    goToEvent = (name, lat, lon, date, time, categories) => {
 
-        if ((lat === undefined || lon === undefined || name === "" || date === "" || time === "")) {
+        if ((lat === undefined || lon === undefined || name === "" || date === "" || time === "" || categories === undefined || categories.length == 0)) {
             alert("Please enter all fields!");
         } else {
             let body = {
@@ -38,6 +38,7 @@ export default class AddEventPage extends Component {
                 lon: lon,
                 date: date,
                 time: time,
+                categories: categories,
             };
             console.log(body);
             API.post('/event', body).then((response) => {

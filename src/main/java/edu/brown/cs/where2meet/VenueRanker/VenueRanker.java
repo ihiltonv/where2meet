@@ -1,6 +1,6 @@
 package edu.brown.cs.where2meet.VenueRanker;
 
-import edu.brown.cs.where2meet.event.Venue;
+import edu.brown.cs.where2meet.event.Suggestion;
 
 import java.util.*;
 
@@ -12,8 +12,8 @@ public class VenueRanker {
     this.rankings = new ArrayList<>();
   }
 
-  public List<Venue> getRanked() {
-    List<Venue> result = new ArrayList<>();
+  public List<Suggestion> getRanked() {
+    List<Suggestion> result = new ArrayList<>();
     for(VenueScore v : this.rankings) {
       result.add(v.getVenue());
     }
@@ -26,7 +26,7 @@ public class VenueRanker {
    * @param v
    * @param s
    */
-  public void updateRank(Venue v, Double s) {
+  public void updateRank(Suggestion v, Double s) {
     VenueScore update = new VenueScore(v, s);
     for(VenueScore ven : this.rankings) {
       if(ven.equals(update)) {
@@ -45,7 +45,7 @@ public class VenueRanker {
    * @param v
    * @param s
    */
-  public void updateRankRelative(Venue v, Double s) {
+  public void updateRankRelative(Suggestion v, Double s) {
     Double newScore = s;
     VenueScore update = new VenueScore(v, 0);
     for(VenueScore ven : this.rankings) {
@@ -62,10 +62,10 @@ public class VenueRanker {
 
   private class VenueScore implements Comparable<VenueScore>{
     private double score;
-    private Venue venue;
+    private Suggestion venue;
     private Long id;
 
-    public VenueScore(Venue venue, double score) {
+    public VenueScore(Suggestion venue, double score) {
       this.score = score;
       this.venue = venue;
       this.id = venue.getId();
@@ -79,7 +79,7 @@ public class VenueRanker {
       return id;
     }
 
-    public Venue getVenue() {
+    public Suggestion getVenue() {
       return this.venue;
     }
 

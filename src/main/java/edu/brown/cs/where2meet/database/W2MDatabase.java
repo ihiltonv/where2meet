@@ -342,6 +342,7 @@ public class W2MDatabase {
       e.printStackTrace();
     }
     Set<Long> events = new HashSet<>();
+
     return new User(id, name, events);
   }
 

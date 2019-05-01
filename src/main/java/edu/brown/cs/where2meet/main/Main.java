@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.event.User;
 import edu.brown.cs.where2meet.websockets.EventWebSocket;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
@@ -112,15 +113,21 @@ public final class Main {
 
     // Setup Spark Routes
     Spark.webSocket("/leaderboard", EventWebSocket.class);
-    Spark.post("/event", new EventHandler());
-    Spark.get("/event/:id", new GetEventDataHandler());
-    Spark.post("/vote", new EventHandler());
+    Spark.post("/event", new EventHandler(wmu));
+    Spark.get("/event/:id", new GetEventDataHandler(wmu));
+    Spark.post("/vote", new EventHandler(wmu));
   }
 
   /**
    * This class handles the creation of new events.
    */
   public static class EventHandler implements Route {
+
+    W2MUniverse wmu;
+
+    public EventHandler(W2MUniverse wmu) {
+      this.wmu = wmu;
+    }
 
     @Override
     public String handle(Request req, Response res) {
@@ -141,7 +148,12 @@ public final class Main {
       coordinates.add(lat);
       coordinates.add(lon);
 
+      // create an event and store it in the database
       Event event = new Event(name, coordinates, date, time);
+      this.wmu.wmd.addEvent(event);
+
+      List leaderboard = new ArrayList();
+      List suggestions = new ArrayList();
 
       // return empty json array for leaderboard and picks
       // return a list (ranked of all suggestions)
@@ -159,21 +171,30 @@ public final class Main {
    */
   public static class GetEventDataHandler implements Route {
 
+    W2MUniverse wmu;
+
+    public GetEventDataHandler(W2MUniverse wmu) {
+      this.wmu = wmu;
+    }
+
     @Override
     public String handle(Request req, Response res) {
       // get the id from the url
       String id = req.params(":id");
+      QueryParamsMap qm = req.queryMap();
+      String username = qm.value("userName");
+      User newUser = new User(username);
+      this.wmu.wmd.addUser(newUser);
 
       // TODO: from the database, get the following info
       Event event = Main.wmu.wmd.getEvent(Long.parseLong(id));
+
       String name = event.getName(); // get the name of the group
       String time = event.getTime(); // make sure the time is in this format, in
                                      // military
       // time so.. 11pm will be 23:00
       String date = event.getDate(); // again, need to be in this form
-      List<Suggestion> leaderBoardList = new ArrayList<>(); // please send the
-                                                            // stored list of
-                                                            // votes
+
       List<Suggestion> initialSuggestionsList = new ArrayList<>(); // give a
                                                                    // default
                                                                    // range of
@@ -183,28 +204,9 @@ public final class Main {
 
       Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
           .put("eventID", id).put("groupName", name).put("meetingTime", time)
-          .put("meetingDate", date).put("leaderBoardList", leaderBoardList)
-          .put("suggestionsList", initialSuggestionsList).build();
-
-      return Main.GSON.toJson(variables);
-    }
-  }
-
-  /**
-   * This class handles a user voting in a specific event.
-   */
-  public static class VoteHandler implements Route {
-
-    // return empty json array for leaderboard and picks
-    // return a list (ranked of all suggestions)
-    // return id
-    @Override
-    public String handle(Request req, Response res) {
-      QueryParamsMap qm = req.queryMap();
-
-      // TODO: build the json
-      Map<String, Object> variables = ImmutableMap.of("testKeyVote",
-          "testValVote");
+          .put("meetingDate", date)
+          .put("suggestionsList", initialSuggestionsList)
+          .put("userID", newUser.getId()).build();
 
       return Main.GSON.toJson(variables);
     }
@@ -212,7 +214,7 @@ public final class Main {
 
   /**
    * Display an error page when an exception occurs in the server.
-   * 
+   *
    * @author jj
    */
   private static class ExceptionPrinter implements ExceptionHandler {
