@@ -174,7 +174,7 @@ class EventPage extends React.Component {
         // filter based on search radius
         if (searchRadius[0] === 0 && searchRadius[1] === 0) {
             return true
-        } else if (object.dist >= searchRadius[0] && searchRadius[1] >= object.dist) {
+        } else if (object.dist >= searchRadius[0] / 10.0 && searchRadius[1] / 10.0 >= object.dist) {
             return true;
         }
         return false

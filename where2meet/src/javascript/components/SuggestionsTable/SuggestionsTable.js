@@ -16,10 +16,9 @@ class SuggestionsTable extends React.Component {
                     {data.map((data, index) => (
                         <div className={"tableRow"} key={index}>
                             {showRank && <div className={"rankNum"} align="center">{index + 1}</div>}
-                            <div className={"imgContainer"}>
-                                <img className={"img"}
-                                     src={data.photo ? data.photo : require('../../../resources/icons/icecream.jpg')}/>
-                            </div>
+                            <div className={"imgContainer"} style={{"background-image": `url(${data.photo})`}}/>
+
+
                             <div className={"nameAddressRating"}>
 
                                 <div className={"dollarVotes"}>
@@ -27,9 +26,9 @@ class SuggestionsTable extends React.Component {
                                         <div className={"category"}>
                                             {data.category}
                                         </div>
-                                        <a className={"venueName"} href={data.url}>
-                                            <div>{data.venue}</div>
-                                        </a>
+                                        <div className={"venueName"}>
+                                            <a className={"venueName"} href={data.url}>{data.venue}</a>
+                                        </div>
                                     </div>
                                     <div className={"voteButtonContainer"}>
                                         <button id={data.id} className={"voteButton"}
@@ -53,6 +52,7 @@ class SuggestionsTable extends React.Component {
                                     <div className={"voteDollar"}>
                                         <div className={"votes"}>👍 {data.votes} </div>
                                         <DollarSignComponent dollars={data.price}/>
+                                        <div className={"dist"}>  {data.dist.toFixed(2)} mi</div>
                                     </div>
                                     <StarRatings
                                         rating={data.rating}
