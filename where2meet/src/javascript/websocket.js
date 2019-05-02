@@ -24,23 +24,21 @@ const setup_live_scores = () => {
 }
 
 console.log("launching");
-setup_live_scores();
 
 //TODO: add this to wherever the user updates the leaderboard.
 function updateLeaderboard(votes, user_id, event_id, suggestion){
-    let obj = '{"type":'+string(MESSAGE_TYPE.UPDATE)+',"votes:"'+string(votes)+
-    ',"user:"'+string(user)+',"event":'+string(event_id)+ ',"suggestion":'+string(suggestion)+'}';
+    let obj = '{"type":'+MESSAGE_TYPE.UPDATE +',"votes:"'+ votes +
+    ',"user:"'+ user_id+',"event":'+event_id+ ',"suggestion":'+suggestion+'}';
     let msg = JSON.parse(JSON.stringify(obj));
     conn.send(obj);
 
 
-}
+};
 
-//TODO: add this to werever the user is created(after modal is filled out).
 function send_connection(event_id){
-    let obj = '{"type": ' + string(MESSAGE_TYPE.CONNECT) +', "event_id":' +
-      string(event_id)'}';
-
-      let msg = JSON.parse(JSON.stringify(obj));
-      conn.send(obj);
+    let obj = '{"type": ' +MESSAGE_TYPE.CONNECT +', "event_id":' +
+      event_id+'}';
+    let msg = JSON.parse(JSON.stringify(obj));
+    conn.send(obj);
+};
 }

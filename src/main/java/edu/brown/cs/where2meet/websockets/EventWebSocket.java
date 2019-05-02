@@ -108,9 +108,20 @@ public class EventWebSocket {
     Long eid = received.get("event").getAsLong();
     User user = W2MDatabase.getUserWithEvent(uid, eid);
     Event event = W2MDatabase.getEvent(eid);
+    List<Suggestion> eventSuggestions = event.getSuggestions();
+    String sId = received.get("suggestion").getAsString();
     // get suggestion id rather than suggestion as a json object
-    Suggestion newSugg = W2MDatabase
-        .getSuggestion(received.get("suggestion").getAsString());
+    Suggestion newSugg = null;
+    for (Suggestion s : eventSuggestions) {
+      if (s.getId().equals(sId)) {
+        newSugg = s;
+        break;
+      }
+    }
+    if (newSugg == null) {
+      newSugg = W2MDatabase
+          .getSuggestion(received.get("suggestion").getAsString());
+    }
     newSugg.setVotes(newSugg.getVotes() + userVotes);
 
     Suggestion[] userSuggestions = user.getSuggestions();
@@ -122,7 +133,6 @@ public class EventWebSocket {
     Suggestion oldSugg = userSuggestions[rank];
     oldSugg.setVotes(oldSugg.getVotes() - userVotes);
 
-    List<Suggestion> eventSuggestions = event.getSuggestions();
     int ind = eventSuggestions.indexOf(newSugg);
     if (ind >= 0) {
       eventSuggestions.set(ind, newSugg);

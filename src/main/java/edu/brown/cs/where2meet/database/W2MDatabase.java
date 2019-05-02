@@ -212,8 +212,8 @@ public class W2MDatabase {
   public static User getUserFromName(String name, Long event) {
     Long uid = null;
     try (PreparedStatement prep = conn.prepareStatement(
-        "SELECT u.id FROM users AS u, events_users AS eu WHERE eu.event_id = ? "
-            + "AND u.name = ?;")) {
+        "SELECT u.id FROM users AS u, events_users AS eu WHERE (eu.event_id = ? "
+            + "AND u.name = ? AND eu.user_id = u.id);")) {
       prep.setLong(1, event);
       prep.setString(2, name);
       try (ResultSet rs = prep.executeQuery()) {

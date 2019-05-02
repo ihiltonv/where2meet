@@ -1,9 +1,18 @@
 package edu.brown.cs.where2meet.main;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
@@ -17,14 +26,6 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public final class Main {
 
@@ -70,8 +71,9 @@ public final class Main {
   }
 
   private void runSparkServer(int port) {
-    Spark.port(port);
     Spark.webSocket("/voting", EventWebSocket.class);
+    Spark.port(port);
+
     // Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
@@ -206,9 +208,7 @@ public final class Main {
           .put("eventID", id).put("groupName", name).put("meetingTime", time)
           .put("meetingDate", date)
           .put("suggestionsList", initialSuggestionsList)
-          .put("location", location)
-          .put("cats", cats)
-          .put("error", error)
+          .put("location", location).put("cats", cats).put("error", error)
           .put("errorMsg", errorMsg).build();
 
       return Main.GSON.toJson(variables);

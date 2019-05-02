@@ -31,12 +31,12 @@ class EventPage extends React.Component {
         super();
         this.state = {
             opacity: 1,
-            groupName: "Weekend Shenanigans",
+            groupName: " ",
             userName: "",
             userID: 0,
             isNameModelShowing: false,
-            meetingTime: "10:30",
-            meetingDate: "2019-10-5",
+            meetingTime: "",
+            meetingDate: "",
             meetingLocation: "",
             priceRange: [false, false, false, false],
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
@@ -528,3 +528,36 @@ const fakeData2 = [
         "category": "dessert"
     },
 ];
+
+//setup_live_scores();
+
+const MESSAGE_TYPE = {
+    CONNECT: 0,
+    UPDATE: 1,
+    SCORING: 2
+}
+
+let conn;
+
+const setup_live_scores = () => {
+    console.log("Connecting");
+    conn = new WebSocket(`ws://${window.location.host}/voting`);
+
+  conn.onerror = err => {
+    console.log('Connection error:', err);
+  };
+
+  conn.onmessage = msg => {
+      const data = JSON.parse(msg.data);
+
+      switch (data.type) {
+          case MESSAGE_TYPE.SCORING:
+            //TODO: send suggestions to leaderboard
+  };
+}
+}
+
+setup_live_scores();
+
+
+//const socket = io(`ws://${window.location.host}/voting`);
