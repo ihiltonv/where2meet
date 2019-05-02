@@ -27,7 +27,7 @@ class SuggestionsTable extends React.Component {
                                             {data.category}
                                         </div>
                                         <div className={"venueName"}>
-                                            <a className={"venueName"} href={data.url}>{data.venue}</a>
+                                            <a className={"venueName"} target="_blank" href={data.url}>{data.venue}</a>
                                         </div>
                                     </div>
                                     <div className={"voteButtonContainer"}>
