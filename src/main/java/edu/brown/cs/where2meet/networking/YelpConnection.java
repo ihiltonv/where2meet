@@ -69,7 +69,7 @@ public class YelpConnection {
     String type = YelpConnection.makeTypeString(types);
     try {
       URL url = new URL(
-          "https://api.yelp.com/v3/businesses/search?latitude=" + lat
+          "https://api.yelp.com/v3/businesses/search?limit=50&latitude=" + lat
               + "&longitude=" + lon + "&categories=" + type + "&radius="
               + radius);
       JsonObject root = YelpConnection.makeQuery(url);
