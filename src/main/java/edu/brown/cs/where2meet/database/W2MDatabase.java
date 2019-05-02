@@ -233,6 +233,24 @@ public class W2MDatabase {
   }
 
   /**
+   * returns true if there a user with the given name associated with the given
+   * event, false otherwise.
+   *
+   * @param name
+   *          the name to check.
+   * @param event
+   *          the id of the event to search.
+   * @return true if the user exists in the event, false otherwise.
+   */
+  public static boolean userExists(String name, Long event) {
+    User user = getUserFromName(name, event);
+    if (user == null) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Gets the user associated with an event.
    *
    * @param uid

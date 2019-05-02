@@ -23,17 +23,6 @@ import UsernameModel from "../../components/UsernameModel/UsernameModel";
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
 
-const options = [
-    {value: 'chocolate', label: 'Chocolate'},
-    {value: 'strawberry', label: 'Strawberry'},
-    {value: 'sdaf', label: 'Vanilla'},
-    {value: 'asdfa', label: 'yas'},
-    {value: 'asdfas', label: 'fsdsf'},
-    {value: 'asdfasda', label: 'fsd'},
-    {value: 'asdfa', label: 'Chocosfsslate'},
-    {value: 'sdfaf', label: 'wtesdvasd'},
-    {value: 'fsdf', label: 'sfafdas '}
-];
 
 class EventPage extends React.Component {
 
@@ -53,7 +42,7 @@ class EventPage extends React.Component {
             dollarButtonColor: ["goldenrod", "white", "white", "white"],
             searchRadius: [0, 0],
             selectedCategories: [],
-            categoryOptions: options,
+            categoryOptions: [],
             popularity: 0,
             suggestionsList: [],
             filteredSuggestionList: [],
@@ -165,27 +154,67 @@ class EventPage extends React.Component {
         }
     };
 
-    isFilterObjectValid = (object) => {
-        let {priceRange, searchRadius, popularity} = this.state;
-        // filter based on search radius
-        if (object.dist >= searchRadius[0] && searchRadius[1] >= object.dist) {
+    filterByCategories = (object) => {
+        const {selectedCategories} = this.state;
+        //filter based on categories
+        if (selectedCategories.length === 0) {
             return true;
-        }
-        // filter based on price
-        for (let price in priceRange) {
-            let numPrice = parseInt(price, 10) + 1;
-            if (priceRange[price] === true) {
-                if (object.price === numPrice) {
+        } else {
+            for (let category in selectedCategories) {
+                if (object.category === selectedCategories[category].value) {
                     return true;
                 }
             }
         }
+        return false;
+    };
 
+    filterBySearchRadius = (object) => {
+        const {searchRadius} = this.state;
+        // filter based on search radius
+        if (searchRadius[0] === 0 && searchRadius[1] === 0) {
+            return true
+        } else if (object.dist >= searchRadius[0] / 10.0 && searchRadius[1] / 10.0 >= object.dist) {
+            return true;
+        }
+        return false
+    };
+
+    filterByPopularity = (object) => {
+        const {popularity} = this.state;
         // filter based on popularity
-        if (object.rating >= popularity && popularity !== 0) {
+        if (popularity === 0) {
+            return true;
+        } else if (object.rating >= popularity) {
             return true;
         }
         return false;
+    };
+
+    filterByPriceRange = (object) => {
+        const {priceRange} = this.state;
+        // filter based on price
+        if (priceRange[0] === false && priceRange[1] === false
+            && priceRange[2] === false && priceRange[3] === false) {
+            return true;
+        } else {
+            for (let price in priceRange) {
+                let numPrice = parseInt(price, 10) + 1;
+                if (priceRange[price] === true) {
+                    if (object.price === numPrice) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    };
+    isFilterObjectValid = (object) => {
+        return this.filterByCategories(object)
+            && this.filterByPopularity(object)
+            && this.filterByPriceRange(object)
+            && this.filterBySearchRadius(object);
     };
     /*methods for filtering suggestions*/
     filterSuggestions = () => {
@@ -231,9 +260,9 @@ class EventPage extends React.Component {
                             <div className={"categoryOptionsContainer"}>
                                 <Select
                                     options={this.state.categoryOptions}
-                                    onChange={(selectedOption) => {
-                                        console.log(selectedOption);
-                                        this.setState({selectedCategories: selectedOption})
+                                    onChange={async (selectedOption) => {
+                                        await this.setState({selectedCategories: selectedOption})
+                                        this.filterSuggestions();
                                     }}
                                     closeMenuOnSelect={false}
                                     components={makeAnimated()}
