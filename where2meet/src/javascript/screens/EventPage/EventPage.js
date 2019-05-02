@@ -14,11 +14,13 @@ import './EventPage.css'
 import '../../../javascript/components/Modal/InputForm.css';
 import '../../components/Modal/Geosuggest.css'
 
+
 import LeaderboardTable from "../../components/LeaderboardTable/LeaderboardTable";
 import SuggestionsTable from "../../components/SuggestionsTable/SuggestionsTable";
 import CollapsableContainer from "../../components/CollapsableContainer/CollapsableContainer";
 import API from "../../utils/API";
 import UsernameModel from "../../components/UsernameModel/UsernameModel";
+import GMap from '../../components/GMap/GMap'
 
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
@@ -149,13 +151,13 @@ class EventPage extends React.Component {
                 }
 
             }
-            this.setState({yourPicksList: oldList})
+            this.setState({ yourPicksList: oldList })
 
         }
     };
 
     filterByCategories = (object) => {
-        const {selectedCategories} = this.state;
+        const { selectedCategories } = this.state;
         //filter based on categories
         if (selectedCategories.length === 0) {
             return true;
@@ -170,7 +172,7 @@ class EventPage extends React.Component {
     };
 
     filterBySearchRadius = (object) => {
-        const {searchRadius} = this.state;
+        const { searchRadius } = this.state;
         // filter based on search radius
         if (searchRadius[0] === 0 && searchRadius[1] === 0) {
             return true
@@ -181,7 +183,7 @@ class EventPage extends React.Component {
     };
 
     filterByPopularity = (object) => {
-        const {popularity} = this.state;
+        const { popularity } = this.state;
         // filter based on popularity
         if (popularity === 0) {
             return true;
@@ -192,7 +194,7 @@ class EventPage extends React.Component {
     };
 
     filterByPriceRange = (object) => {
-        const {priceRange} = this.state;
+        const { priceRange } = this.state;
         // filter based on price
         if (priceRange[0] === false && priceRange[1] === false
             && priceRange[2] === false && priceRange[3] === false) {
@@ -219,13 +221,13 @@ class EventPage extends React.Component {
     /*methods for filtering suggestions*/
     filterSuggestions = () => {
         let filteredResult = this.state.suggestionsList.filter(this.isFilterObjectValid);
-        this.setState({filteredSuggestionList: filteredResult})
+        this.setState({ filteredSuggestionList: filteredResult })
     };
 
     changeDollarButtonState = (event) => {
         let dollarArray = this.state.priceRange;
         dollarArray[event.target.value] = dollarArray[event.target.value] ? false : true;
-        this.setState({priceRange: dollarArray});
+        this.setState({ priceRange: dollarArray });
         this.filterSuggestions();
     };
 
@@ -239,7 +241,7 @@ class EventPage extends React.Component {
                     backgroundColor: this.state.opacity,
                     position: "absolute",
                     zIndex: 100
-                }}/>}
+                }} />}
                 {/*filters sidebar*/}
                 <div className={"filtersContainer"}>
                     {/*Initial inputs*/}
@@ -261,7 +263,7 @@ class EventPage extends React.Component {
                                 <Select
                                     options={this.state.categoryOptions}
                                     onChange={async (selectedOption) => {
-                                        await this.setState({selectedCategories: selectedOption})
+                                        await this.setState({ selectedCategories: selectedOption })
                                         this.filterSuggestions();
                                     }}
                                     closeMenuOnSelect={false}
@@ -269,7 +271,7 @@ class EventPage extends React.Component {
                                     isMulti
                                 />
                             </div>
-                        }/>
+                        } />
                     </div>
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Search Radius"} filter={
@@ -279,7 +281,7 @@ class EventPage extends React.Component {
                                     max={100}
                                     values={this.state.searchRadius}
                                     onValuesUpdated={async (event) => {
-                                        await this.setState({searchRadius: event.values});
+                                        await this.setState({ searchRadius: event.values });
                                         this.filterSuggestions();
                                     }}
                                 />
@@ -288,45 +290,45 @@ class EventPage extends React.Component {
                                     <h1>{this.state.searchRadius[1] / 10.0} miles</h1>
                                 </div>
                             </div>
-                        }/>
+                        } />
                     </div>
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Price Range"} filter={
                             <div className={"dollarButtonContainer"}>
                                 <button className={"dollarButton"} value={0}
-                                        onClick={this.changeDollarButtonState}
-                                        style={{
-                                            "backgroundColor": this.state.priceRange[0] ? "goldenrod" : "white",
-                                            "color": this.state.priceRange[0] ? "white" : "black"
-                                        }}
+                                    onClick={this.changeDollarButtonState}
+                                    style={{
+                                        "backgroundColor": this.state.priceRange[0] ? "goldenrod" : "white",
+                                        "color": this.state.priceRange[0] ? "white" : "black"
+                                    }}
                                 >$
                                 </button>
                                 <button className={"dollarButton"} value={1}
-                                        onClick={this.changeDollarButtonState}
-                                        style={{
-                                            "backgroundColor": this.state.priceRange[1] ? "goldenrod" : "white",
-                                            "color": this.state.priceRange[1] ? "white" : "black"
-                                        }}
+                                    onClick={this.changeDollarButtonState}
+                                    style={{
+                                        "backgroundColor": this.state.priceRange[1] ? "goldenrod" : "white",
+                                        "color": this.state.priceRange[1] ? "white" : "black"
+                                    }}
                                 >$$
                                 </button>
                                 <button className={"dollarButton"} value={2}
-                                        onClick={this.changeDollarButtonState}
-                                        style={{
-                                            "backgroundColor": this.state.priceRange[2] ? "goldenrod" : "white",
-                                            "color": this.state.priceRange[2] ? "white" : "black"
-                                        }}
+                                    onClick={this.changeDollarButtonState}
+                                    style={{
+                                        "backgroundColor": this.state.priceRange[2] ? "goldenrod" : "white",
+                                        "color": this.state.priceRange[2] ? "white" : "black"
+                                    }}
                                 >$$$
                                 </button>
                                 <button className={"dollarButton"} value={3}
-                                        onClick={this.changeDollarButtonState}
-                                        style={{
-                                            "backgroundColor": this.state.priceRange[3] ? "goldenrod" : "white",
-                                            "color": this.state.priceRange[3] ? "white" : "black"
-                                        }}
+                                    onClick={this.changeDollarButtonState}
+                                    style={{
+                                        "backgroundColor": this.state.priceRange[3] ? "goldenrod" : "white",
+                                        "color": this.state.priceRange[3] ? "white" : "black"
+                                    }}
                                 >$$$$
                                 </button>
                             </div>
-                        }/>
+                        } />
                     </div>
 
                     <div className={"filtersRow"}>
@@ -341,13 +343,13 @@ class EventPage extends React.Component {
                                     starDimension={'20px'}
                                     starSpacing={'5px'}
                                     changeRating={async (rating) => {
-                                        await this.setState({popularity: rating});
+                                        await this.setState({ popularity: rating });
                                         this.filterSuggestions();
                                     }}
                                     rating={this.state.popularity}
                                 />
                             </div>
-                        }/>
+                        } />
                     </div>
 
                 </div>
@@ -362,23 +364,29 @@ class EventPage extends React.Component {
                         close={this.closeModalHandler}
                     />
                     <SuggestionsTable buttonClicked={this.buttonClicked} showRank={false}
-                                      data={this.state.filteredSuggestionList}/>
+                        data={this.state.filteredSuggestionList} />
                 </div>
                 {/*top suggestions list*/}
-                <div className={"tablesContainer"}>
-                    <div className={"eachTable"}>
-                        <div className={"tableTitle"}>
-                            LeaderBoard
+                <div className={"rightSidebar"}>
+                    <div className={"tablesContainer"}>
+                        <div className={"eachTable"}>
+                            <div className={"tableTitle"}>
+                                LeaderBoard
                         </div>
-                        <LeaderboardTable showRank={true} data={this.state.leaderBoardList}/>
+                            <LeaderboardTable showRank={true} data={this.state.leaderBoardList} />
+                        </div>
+                        <div className={"eachTable"}>
+                            <div className={"tableTitle"}>
+                                Your Picks
+                        </div>
+                            <LeaderboardTable showRank={true} data={this.state.yourPicksList} />
+                        </div>
                     </div>
-                    <div className={"eachTable"}>
-                        <div className={"tableTitle"}>
-                            Your Picks
-                        </div>
-                        <LeaderboardTable showRank={true} data={this.state.yourPicksList}/>
+                    <div className={"gmap"}>
+                        <GMap />
                     </div>
                 </div>
+
             </div>
         )
     }
@@ -543,18 +551,18 @@ const setup_live_scores = () => {
     console.log("Connecting");
     conn = new WebSocket(`ws://${window.location.host}/voting`);
 
-  conn.onerror = err => {
-    console.log('Connection error:', err);
-  };
+    conn.onerror = err => {
+        console.log('Connection error:', err);
+    };
 
-  conn.onmessage = msg => {
-      const data = JSON.parse(msg.data);
+    conn.onmessage = msg => {
+        const data = JSON.parse(msg.data);
 
-      switch (data.type) {
-          case MESSAGE_TYPE.SCORING:
+        switch (data.type) {
+            case MESSAGE_TYPE.SCORING:
             //TODO: send suggestions to leaderboard
-  };
-}
+        };
+    }
 }
 
 setup_live_scores();

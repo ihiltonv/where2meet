@@ -109,13 +109,25 @@
     height: 100%;
 }
 
+.rightSidebar {
+    height: 100vh;
+    width: 20vw;
+}
 /*tables styles */
 .tablesContainer {
     display: flex;
-    height: 100vh;
+    height: 60vh;
     width: 20vw;
     flex-direction: column;
     overflow: scroll;
+}
+
+/* google maps style */
+.gmap {
+ width: 20vw;
+ height: 40vh;
+ border: solid 1px black;
+ 
 }
 
 .tableTitle {
