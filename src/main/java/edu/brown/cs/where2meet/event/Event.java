@@ -310,3 +310,15 @@ public class Event {
     this.suggestions.sort(new SuggestionComparator());
   }
 }
+
+/**
+ * Meeting notes:
+ *
+ * Query with additional filter for more results
+ * Potentially add a password
+ * Add a map view
+ * Don't scroll for leaderboard/picks
+ * Link opens in a new window (location = _tab?)
+ * Modal with link in it?
+ *
+ */

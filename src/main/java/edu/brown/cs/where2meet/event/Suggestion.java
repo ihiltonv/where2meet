@@ -419,7 +419,7 @@ public class Suggestion {
 
 
     Double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
-    
+
 
     return dist;
   }
