@@ -4,6 +4,7 @@ import StarRatings from 'react-star-ratings'
 import ThemedStyleSheet from 'react-with-styles/lib/ThemedStyleSheet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/lib/animated';
+import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
 
 import DefaultTheme from 'rheostat/lib/themes/DefaultTheme';
 import aphroditeInterface from 'react-with-styles-interface-aphrodite';

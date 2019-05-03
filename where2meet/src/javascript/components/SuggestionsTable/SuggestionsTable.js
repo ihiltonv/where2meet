@@ -9,14 +9,14 @@ class SuggestionsTable extends React.Component {
     }
 
     render() {
-        const {data, showRank} = this.props;
+        const { data, showRank } = this.props;
         return (
             <div className={"tableContainer"}>
                 <div className={"tableBody"}>
                     {data.map((data, index) => (
-                        <div className={"tableRow"} key={index}>
+                        <div className={"tableRow"} key={index} ref={data.ref}>
                             {showRank && <div className={"rankNum"} align="center">{index + 1}</div>}
-                            <div className={"imgContainer"} style={{"background-image": `url(${data.photo})`}}/>
+                            <div className={"imgContainer"} style={{ "background-image": `url(${data.photo})` }} />
 
 
                             <div className={"nameAddressRating"}>
@@ -32,16 +32,16 @@ class SuggestionsTable extends React.Component {
                                     </div>
                                     <div className={"voteButtonContainer"}>
                                         <button id={data.id} className={"voteButton"}
-                                                style={{"backgroundColor": "gold"}} value={5}
-                                                onClick={this.props.buttonClicked}>1
+                                            style={{ "backgroundColor": "gold" }} value={5}
+                                            onClick={this.props.buttonClicked}>1
                                         </button>
                                         <button id={data.id} className={"voteButton"}
-                                                style={{"backgroundColor": "silver"}} value={3}
-                                                onClick={this.props.buttonClicked}>2
+                                            style={{ "backgroundColor": "silver" }} value={3}
+                                            onClick={this.props.buttonClicked}>2
                                         </button>
                                         <button id={data.id} className={"voteButton"}
-                                                style={{"backgroundColor": "#cc6633"}} value={1}
-                                                onClick={this.props.buttonClicked}>3
+                                            style={{ "backgroundColor": "#cc6633" }} value={1}
+                                            onClick={this.props.buttonClicked}>3
                                         </button>
                                     </div>
                                 </div>
@@ -51,7 +51,7 @@ class SuggestionsTable extends React.Component {
                                 <div className={"dollarVotes"}>
                                     <div className={"voteDollar"}>
                                         <div className={"votes"}>👍 {data.votes} </div>
-                                        <DollarSignComponent dollars={data.price}/>
+                                        <DollarSignComponent dollars={data.price} />
                                         <div className={"dist"}>  {data.dist.toFixed(2)} mi</div>
                                     </div>
                                     <StarRatings
