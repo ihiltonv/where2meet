@@ -385,9 +385,9 @@ class EventPage extends React.Component {
                             <LeaderboardTable showRank={true} data={this.state.yourPicksList} />
                         </div>
                     </div>
-                    <div className={"gmap"}>
+                    {this.state.filteredSuggestionList[0] && <div className={"gmap"}>
                         <GoogleMap zoom={12} lat={this.state.latlon[0]} lon={this.state.latlon[1]} markers={this.state.filteredSuggestionList} />
-                    </div>
+                    </div>}
                 </div>
 
             </div>
