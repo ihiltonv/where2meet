@@ -20,7 +20,7 @@ import SuggestionsTable from "../../components/SuggestionsTable/SuggestionsTable
 import CollapsableContainer from "../../components/CollapsableContainer/CollapsableContainer";
 import API from "../../utils/API";
 import UsernameModel from "../../components/UsernameModel/UsernameModel";
-import GMap from '../../components/GMap/GMap'
+import GoogleMap from '../../components/GoogleMap/GoogleMap'
 
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
@@ -45,6 +45,7 @@ class EventPage extends React.Component {
             searchRadius: [0, 0],
             selectedCategories: [],
             categoryOptions: [],
+            latlon: [],
             popularity: 0,
             suggestionsList: [],
             filteredSuggestionList: [],
@@ -74,6 +75,7 @@ class EventPage extends React.Component {
             let data = response.data;
             console.log(data);
             this.setState({
+                latlon: data.location,
                 groupName: data.groupName,
                 meetingTime: data.meetingTime,
                 meetingDate: data.meetingDate,
@@ -383,7 +385,7 @@ class EventPage extends React.Component {
                         </div>
                     </div>
                     <div className={"gmap"}>
-                        <GMap />
+                        <GoogleMap zoom={12} lat={this.state.latlon[0]} lon={this.state.latlon[1]} markers={this.state.filteredSuggestionList} />
                     </div>
                 </div>
 

@@ -19,11 +19,12 @@ const MapComponent = compose(
     withScriptjs,
     withGoogleMap
 )(props => (
-    <GoogleMap defaultZoom={8} defaultCenter={{ lat: -34.397, lng: 150.644 }}>
-        {props.isMarkerShown && (
-            <Marker position={{ lat: -34.397, lng: 150.644 }} />
-        )}
-    </GoogleMap>
+    < GoogleMap defaultZoom={props.zoom} defaultCenter={{ lat: props.lat, lng: props.lon }}>
+        {props.markers.map(m => (<Marker key={m.id}
+            position={{ lat: m.lat, lng: m.lon }}
+            title={m.venue}
+            onClick={e => console.log(m.venue)} />))}
+    </GoogleMap >
 ));
 
 //ReactDOM.render(<MyMapComponent isMarkerShown />, document.getElementById("root"));
