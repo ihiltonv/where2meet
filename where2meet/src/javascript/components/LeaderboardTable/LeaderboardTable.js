@@ -9,7 +9,7 @@ class LeaderboardTable extends React.Component {
     }
 
     render() {
-        const {data} = this.props;
+        const { data } = this.props;
         return (
             <div className={"tableContainer"}>
                 <div className={"tableBody"}>
@@ -22,29 +22,20 @@ class LeaderboardTable extends React.Component {
                             </div>
                             <div className={"nameAddressRating1"}>
                                 <div className={"dollarVotes"}>
+                                    {data.venue && <div className={"votes"}>👍 {data.votes} </div>}
+
                                     <div>
-                                        <div className={"category"}>
+                                        {/* <div className={"category"}>
                                             {data.category}
-                                        </div>
-                                        <a className={"venueName"} href={data.url}>
-                                            <div>{data.venue}</div>
-                                        </a>
+                                        </div> */}
+                                        {data.venue && <a className={"venueName2"} href={data.url}>
+                                            <div>{(data.venue.split("").length > 18) ? data.venue.split("").splice(0, 18).join("") + "..." : data.venue}</div>
+                                            {console.log(data.venue.split("").length)}
+                                        </a>}
+
                                     </div>
                                 </div>
-                                {data.venue && <div className={"dollarVotes"}>
-                                    <div className={"voteDollar"}>
-                                        <div className={"votes"}>👍 {data.votes} </div>
-                                        <DollarSignComponent dollars={data.price}/>
-                                    </div>
-                                    <StarRatings
-                                        rating={data.rating}
-                                        starRatedColor="gold"
-                                        numberOfStars={5}
-                                        name='rating'
-                                        starDimension={'10px'}
-                                        starSpacing={'1px'}
-                                    />
-                                </div>}
+
                             </div>
                         </div>
                     ))}
