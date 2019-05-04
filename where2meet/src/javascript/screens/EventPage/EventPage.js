@@ -23,6 +23,9 @@ import API from "../../utils/API";
 import UsernameModel from "../../components/UsernameModel/UsernameModel";
 import GoogleMap from '../../components/GoogleMap/GoogleMap'
 
+import openSocket from 'socket.io-client';
+import io from 'socket.io-client';
+
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
 
@@ -52,7 +55,26 @@ class EventPage extends React.Component {
             filteredSuggestionList: [],
             leaderBoardList: [{}, {}, {}],
             yourPicksList: [{}, {}, {}],
+            socket:openSocket('http://localhost:3434',{
+                transports: ['websocket']
+            }),
         };
+
+        this.state.socket.on('connect',() =>{
+            console.log("sending id");
+            this.state.socket.send(`REQ_ID`,this.props.match.params.id);
+        });
+
+        this.state.socket.on('disconnect',() =>{
+            console.log("whoops!");
+            this.state.socket.open();
+        });
+
+        this.state.socket.on('REQ_ID', (server)=>{
+            console.log(server);
+            //console.log("sending id");
+            this.state.socket.send(`REQ_ID`,this.props.match.params.id);
+        });
     }
 
     openModalHandler = () => {
@@ -71,6 +93,9 @@ class EventPage extends React.Component {
 
     componentDidMount() {
         let eventId = this.props.match.params.id;
+
+        console.log("connecting");
+
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
             let data = response.data;
@@ -133,6 +158,12 @@ class EventPage extends React.Component {
             console.log(this.state.filteredSuggestionList);
             const suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
             let oldList = this.state.yourPicksList;
+
+            console.log("VOTED");
+            this.state.socket.emit('UPDATE',{val: val, suggestion: suggestion, user: this.state.userID,event:this.props.match.params.id});
+            this.state.socket.on('REQ_ID', (server,lb)=>{
+                this.leaderBoardList = lb;
+            })
 
             if (val === '5') {
                 if (oldList[1].id === id || oldList[2].id === id) {
@@ -236,6 +267,7 @@ class EventPage extends React.Component {
 
 
     render() {
+
         return (
             <div className={"body"}>
                 {this.state.isNameModelShowing && <div style={{
@@ -539,36 +571,3 @@ const fakeData2 = [
         "category": "dessert"
     },
 ];
-
-//setup_live_scores();
-
-const MESSAGE_TYPE = {
-    CONNECT: 0,
-    UPDATE: 1,
-    SCORING: 2
-}
-
-let conn;
-
-const setup_live_scores = () => {
-    console.log("Connecting");
-    conn = new WebSocket(`ws://${window.location.host}/voting`);
-
-    conn.onerror = err => {
-        console.log('Connection error:', err);
-    };
-
-    conn.onmessage = msg => {
-        const data = JSON.parse(msg.data);
-
-        switch (data.type) {
-            case MESSAGE_TYPE.SCORING:
-            //TODO: send suggestions to leaderboard
-        };
-    }
-}
-
-setup_live_scores();
-
-
-//const socket = io(`ws://${window.location.host}/voting`);
