@@ -4,7 +4,7 @@ import StarRatings from 'react-star-ratings'
 import ThemedStyleSheet from 'react-with-styles/lib/ThemedStyleSheet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/lib/animated';
-import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
+import { DirectLink } from 'react-scroll'
 
 import DefaultTheme from 'rheostat/lib/themes/DefaultTheme';
 import aphroditeInterface from 'react-with-styles-interface-aphrodite';
@@ -23,9 +23,16 @@ import API from "../../utils/API";
 import UsernameModel from "../../components/UsernameModel/UsernameModel";
 import GoogleMap from '../../components/GoogleMap/GoogleMap'
 
+const MESSAGE_TYPE = {
+    CONNECT: 0,
+    UPDATE: 1,
+    SCORING: 2
+};
+
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
 
+console.log(window.location.host);
 
 class EventPage extends React.Component {
 
@@ -53,6 +60,7 @@ class EventPage extends React.Component {
             leaderBoardList: [{}, {}, {}],
             yourPicksList: [{}, {}, {}],
             prevSelected: null,
+            socket: new WebSocket(`ws://localhost:4567/voting`),
         };
     }
 
@@ -70,8 +78,46 @@ class EventPage extends React.Component {
         });
     };
 
+    socketListener = () => {
+        this.state.socket.onmessage = async msg => {
+            console.log("message recieved");
+            const data = JSON.parse(msg.data);
+            switch (data.type) {
+                default:
+                    console.log("Unkown message type:" + data.type);
+                    break;
+                case MESSAGE_TYPE.CONNECT:
+                    console.log("Connected!");
+                    let str = '{"type":' + String(MESSAGE_TYPE.CONNECT) + ',"event_id":' + String(this.props.match.params.id) + '}'
+                    this.state.socket.send(JSON.parse(JSON.stringify(str)));
+                    break;
+                case MESSAGE_TYPE.UPDATE:
+                    break;
+                case MESSAGE_TYPE.SCORING:
+                    console.log("Scoring!");
+                    console.log(data.s1);
+                    console.log(data.s2);
+                    console.log(data.s3);
+
+                    let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
+                    console.log(newList);
+                    console.log(this.state.yourPicksList);
+
+                    await this.setState({ leaderBoardList: newList });
+                    console.log(this.state.leaderBoardList);
+                    console.log(this.state.leaderBoardList[0]);
+                    console.log(this.state.leaderBoardList[1]);
+                    console.log(this.state.leaderBoardList[2]);
+                    //this.render();
+                    break;
+            }
+        };
+    };
+
     componentDidMount() {
         let eventId = this.props.match.params.id;
+        this.socketListener();
+
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
             let data = response.data;
@@ -160,26 +206,39 @@ class EventPage extends React.Component {
             console.log(this.state.filteredSuggestionList);
             const suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
             let oldList = this.state.yourPicksList;
+            let oldSugg = oldList[3 - ((parseInt(val) + 1) / 2)];
+            let update = true;
 
             if (val === '5') {
                 if (oldList[1].id === id || oldList[2].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
                     oldList[0] = suggestion[0];
                 }
             } else if (val === '3') {
                 if (oldList[0].id === id || oldList[2].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
                     oldList[1] = suggestion[0];
                 }
             } else {
                 if (oldList[1].id === id || oldList[0].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
                     oldList[2] = suggestion[0];
                 }
 
+            }
+            if (update) {
+                const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
+                    ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
+                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + '}';
+                console.log(msg);
+                console.log(suggestion[0]);
+                this.state.socket.send(JSON.parse(JSON.stringify(msg)));
             }
             this.setState({ yourPicksList: oldList })
 
@@ -263,6 +322,7 @@ class EventPage extends React.Component {
 
 
     render() {
+        this.socketListener();
         return (
             <div className={"body"}>
                 {this.state.isNameModelShowing && <div style={{
@@ -439,164 +499,3 @@ const geoSuggestInputStyle = {
     "margin-top": "-5%",
     "text-align": "center"
 };
-
-const fakeData = [
-    {
-        "id": "1",
-        "venue": 'Frozen Yogurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "2",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "3",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "4",
-        "venue": 'Frozen Yogurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "5",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "6",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "7",
-        "venue": 'Frozen Yogurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "8",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert",
-        "photo": "photourl"
-    },
-    {
-        "id": "9",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-];
-
-const fakeData2 = [
-    {
-        "id": "1",
-        "venue": 'Frozen yoghurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert",
-
-    },
-    {
-        "id": "2",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "3",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-];
-
-//setup_live_scores();
-
-const MESSAGE_TYPE = {
-    CONNECT: 0,
-    UPDATE: 1,
-    SCORING: 2
-}
-
-let conn;
-
-const setup_live_scores = () => {
-    console.log("Connecting");
-    conn = new WebSocket(`ws://${window.location.host}/voting`);
-
-    conn.onerror = err => {
-        console.log('Connection error:', err);
-    };
-
-    conn.onmessage = msg => {
-        const data = JSON.parse(msg.data);
-
-        switch (data.type) {
-            case MESSAGE_TYPE.SCORING:
-            //TODO: send suggestions to leaderboard
-        };
-    }
-}
-
-setup_live_scores();
-
-
-//const socket = io(`ws://${window.location.host}/voting`);
