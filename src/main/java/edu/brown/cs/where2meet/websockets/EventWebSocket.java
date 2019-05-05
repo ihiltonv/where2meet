@@ -98,6 +98,7 @@ public class EventWebSocket {
       leaderboard.addProperty("s3", GSON.toJson(new JsonObject()));
     }
 
+    leaderboard.addProperty("oldSugg", GSON.toJson(new JsonObject()));
     session.getRemote().sendString(GSON.toJson(leaderboard));
 
     if (eventMap.get(eid) == null) {
@@ -116,6 +117,9 @@ public class EventWebSocket {
     List<Suggestion> eventSuggestions = event.getSuggestions();
     String sId = received.get("suggestion").getAsString();
     String sId2 = received.get("oldSuggestion").getAsString();
+    // JsonArray suggList = received.get("suggestions").getAsJsonArray();
+    // List<Suggestion> eventSuggestions = Suggestion
+    // .getStringAsList(suggList.toString());
     // get suggestion id rather than suggestion as a json object
     Suggestion newSugg = null;
     Suggestion oldSugg = null;
@@ -157,6 +161,8 @@ public class EventWebSocket {
     event.setSuggestions(eventSuggestions);
     W2MDatabase.updateEvent(event);
 
+    String eList = Suggestion.suggToString(eventSuggestions);
+
     Suggestion s1 = eventSuggestions.get(0);
     Suggestion s2 = eventSuggestions.get(1);
     Suggestion s3 = eventSuggestions.get(2);
@@ -177,6 +183,12 @@ public class EventWebSocket {
     } else {
       response.addProperty("s3", GSON.toJson(new JsonObject()));
     }
+    if (oldSugg == null) {
+      response.addProperty("oldSugg", GSON.toJson(new JsonObject()));
+    } else {
+      response.addProperty("oldSugg", GSON.toJson(oldSugg.getAsJsonObject()));
+    }
+    // response.addProperty("suggestions", eList);
 
     for (Session s : eventMap.get(eid)) {
       s.getRemote().sendString(GSON.toJson(response));

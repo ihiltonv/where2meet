@@ -91,29 +91,45 @@ class EventPage extends React.Component {
 
     socketListener = () => {
         this.state.socket.onmessage = async msg => {
-            console.log("message recieved");
+            //console.log("message recieved");
             const data = JSON.parse(msg.data);
             switch (data.type) {
                 default:
                     console.log("Unkown message type:" + data.type);
                     break;
                 case MESSAGE_TYPE.CONNECT:
-                    console.log("Connected!");
                     let str = '{"type":' + String(MESSAGE_TYPE.CONNECT) + ',"event_id":' + String(this.props.match.params.id) + '}'
                     this.state.socket.send(JSON.parse(JSON.stringify(str)));
                     break;
                 case MESSAGE_TYPE.UPDATE:
                     break;
                 case MESSAGE_TYPE.SCORING:
+
                     console.log("Scoring!");
+                    let suggestions = this.state.suggestionsList;
+
+                    function findById(sugg){
+
+                    }
+                    let oldSuggestion = data.oldSugg;
+
+                    oldSuggestion = JSON.parse(oldSuggestion);
+                    if(oldSuggestion.id != null && suggestions.length > 0){
+                        let temp = suggestions.find(sugg =>{
+                            return sugg.id == oldSuggestion.id;
+                        });
+                        let ind = suggestions.indexOf(temp);
+
+
+                        suggestions[ind].votes = oldSuggestion.votes;
+                    }
 
                     let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
-
-
                     await this.setState({
                         leaderBoardList: newList,
-                        //suggestionsList: this.state.suggestionsList,
+                        suggestionsList: suggestions,
                     });
+
                     break;
             }
         };
@@ -245,9 +261,8 @@ class EventPage extends React.Component {
             if (update) {
                 const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
                     ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
-                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + '}';
-                console.log(msg);
-                console.log(suggestion[0]);
+                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + ',"suggestions":'+
+                    JSON.stringify(this.state.suggestionsList)+'}';
                 this.state.socket.send(JSON.parse(JSON.stringify(msg)));
             }
 
