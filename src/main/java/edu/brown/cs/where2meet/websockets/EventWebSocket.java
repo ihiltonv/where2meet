@@ -98,6 +98,8 @@ public class EventWebSocket {
       leaderboard.addProperty("s3", GSON.toJson(new JsonObject()));
     }
 
+    leaderboard.addProperty("suggestions",
+        Suggestion.suggToString(suggestions));
     session.getRemote().sendString(GSON.toJson(leaderboard));
 
     if (eventMap.get(eid) == null) {
@@ -157,6 +159,8 @@ public class EventWebSocket {
     event.setSuggestions(eventSuggestions);
     W2MDatabase.updateEvent(event);
 
+    String eList = Suggestion.suggToString(eventSuggestions);
+
     Suggestion s1 = eventSuggestions.get(0);
     Suggestion s2 = eventSuggestions.get(1);
     Suggestion s3 = eventSuggestions.get(2);
@@ -177,6 +181,7 @@ public class EventWebSocket {
     } else {
       response.addProperty("s3", GSON.toJson(new JsonObject()));
     }
+    response.addProperty("suggestions", eList);
 
     for (Session s : eventMap.get(eid)) {
       s.getRemote().sendString(GSON.toJson(response));

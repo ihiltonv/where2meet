@@ -88,29 +88,38 @@ class EventPage extends React.Component {
 
     socketListener = () => {
         this.state.socket.onmessage = async msg => {
-            console.log("message recieved");
+            //console.log("message recieved");
             const data = JSON.parse(msg.data);
             switch (data.type) {
                 default:
                     console.log("Unkown message type:" + data.type);
                     break;
                 case MESSAGE_TYPE.CONNECT:
-                    console.log("Connected!");
                     let str = '{"type":' + String(MESSAGE_TYPE.CONNECT) + ',"event_id":' + String(this.props.match.params.id) + '}'
                     this.state.socket.send(JSON.parse(JSON.stringify(str)));
                     break;
                 case MESSAGE_TYPE.UPDATE:
                     break;
                 case MESSAGE_TYPE.SCORING:
-                    console.log("Scoring!");
+                    console.log("scoring");
+
                     console.log(data.s1);
                     console.log(data.s2);
                     console.log(data.s3);
 
-                    let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
+                    let updatedList = data.suggestions;
+
+                    if(updatedList != null){
+                        updatedList = JSON.parse(updatedList);
+                    }else{
+                        updatedList = [{},{},{}];
+                    }
+                    //console.log("updated" + updatedList);
+
+                    let newList = [updatedList[0], updatedList[1], updatedList[2]];
                     console.log(newList);
                     console.log(this.state.yourPicksList);
-
+                    await this.setState({ suggestionsList : updatedList})
                     await this.setState({ leaderBoardList: newList });
                     console.log(this.state.leaderBoardList);
                     console.log(this.state.leaderBoardList[0]);
@@ -244,8 +253,6 @@ class EventPage extends React.Component {
                 const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
                     ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
                     String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + '}';
-                console.log(msg);
-                console.log(suggestion[0]);
                 this.state.socket.send(JSON.parse(JSON.stringify(msg)));
             }
             this.setState({ yourPicksList: oldList })
