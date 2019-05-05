@@ -95,19 +95,28 @@ class EventPage extends React.Component {
                 case MESSAGE_TYPE.SCORING:
 
                     console.log("Scoring!");
+                    let suggestions = this.state.suggestionsList;
 
-                    let updatedList = data.suggestions;
-                    if(updatedList != null){
-                        updatedList = JSON.parse(updatedList);
-                    }else{
-                        updatedList = [{},{},{}];
+                    function findById(sugg){
+
                     }
-                    let newList = [updatedList[0], updatedList[1], updatedList[2]];
+                    let oldSuggestion = data.oldSugg;
 
-                    //let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
+                    oldSuggestion = JSON.parse(oldSuggestion);
+                    if(oldSuggestion.id != null && suggestions.length > 0){
+                        let temp = suggestions.find(sugg =>{
+                            return sugg.id == oldSuggestion.id;
+                        });
+                        let ind = suggestions.indexOf(temp);
+
+
+                        suggestions[ind].votes = oldSuggestion.votes;
+                    }
+
+                    let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
                     await this.setState({
                         leaderBoardList: newList,
-                        //suggestionsList: this.state.suggestionsList,
+                        suggestionsList: suggestions,
                     });
 
                     break;
@@ -241,7 +250,8 @@ class EventPage extends React.Component {
             if (update) {
                 const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
                     ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
-                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + '}';
+                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + ',"suggestions":'+
+                    JSON.stringify(this.state.suggestionsList)+'}';
                 this.state.socket.send(JSON.parse(JSON.stringify(msg)));
             }
 
