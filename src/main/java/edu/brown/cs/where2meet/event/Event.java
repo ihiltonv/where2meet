@@ -30,7 +30,6 @@ public class Event {
 
   /**
    * Constructor for an Event.
-   *
    * @param name        the name of the event.
    * @param coordinates the coordinates that the event should be near
    * @param date        a String representing the date of the event
@@ -51,7 +50,6 @@ public class Event {
 
   /**
    * A constructor for the Event.
-   *
    * @param name        the name of the event.
    * @param users       the users in the event.
    * @param coordinates the coordinates of the event's location.
@@ -77,7 +75,6 @@ public class Event {
 
   /**
    * A constructor for the Event.
-   *
    * @param id          the id of the event.
    * @param name        the name of the event.
    * @param users       the users in the event.
@@ -100,7 +97,6 @@ public class Event {
 
   /**
    * Instantiates the suggestion list.
-   *
    * @param categories the categories of the venues to search
    */
 
@@ -119,7 +115,6 @@ public class Event {
    * This function returns a json array of
    * all of the categories that are present in the
    * suggestions list.
-   *
    * @return a json array of categories
    */
   public JsonArray getAllCats() {
@@ -186,7 +181,6 @@ public class Event {
 
   /**
    * Adds a user to the event.
-   *
    * @param u the user to add
    */
   public void addUser(Long u) {
@@ -202,7 +196,6 @@ public class Event {
   /**
    * This method ranks each of the suggestions
    * and returns and ordered list of them.
-   *
    * @return a list of suggestions, from best to worst
    */
   public List<Suggestion> getBestSuggestions() {
@@ -216,7 +209,6 @@ public class Event {
 
   /**
    * Gets the user set of the event.
-   *
    * @return the set of users for the event.
    */
   public Set<Long> getUsers() {
@@ -225,7 +217,6 @@ public class Event {
 
   /**
    * Gets the id of the event.
-   *
    * @return the id of the event
    */
   public Long getId() {
@@ -234,7 +225,6 @@ public class Event {
 
   /**
    * Gets the name of the event.
-   *
    * @return the name of the event.
    */
   public String getName() {
@@ -243,7 +233,6 @@ public class Event {
 
   /**
    * Gets the coordinates of the event's location.
-   *
    * @return a list of the coordinates of the event.
    */
   public List<Double> getLocation() {
@@ -252,7 +241,6 @@ public class Event {
 
   /**
    * Gets the date of the event.
-   *
    * @return a string with the date of the event.
    */
   public String getDate() {
@@ -261,7 +249,6 @@ public class Event {
 
   /**
    * Gets the time of the event.
-   *
    * @return a string with the time of the event.
    */
   public String getTime() {
@@ -270,7 +257,6 @@ public class Event {
 
   /**
    * Gets the suggestion at a specified rank (1 through 3).
-   *
    * @param rank the rank of the suggestion
    * @return the suggestion at the specified rank.
    */
@@ -280,7 +266,6 @@ public class Event {
 
   /**
    * Gets the suggestion list.
-   *
    * @return the list of suggestions for the event.
    */
   public List<Suggestion> getSuggestions() {
@@ -289,7 +274,6 @@ public class Event {
 
   /**
    * Sets the suggestion list.
-   *
    * @param suggestions the array to which suggestions is set.
    */
   public void setSuggestions(List<Suggestion> suggestions) {
@@ -298,7 +282,6 @@ public class Event {
 
   /**
    * Sets a specific suggestion in the array.
-   *
    * @param s    the new suggestion.
    * @param rank the position in the array to replace.
    */
