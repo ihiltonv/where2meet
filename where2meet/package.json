@@ -2,7 +2,6 @@
   "name": "where2meet",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3002",
   "dependencies": {
     "@material-ui/core": "^3.9.3",
     "aphrodite": "^2.3.1",
@@ -28,16 +27,13 @@
     "react-star-ratings": "^2.3.0",
     "react-with-styles": "^3.2.1",
     "react-with-styles-interface-aphrodite": "^5.0.1",
-    "rheostat": "^3.0.2",
-    "socket.io": "^2.2.0"
+    "rheostat": "^3.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "server": "node-env-run server --exec nodemon | pino-colada",
-    "dev": "run-p server start"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -49,12 +45,6 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.16.4",
-    "express-pino-logger": "^4.0.0",
-    "node-env-run": "^3.0.2",
-    "nodemon": "^1.19.0",
-    "npm-run-all": "^4.1.5",
-    "pino-colada": "^1.4.4"
+    "body-parser": "^1.19.0"
   }
 }

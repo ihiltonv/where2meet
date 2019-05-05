@@ -26,10 +26,16 @@ import GoogleMap from '../../components/GoogleMap/GoogleMap'
 import openSocket from 'socket.io-client';
 import io from 'socket.io-client';
 
+const MESSAGE_TYPE = {
+  CONNECT: 0,
+  UPDATE: 1,
+  SCORING: 2
+};
+
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
 
-
+console.log(window.location.host);
 class EventPage extends React.Component {
 
 
@@ -55,26 +61,8 @@ class EventPage extends React.Component {
             filteredSuggestionList: [],
             leaderBoardList: [{}, {}, {}],
             yourPicksList: [{}, {}, {}],
-            socket:openSocket('http://localhost:3434',{
-                transports: ['websocket']
-            }),
+            socket:new WebSocket(`ws://localhost:4567/voting`),
         };
-
-        this.state.socket.on('connect',() =>{
-            console.log("sending id");
-            this.state.socket.send(`REQ_ID`,this.props.match.params.id);
-        });
-
-        this.state.socket.on('disconnect',() =>{
-            console.log("whoops!");
-            this.state.socket.open();
-        });
-
-        this.state.socket.on('REQ_ID', (server)=>{
-            console.log(server);
-            //console.log("sending id");
-            this.state.socket.send(`REQ_ID`,this.props.match.params.id);
-        });
     }
 
     openModalHandler = () => {
@@ -91,10 +79,41 @@ class EventPage extends React.Component {
         });
     };
 
+    socketListener = ()=>{
+        this.state.socket.onmessage = msg =>{
+            console.log("message recieved");
+            const data = JSON.parse(msg.data);
+            switch(data.type){
+                default:
+                    console.log("Unkown message type:" + data.type);
+                    break;
+                case MESSAGE_TYPE.CONNECT:
+                    console.log("Connected!");
+                    let str = '{"type":'+String(MESSAGE_TYPE.CONNECT)+',"event_id":'+String(this.props.match.params.id)+'}'
+                    this.state.socket.send(JSON.parse(JSON.stringify(str)));
+                    break;
+                case MESSAGE_TYPE.UPDATE:
+                    break;
+                case MESSAGE_TYPE.SCORING:
+                    console.log("Scoring!");
+                    console.log(data.s1);
+                    console.log(data.s2);
+                    console.log(data.s3);
+
+                    let newList = [data.s1,data.s2,data.s3];
+                    console.log(newList);
+                    console.log(this.yourPicksList);
+
+                    this.setState({ leaderBoardList: newList })
+                    this.render();
+                    break;
+            }
+        };
+    };
+
     componentDidMount() {
         let eventId = this.props.match.params.id;
-
-        console.log("connecting");
+        this.socketListener();
 
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
@@ -158,32 +177,39 @@ class EventPage extends React.Component {
             console.log(this.state.filteredSuggestionList);
             const suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
             let oldList = this.state.yourPicksList;
-
-            console.log("VOTED");
-            this.state.socket.emit('UPDATE',{val: val, suggestion: suggestion, user: this.state.userID,event:this.props.match.params.id});
-            this.state.socket.on('REQ_ID', (server,lb)=>{
-                this.leaderBoardList = lb;
-            })
+            let oldSugg = oldList[3-((parseInt(val)+1)/2)];
+            let update = true;
 
             if (val === '5') {
                 if (oldList[1].id === id || oldList[2].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
                     oldList[0] = suggestion[0];
                 }
             } else if (val === '3') {
                 if (oldList[0].id === id || oldList[2].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
                     oldList[1] = suggestion[0];
                 }
             } else {
                 if (oldList[1].id === id || oldList[0].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
                     oldList[2] = suggestion[0];
                 }
 
+            }
+            if(update){
+                const msg = '{"type":'+String(MESSAGE_TYPE.UPDATE)+',"votes":'+String(val)+
+                ',"event":'+String(this.props.match.params.id)+',"suggestion":'+
+                String(suggestion[0].id)+',"oldSuggestion":'+String(oldSugg.id)+'}';
+                console.log(msg);
+                console.log(suggestion[0]);
+                this.state.socket.send(JSON.parse(JSON.stringify(msg)));
             }
             this.setState({ yourPicksList: oldList })
 
