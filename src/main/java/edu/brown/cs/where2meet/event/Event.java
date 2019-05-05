@@ -296,6 +296,7 @@ public class Event {
 }
 
 /**
+ * TODO delete this at some point
  * Meeting notes:
  *
  * Query with additional filter for more results
@@ -304,5 +305,8 @@ public class Event {
  * Don't scroll for leaderboard/picks
  * Link opens in a new window (location = _tab?)
  * Modal with link in it?
+ *
+ * Purge database? (nah)
+ * Change categories to categories + alias
  *
  */
