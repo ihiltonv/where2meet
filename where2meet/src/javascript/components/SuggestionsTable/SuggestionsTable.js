@@ -2,6 +2,7 @@ import React from 'react';
 import './SuggestionsTable.css'
 import StarRatings from 'react-star-ratings';
 import DollarSignComponent from '../DollarSignComponent/DollarSignComponent'
+import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
 
 class SuggestionsTable extends React.Component {
     constructor() {
@@ -11,10 +12,10 @@ class SuggestionsTable extends React.Component {
     render() {
         const { data, showRank } = this.props;
         return (
-            <div className={"tableContainer"}>
-                <div className={"tableBody"}>
+            <div className={"tableContainer"} >
+                <div className={"tableBody"} >
                     {data.map((data, index) => (
-                        <div className={"tableRow"} key={index} ref={data.ref}>
+                        <Element className={"tableRow"} key={index} name={data.venue + ":" + data.id} id={data.venue + ":" + data.id}>
                             {showRank && <div className={"rankNum"} align="center">{index + 1}</div>}
                             <div className={"imgContainer"} style={{ "background-image": `url(${data.photo})` }} />
 
@@ -67,7 +68,7 @@ class SuggestionsTable extends React.Component {
 
                             </div>
 
-                        </div>
+                        </Element>
                     ))}
                 </div>
             </div>

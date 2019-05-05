@@ -5,7 +5,8 @@ import {
     withScriptjs,
     withGoogleMap,
     GoogleMap,
-    Marker
+    Marker,
+    Circle
 } from "react-google-maps";
 
 const MapComponent = compose(
@@ -13,7 +14,7 @@ const MapComponent = compose(
         googleMapURL:
             "https://maps.googleapis.com/maps/api/js?key=AIzaSyCj4HG2u7yGcDfeRgnjUvExu09hDGEMhgU&v=3.exp&libraries=geometry,drawing,places",
         loadingElement: <div style={{ height: `100%` }} />,
-        containerElement: <div style={{ height: `400px` }} />,
+        containerElement: <div style={{ height: `100%` }} />,
         mapElement: <div style={{ height: `100%` }} />
     }),
     withScriptjs,
@@ -23,7 +24,12 @@ const MapComponent = compose(
         {props.markers.map(m => (<Marker key={m.id}
             position={{ lat: m.lat, lng: m.lon }}
             title={m.venue}
-            onClick={e => console.log(m.venue)} />))}
+            onClick={e => props.scrollTo(m.venue + ":" + m.id)} />))}
+        <Circle
+            center={{ lat: props.lat, lng: props.lon }}
+            visible={true}
+            radius={10}
+        />
     </GoogleMap >
 ));
 

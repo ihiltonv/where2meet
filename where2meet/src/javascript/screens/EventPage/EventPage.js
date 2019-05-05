@@ -52,6 +52,7 @@ class EventPage extends React.Component {
             filteredSuggestionList: [],
             leaderBoardList: [{}, {}, {}],
             yourPicksList: [{}, {}, {}],
+            prevSelected: null,
         };
     }
 
@@ -88,6 +89,32 @@ class EventPage extends React.Component {
             .catch(function (error) {
                 console.log(error);
             });
+
+        Events.scrollEvent.register('begin', function () {
+            console.log("begin", arguments);
+        });
+
+        Events.scrollEvent.register('end', function () {
+            console.log("end", arguments);
+        });
+
+        scrollSpy.update();
+    }
+
+
+    scrollTo = (elem) => {
+        console.log("scrolling to " + elem)
+        scroller.scrollTo(elem, {
+            duration: 800,
+            delay: 0,
+            smooth: "easeInOutQuart",
+            containerId: "suggTable",
+            offset: -100
+        });
+        this.state.prevSelected && this.state.prevSelected.removeAttribute("style");
+        this.setState({ prevSelected: document.getElementById(elem) });
+        document.getElementById(elem).setAttribute("style", "border-color: #4da6ff; border-width: 8px")
+
     }
 
     submitName = (name) => {
@@ -306,6 +333,7 @@ class EventPage extends React.Component {
                                     }}
                                 >$
                                 </button>
+                                {/* <button onClick={this.scrollTo("res6")}>CLICK</button> */}
                                 <button className={"dollarButton"} value={1}
                                     onClick={this.changeDollarButtonState}
                                     style={{
@@ -357,7 +385,7 @@ class EventPage extends React.Component {
 
                 </div>
                 {/*suggestions list*/}
-                <div className={"suggestionsBoardContainer"}>
+                <div className={"suggestionsBoardContainer"} id={"suggTable"}>
                     <div className={"tableTitle"}>
                         Some Suggestions
                     </div>
@@ -376,17 +404,17 @@ class EventPage extends React.Component {
                             <div className={"tableTitle"}>
                                 LeaderBoard
                         </div>
-                            <LeaderboardTable showRank={true} data={this.state.leaderBoardList} />
+                            <LeaderboardTable showRank={true} data={this.state.leaderBoardList} scrollTo={this.scrollTo} />
                         </div>
                         <div className={"eachTable"}>
                             <div className={"tableTitle"}>
                                 Your Picks
                         </div>
-                            <LeaderboardTable showRank={true} data={this.state.yourPicksList} />
+                            <LeaderboardTable showRank={true} data={this.state.yourPicksList} scrollTo={this.scrollTo} />
                         </div>
                     </div>
-                    {this.state.filteredSuggestionList[0] && <div className={"gmap"}>
-                        <GoogleMap zoom={12} lat={this.state.latlon[0]} lon={this.state.latlon[1]} markers={this.state.filteredSuggestionList} />
+                    {this.state.latlon[0] && <div className={"gmap"}>
+                        <GoogleMap zoom={12} lat={this.state.latlon[0]} lon={this.state.latlon[1]} markers={this.state.filteredSuggestionList} scrollTo={this.scrollTo} />
                     </div>}
                 </div>
 

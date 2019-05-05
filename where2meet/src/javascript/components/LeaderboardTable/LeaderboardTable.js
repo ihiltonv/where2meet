@@ -2,6 +2,7 @@ import React from 'react';
 import './LeaderboardTable.css'
 import StarRatings from 'react-star-ratings';
 import DollarSignComponent from '../DollarSignComponent/DollarSignComponent'
+import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
 
 class LeaderboardTable extends React.Component {
     constructor() {
@@ -9,7 +10,7 @@ class LeaderboardTable extends React.Component {
     }
 
     render() {
-        const { data } = this.props;
+        const { data, scrollTo } = this.props;
         return (
             <div className={"tableContainer"}>
                 <div className={"tableBody"}>
@@ -28,9 +29,11 @@ class LeaderboardTable extends React.Component {
                                         {/* <div className={"category"}>
                                             {data.category}
                                         </div> */}
-                                        {data.venue && <a className={"venueName2"} href={data.url}>
+                                        {/* {data.venue && <Link activeClass="active" className={"venueName2"} containerId="suggTable" to="res6" spy={true} smooth={true} duration={500} >
                                             <div>{(data.venue.split("").length > 18) ? data.venue.split("").splice(0, 18).join("") + "..." : data.venue}</div>
-                                            {console.log(data.venue.split("").length)}
+                                        </Link>} */}
+                                        {data.venue && <a className={"venueName2"} onClick={() => scrollTo(data.venue + ":" + data.id)}>
+                                            <div>{(data.venue.split("").length > 18) ? data.venue.split("").splice(0, 18).join("") + "..." : data.venue}</div>
                                         </a>}
 
                                     </div>
