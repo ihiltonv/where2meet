@@ -61,11 +61,21 @@ class EventPage extends React.Component {
             yourPicksList: [{}, {}, {}],
             prevSelected: null,
             socket: new WebSocket(`ws://localhost:4567/voting`),
+            iFrameURL: "",
+            wantiFrame: false,
+            modalHeight: 0,
         };
     }
 
-    openModalHandler = () => {
-        this.setState({
+    openModalHandler = (url, height) => {
+        url ? this.setState({
+            modalHeight: height,
+            isNameModelShowing: true,
+            wantiFrame: true,
+            iFrameURL: url,
+            opacity: "rgba(255,255,255,0.5)"
+        }) : this.setState({
+            modalHeight: height,
             isNameModelShowing: true,
             opacity: "rgba(255,255,255,0.5)"
         });
@@ -74,6 +84,7 @@ class EventPage extends React.Component {
     closeModalHandler = () => {
         this.setState({
             isNameModelShowing: false,
+            wantiFrame: false,
             opacity: "rgba(255,255,255,0)"
         });
     };
@@ -155,7 +166,7 @@ class EventPage extends React.Component {
         this.setState({prevSelected: document.getElementById(elem)});
         document.getElementById(elem).setAttribute("style", "border-color: #4da6ff; border-width: 8px")
 
-    }
+    };
 
     submitName = (name) => {
         let eventId = this.props.match.params.id;
@@ -323,6 +334,14 @@ class EventPage extends React.Component {
         this.socketListener();
         return (
             <div className={"body"}>
+                <UsernameModel
+                    submitName={this.submitName}
+                    show={this.state.isNameModelShowing}
+                    close={this.closeModalHandler}
+                    wantiFrame={this.state.wantiFrame}
+                    url={this.state.iFrameURL}
+                    height={this.state.modalHeight}
+                />
                 {this.state.isNameModelShowing && <div style={{
                     width: "100vw",
                     height: "100vh",
@@ -445,14 +464,11 @@ class EventPage extends React.Component {
                 {/*suggestions list*/}
                 <div className={"suggestionsBoardContainer"} id={"suggTable"}>
                     <div className={"tableTitle"}>
-                        Some Suggestions
+                        Some Suggestions For You!
                     </div>
-                    <UsernameModel
-                        submitName={this.submitName}
-                        show={this.state.isNameModelShowing}
-                        close={this.closeModalHandler}
-                    />
+
                     <SuggestionsTable buttonClicked={this.buttonClicked} showRank={false}
+                                      openModalURL={this.openModalHandler}
                                       data={this.state.filteredSuggestionList}/>
                 </div>
                 {/*top suggestions list*/}

@@ -17,6 +17,7 @@
     "react-google-maps": "^9.4.5",
     "react-google-maps-loader": "^4.2.5",
     "react-google-places-suggest": "^3.7.1",
+    "react-iframe": "^1.8.0",
     "react-motion": "^0.5.2",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
