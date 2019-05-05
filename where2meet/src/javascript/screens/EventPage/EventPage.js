@@ -108,9 +108,6 @@ class EventPage extends React.Component {
                     console.log("Scoring!");
                     let suggestions = this.state.suggestionsList;
 
-                    function findById(sugg){
-
-                    }
                     let oldSuggestion = data.oldSugg;
 
                     oldSuggestion = JSON.parse(oldSuggestion);
@@ -257,7 +254,7 @@ class EventPage extends React.Component {
                 }
 
             }
-            await this.setState({yourPicksList: oldList});
+            //await this.setState({yourPicksList: oldList});
             if (update) {
                 const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
                     ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
