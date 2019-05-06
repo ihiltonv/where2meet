@@ -318,6 +318,7 @@ public class Event {
 }
 
 /**
+ * TODO delete this at some point
  * Meeting notes:
  * <p>
  * Query with additional filter for more results
