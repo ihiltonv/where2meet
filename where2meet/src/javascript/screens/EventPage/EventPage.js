@@ -188,8 +188,18 @@ class EventPage extends React.Component {
             await API.post(`/update/${eventId}`, body).then((response) => {
                 let data = response.data;
                 console.log(data);
+
+                let names = [];
+                let i;
+                for (i = 0; i < data.suggestionsList.length; i = i + 1) {
+                    let name = data.suggestionsList[i].venue;
+                    let temp = '{"value":"' + name + '","label":"' + name + '"}';
+                    names.push(JSON.parse(temp));
+                }
+
                 this.setState({
                     suggestionsList: this.state.suggestionsList.concat(data.suggestionsList),
+                    venueNames: this.state.venueNames.concat(names),
                 })
             })
                 .catch(function (error) {
