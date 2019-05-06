@@ -26,7 +26,7 @@ public class Event {
   // private Suggestion[] suggestions;
   private List<Suggestion> suggestions;
   //default radius to search in, (in meters)
-  private static final int DEFAULT_RADIUS = 8050;
+  private static final int DEFAULT_RADIUS = 16100;
 
   /**
    * Constructor for an Event.
@@ -298,15 +298,11 @@ public class Event {
 /**
  * TODO delete this at some point
  * Meeting notes:
- *
+ * <p>
  * Query with additional filter for more results
  * Potentially add a password
  * Add a map view
  * Don't scroll for leaderboard/picks
  * Link opens in a new window (location = _tab?)
  * Modal with link in it?
- *
- * Purge database? (nah)
- * Change categories to categories + alias
- *
  */

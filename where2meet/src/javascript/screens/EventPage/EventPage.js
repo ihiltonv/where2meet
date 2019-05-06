@@ -4,7 +4,7 @@ import StarRatings from 'react-star-ratings'
 import ThemedStyleSheet from 'react-with-styles/lib/ThemedStyleSheet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/lib/animated';
-import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
+import {DirectLink, Events, scroller, scrollSpy} from "react-scroll";
 
 import DefaultTheme from 'rheostat/lib/themes/DefaultTheme';
 import aphroditeInterface from 'react-with-styles-interface-aphrodite';
@@ -23,9 +23,16 @@ import API from "../../utils/API";
 import UsernameModel from "../../components/UsernameModel/UsernameModel";
 import GoogleMap from '../../components/GoogleMap/GoogleMap'
 
+const MESSAGE_TYPE = {
+    CONNECT: 0,
+    UPDATE: 1,
+    SCORING: 2
+};
+
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
 
+console.log(window.location.host);
 
 class EventPage extends React.Component {
 
@@ -52,11 +59,23 @@ class EventPage extends React.Component {
             filteredSuggestionList: [],
             leaderBoardList: [{}, {}, {}],
             yourPicksList: [{}, {}, {}],
+            prevSelected: null,
+            socket: new WebSocket(`ws://localhost:4567/voting`),
+            iFrameURL: "",
+            wantiFrame: false,
+            modalHeight: 0,
         };
     }
 
-    openModalHandler = () => {
-        this.setState({
+    openModalHandler = (url, height) => {
+        url ? this.setState({
+            modalHeight: height,
+            isNameModelShowing: true,
+            wantiFrame: true,
+            iFrameURL: url,
+            opacity: "rgba(255,255,255,0.5)"
+        }) : this.setState({
+            modalHeight: height,
             isNameModelShowing: true,
             opacity: "rgba(255,255,255,0.5)"
         });
@@ -65,12 +84,61 @@ class EventPage extends React.Component {
     closeModalHandler = () => {
         this.setState({
             isNameModelShowing: false,
+            wantiFrame: false,
             opacity: "rgba(255,255,255,0)"
         });
     };
 
+    socketListener = () => {
+        this.state.socket.onmessage = async msg => {
+            //console.log("message recieved");
+            const data = JSON.parse(msg.data);
+            switch (data.type) {
+                default:
+                    console.log("Unkown message type:" + data.type);
+                    break;
+                case MESSAGE_TYPE.CONNECT:
+                    let str = '{"type":' + String(MESSAGE_TYPE.CONNECT) + ',"event_id":' + String(this.props.match.params.id) + '}'
+                    this.state.socket.send(JSON.parse(JSON.stringify(str)));
+                    break;
+                case MESSAGE_TYPE.UPDATE:
+                    break;
+                case MESSAGE_TYPE.SCORING:
+
+                    console.log("Scoring!");
+                    let suggestions = this.state.suggestionsList;
+
+                    function findById(sugg){
+
+                    }
+                    let oldSuggestion = data.oldSugg;
+
+                    oldSuggestion = JSON.parse(oldSuggestion);
+                    if(oldSuggestion.id != null && suggestions.length > 0){
+                        let temp = suggestions.find(sugg =>{
+                            return sugg.id == oldSuggestion.id;
+                        });
+                        let ind = suggestions.indexOf(temp);
+
+
+                        suggestions[ind].votes = oldSuggestion.votes;
+                    }
+
+                    let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
+                    await this.setState({
+                        leaderBoardList: newList,
+                        suggestionsList: suggestions,
+                    });
+
+                    break;
+            }
+        };
+    };
+
     componentDidMount() {
         let eventId = this.props.match.params.id;
+        this.socketListener();
+
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
             let data = response.data;
@@ -88,7 +156,33 @@ class EventPage extends React.Component {
             .catch(function (error) {
                 console.log(error);
             });
+
+        Events.scrollEvent.register('begin', function () {
+            console.log("begin", arguments);
+        });
+
+        Events.scrollEvent.register('end', function () {
+            console.log("end", arguments);
+        });
+
+        scrollSpy.update();
     }
+
+
+    scrollTo = (elem) => {
+        console.log("scrolling to " + elem)
+        scroller.scrollTo(elem, {
+            duration: 800,
+            delay: 0,
+            smooth: "easeInOutQuart",
+            containerId: "suggTable",
+            offset: -100
+        });
+        this.state.prevSelected && this.state.prevSelected.removeAttribute("style");
+        this.setState({prevSelected: document.getElementById(elem)});
+        document.getElementById(elem).setAttribute("style", "border-color: #4da6ff; border-width: 8px")
+
+    };
 
     submitName = (name) => {
         let eventId = this.props.match.params.id;
@@ -122,7 +216,7 @@ class EventPage extends React.Component {
 
     };
 
-    buttonClicked = (event) => {
+    buttonClicked = async (event) => {
         const val = event.target.value;
         const id = event.target.id;
         console.log(event.target.value);
@@ -131,36 +225,52 @@ class EventPage extends React.Component {
             this.openModalHandler()
         } else {
             console.log(this.state.filteredSuggestionList);
-            const suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
+            let suggestion = this.state.suggestionsList.filter(suggestion => suggestion.id === id);
+            console.log(suggestion);
             let oldList = this.state.yourPicksList;
+            let oldSugg = oldList[3 - ((parseInt(val) + 1) / 2)];
+            let update = true;
 
             if (val === '5') {
                 if (oldList[1].id === id || oldList[2].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
+                    suggestion[0].votes += 5;
                     oldList[0] = suggestion[0];
                 }
             } else if (val === '3') {
                 if (oldList[0].id === id || oldList[2].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
+                    suggestion[0].votes += 3;
                     oldList[1] = suggestion[0];
                 }
             } else {
                 if (oldList[1].id === id || oldList[0].id === id) {
                     alert("Sorry Please Don't Vote for the Same Suggestions Twice");
+                    update = false;
                 } else {
+                    suggestion[0].votes += 1;
                     oldList[2] = suggestion[0];
                 }
 
             }
-            this.setState({ yourPicksList: oldList })
+            await this.setState({yourPicksList: oldList});
+            if (update) {
+                const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
+                    ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
+                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + ',"suggestions":'+
+                    JSON.stringify(this.state.suggestionsList)+'}';
+                this.state.socket.send(JSON.parse(JSON.stringify(msg)));
+            }
 
         }
     };
 
     filterByCategories = (object) => {
-        const { selectedCategories } = this.state;
+        const {selectedCategories} = this.state;
         //filter based on categories
         if (selectedCategories.length === 0) {
             return true;
@@ -175,7 +285,7 @@ class EventPage extends React.Component {
     };
 
     filterBySearchRadius = (object) => {
-        const { searchRadius } = this.state;
+        const {searchRadius} = this.state;
         // filter based on search radius
         if (searchRadius[0] === 0 && searchRadius[1] === 0) {
             return true
@@ -186,7 +296,7 @@ class EventPage extends React.Component {
     };
 
     filterByPopularity = (object) => {
-        const { popularity } = this.state;
+        const {popularity} = this.state;
         // filter based on popularity
         if (popularity === 0) {
             return true;
@@ -197,7 +307,7 @@ class EventPage extends React.Component {
     };
 
     filterByPriceRange = (object) => {
-        const { priceRange } = this.state;
+        const {priceRange} = this.state;
         // filter based on price
         if (priceRange[0] === false && priceRange[1] === false
             && priceRange[2] === false && priceRange[3] === false) {
@@ -224,27 +334,36 @@ class EventPage extends React.Component {
     /*methods for filtering suggestions*/
     filterSuggestions = () => {
         let filteredResult = this.state.suggestionsList.filter(this.isFilterObjectValid);
-        this.setState({ filteredSuggestionList: filteredResult })
+        this.setState({filteredSuggestionList: filteredResult})
     };
 
     changeDollarButtonState = (event) => {
         let dollarArray = this.state.priceRange;
         dollarArray[event.target.value] = dollarArray[event.target.value] ? false : true;
-        this.setState({ priceRange: dollarArray });
+        this.setState({priceRange: dollarArray});
         this.filterSuggestions();
     };
 
 
     render() {
+        this.socketListener();
         return (
             <div className={"body"}>
+                <UsernameModel
+                    submitName={this.submitName}
+                    show={this.state.isNameModelShowing}
+                    close={this.closeModalHandler}
+                    wantiFrame={this.state.wantiFrame}
+                    url={this.state.iFrameURL}
+                    height={this.state.modalHeight}
+                />
                 {this.state.isNameModelShowing && <div style={{
                     width: "100vw",
                     height: "100vh",
                     backgroundColor: this.state.opacity,
                     position: "absolute",
                     zIndex: 100
-                }} />}
+                }}/>}
                 {/*filters sidebar*/}
                 <div className={"filtersContainer"}>
                     {/*Initial inputs*/}
@@ -266,7 +385,7 @@ class EventPage extends React.Component {
                                 <Select
                                     options={this.state.categoryOptions}
                                     onChange={async (selectedOption) => {
-                                        await this.setState({ selectedCategories: selectedOption })
+                                        await this.setState({selectedCategories: selectedOption})
                                         this.filterSuggestions();
                                     }}
                                     closeMenuOnSelect={false}
@@ -274,7 +393,7 @@ class EventPage extends React.Component {
                                     isMulti
                                 />
                             </div>
-                        } />
+                        }/>
                     </div>
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Search Radius"} filter={
@@ -284,7 +403,7 @@ class EventPage extends React.Component {
                                     max={100}
                                     values={this.state.searchRadius}
                                     onValuesUpdated={async (event) => {
-                                        await this.setState({ searchRadius: event.values });
+                                        await this.setState({searchRadius: event.values});
                                         this.filterSuggestions();
                                     }}
                                 />
@@ -293,45 +412,46 @@ class EventPage extends React.Component {
                                     <h1>{this.state.searchRadius[1] / 10.0} miles</h1>
                                 </div>
                             </div>
-                        } />
+                        }/>
                     </div>
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Price Range"} filter={
                             <div className={"dollarButtonContainer"}>
                                 <button className={"dollarButton"} value={0}
-                                    onClick={this.changeDollarButtonState}
-                                    style={{
-                                        "backgroundColor": this.state.priceRange[0] ? "goldenrod" : "white",
-                                        "color": this.state.priceRange[0] ? "white" : "black"
-                                    }}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "backgroundColor": this.state.priceRange[0] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[0] ? "white" : "black"
+                                        }}
                                 >$
                                 </button>
+                                {/* <button onClick={this.scrollTo("res6")}>CLICK</button> */}
                                 <button className={"dollarButton"} value={1}
-                                    onClick={this.changeDollarButtonState}
-                                    style={{
-                                        "backgroundColor": this.state.priceRange[1] ? "goldenrod" : "white",
-                                        "color": this.state.priceRange[1] ? "white" : "black"
-                                    }}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "backgroundColor": this.state.priceRange[1] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[1] ? "white" : "black"
+                                        }}
                                 >$$
                                 </button>
                                 <button className={"dollarButton"} value={2}
-                                    onClick={this.changeDollarButtonState}
-                                    style={{
-                                        "backgroundColor": this.state.priceRange[2] ? "goldenrod" : "white",
-                                        "color": this.state.priceRange[2] ? "white" : "black"
-                                    }}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "backgroundColor": this.state.priceRange[2] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[2] ? "white" : "black"
+                                        }}
                                 >$$$
                                 </button>
                                 <button className={"dollarButton"} value={3}
-                                    onClick={this.changeDollarButtonState}
-                                    style={{
-                                        "backgroundColor": this.state.priceRange[3] ? "goldenrod" : "white",
-                                        "color": this.state.priceRange[3] ? "white" : "black"
-                                    }}
+                                        onClick={this.changeDollarButtonState}
+                                        style={{
+                                            "backgroundColor": this.state.priceRange[3] ? "goldenrod" : "white",
+                                            "color": this.state.priceRange[3] ? "white" : "black"
+                                        }}
                                 >$$$$
                                 </button>
                             </div>
-                        } />
+                        }/>
                     </div>
 
                     <div className={"filtersRow"}>
@@ -346,28 +466,25 @@ class EventPage extends React.Component {
                                     starDimension={'20px'}
                                     starSpacing={'5px'}
                                     changeRating={async (rating) => {
-                                        await this.setState({ popularity: rating });
+                                        await this.setState({popularity: rating});
                                         this.filterSuggestions();
                                     }}
                                     rating={this.state.popularity}
                                 />
                             </div>
-                        } />
+                        }/>
                     </div>
 
                 </div>
                 {/*suggestions list*/}
-                <div className={"suggestionsBoardContainer"}>
+                <div className={"suggestionsBoardContainer"} id={"suggTable"}>
                     <div className={"tableTitle"}>
-                        Some Suggestions
+                        Some Suggestions For You!
                     </div>
-                    <UsernameModel
-                        submitName={this.submitName}
-                        show={this.state.isNameModelShowing}
-                        close={this.closeModalHandler}
-                    />
+
                     <SuggestionsTable buttonClicked={this.buttonClicked} showRank={false}
-                        data={this.state.filteredSuggestionList} />
+                                      openModalURL={this.openModalHandler}
+                                      data={this.state.filteredSuggestionList}/>
                 </div>
                 {/*top suggestions list*/}
                 <div className={"rightSidebar"}>
@@ -375,19 +492,21 @@ class EventPage extends React.Component {
                         <div className={"eachTable"}>
                             <div className={"tableTitle"}>
                                 LeaderBoard
-                        </div>
-                            <LeaderboardTable showRank={true} data={this.state.leaderBoardList} />
+                            </div>
+                            <LeaderboardTable showRank={true} data={this.state.leaderBoardList}
+                                              scrollTo={this.scrollTo}/>
                         </div>
                         <div className={"eachTable"}>
                             <div className={"tableTitle"}>
                                 Your Picks
-                        </div>
-                            <LeaderboardTable showRank={true} data={this.state.yourPicksList} />
+                            </div>
+                            <LeaderboardTable showRank={true} data={this.state.yourPicksList} scrollTo={this.scrollTo}/>
                         </div>
                     </div>
-                    <div className={"gmap"}>
-                        <GoogleMap zoom={12} lat={this.state.latlon[0]} lon={this.state.latlon[1]} markers={this.state.filteredSuggestionList} />
-                    </div>
+                    {this.state.latlon[0] && <div className={"gmap"}>
+                        <GoogleMap zoom={12} lat={this.state.latlon[0]} lon={this.state.latlon[1]}
+                                   markers={this.state.filteredSuggestionList} scrollTo={this.scrollTo}/>
+                    </div>}
                 </div>
 
             </div>
@@ -411,164 +530,3 @@ const geoSuggestInputStyle = {
     "margin-top": "-5%",
     "text-align": "center"
 };
-
-const fakeData = [
-    {
-        "id": "1",
-        "venue": 'Frozen Yogurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "2",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "3",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "4",
-        "venue": 'Frozen Yogurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "5",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "6",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "7",
-        "venue": 'Frozen Yogurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "8",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert",
-        "photo": "photourl"
-    },
-    {
-        "id": "9",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-];
-
-const fakeData2 = [
-    {
-        "id": "1",
-        "venue": 'Frozen yoghurt',
-        "votes": "10",
-        "rating": 4.5,
-        "price": 4,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert",
-
-    },
-    {
-        "id": "2",
-        "venue": 'Ice Cream',
-        "votes": "8",
-        "rating": 4.3,
-        "price": 2,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-    {
-        "id": "3",
-        "venue": 'Cake',
-        "votes": "6",
-        "rating": 3,
-        "price": 1,
-        "location": 'Thayer Street, Providence, RI, 02912',
-        "url": 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        "category": "dessert"
-    },
-];
-
-//setup_live_scores();
-
-const MESSAGE_TYPE = {
-    CONNECT: 0,
-    UPDATE: 1,
-    SCORING: 2
-}
-
-let conn;
-
-const setup_live_scores = () => {
-    console.log("Connecting");
-    conn = new WebSocket(`ws://${window.location.host}/voting`);
-
-    conn.onerror = err => {
-        console.log('Connection error:', err);
-    };
-
-    conn.onmessage = msg => {
-        const data = JSON.parse(msg.data);
-
-        switch (data.type) {
-            case MESSAGE_TYPE.SCORING:
-            //TODO: send suggestions to leaderboard
-        };
-    }
-}
-
-setup_live_scores();
-
-
-//const socket = io(`ws://${window.location.host}/voting`);

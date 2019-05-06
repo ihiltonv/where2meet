@@ -1,14 +1,12 @@
 package edu.brown.cs.where2meet.database;
 
-import edu.brown.cs.where2meet.networking.YelpConnection;
-
-import java.util.Arrays;
+import org.junit.Test;
 
 public class YelpConnectionTest {
 
-  //@Test
+  @Test
   public void testConnect() {
-    YelpConnection.exploreQuery(41.826664, -71.404852, Arrays.asList(""), 500)
-        .forEach(x -> System.out.println(x.getVenue()));
+//    YelpConnection.exploreQuery(41.826664, -71.404852, Arrays.asList(""), 500)
+//        .forEach(x -> System.out.println(x.getVenue()));
   }
 }
