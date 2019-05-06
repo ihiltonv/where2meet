@@ -64,6 +64,8 @@ class EventPage extends React.Component {
             iFrameURL: "",
             wantiFrame: false,
             modalHeight: 0,
+            venueNames:[],
+            selectedNames: [],
         };
     }
 
@@ -139,6 +141,13 @@ class EventPage extends React.Component {
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
             let data = response.data;
+            let names = [];
+            let i;
+            for(i = 0;i < data.suggestionsList.length; i = i + 1){
+                let name = data.suggestionsList[i].venue;
+                let temp = '{"value":"'+name+'","label":"'+name+'"}';
+                names.push(JSON.parse(temp));
+            }
             console.log(data);
             this.setState({
                 latlon: data.location,
@@ -147,8 +156,11 @@ class EventPage extends React.Component {
                 meetingDate: data.meetingDate,
                 suggestionsList: data.suggestionsList,
                 filteredSuggestionList: data.suggestionsList,
-                categoryOptions: data.cats
+                categoryOptions: data.cats,
+                venueNames: names
             })
+            console.log(this.state.venueNames);
+            console.log(this.state.categoryOptions);
         })
             .catch(function (error) {
                 console.log(error);
@@ -266,6 +278,20 @@ class EventPage extends React.Component {
         }
     };
 
+    filterBySearch = (object) => {
+        const {selectedNames} = this.state;
+        //filter based on names.
+        if(selectedNames.length === 0){
+            return true;
+        }else{
+            for(let venue in selectedNames) {
+                if(object.venue === selectedNames[venue].value){
+                    return true;
+                }
+            }
+        }
+    };
+
     filterByCategories = (object) => {
         const {selectedCategories} = this.state;
         //filter based on categories
@@ -326,7 +352,8 @@ class EventPage extends React.Component {
         return this.filterByCategories(object)
             && this.filterByPopularity(object)
             && this.filterByPriceRange(object)
-            && this.filterBySearchRadius(object);
+            && this.filterBySearchRadius(object)
+            && this.filterBySearch(object);
     };
     /*methods for filtering suggestions*/
     filterSuggestions = () => {
@@ -376,6 +403,25 @@ class EventPage extends React.Component {
                     <div>
                         Meeting Date: {this.state.meetingDate}
                     </div>
+                    <div className={"filtersRow"}>
+                        <CollapsableContainer title={"Search"} filter={
+                            <div className={"searchOptionsContainer"}>
+                                <Select
+                                    options={this.state.venueNames}
+                                    onChange={async (selectedOption) => {
+                                        await this.setState({selectedNames: selectedOption})
+                                        this.filterSuggestions();
+                                    }}
+                                    closeMenuOnSelect={false}
+                                    components={makeAnimated()}
+                                    isMulti
+
+                                />
+                            </div>
+                        }/>
+                    </div>
+
+
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Categories"} filter={
                             <div className={"categoryOptionsContainer"}>
