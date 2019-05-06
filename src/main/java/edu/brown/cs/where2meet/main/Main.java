@@ -57,13 +57,13 @@ public final class Main {
     runSparkServer((int) options.valueOf("port"));
   }
 
-  static int getHerokuAssignedPort() {
-    ProcessBuilder processBuilder = new ProcessBuilder();
-    if (processBuilder.environment().get("PORT") != null) {
-      return Integer.parseInt(processBuilder.environment().get("PORT"));
-    }
-    return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
-  }
+//  static int getHerokuAssignedPort() {
+//    ProcessBuilder processBuilder = new ProcessBuilder();
+//    if (processBuilder.environment().get("PORT") != null) {
+//      return Integer.parseInt(processBuilder.environment().get("PORT"));
+//    }
+//    return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
+//  }
 
   private static FreeMarkerEngine createEngine() {
     Configuration config = new Configuration();
@@ -80,7 +80,7 @@ public final class Main {
 
   private void runSparkServer(int port) {
     Spark.webSocket("/voting", EventWebSocket.class);
-    Spark.port(getHerokuAssignedPort());
+    Spark.port(port);
 
     // Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
