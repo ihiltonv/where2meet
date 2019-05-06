@@ -1,5 +1,7 @@
 package edu.brown.cs.where2meet.database;
 
+import static org.junit.Assert.assertTrue;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -55,6 +57,14 @@ public class W2MDatabase {
    * @return a connection to the database.
    */
   private Connection connectToDB(String dbname) {
+    String fileEnding = ".sqlite3";
+    int len = dbname.length();
+    try {
+      assertTrue(len > 8);
+      assertTrue(dbname.substring(len - 8).equals(fileEnding));
+    } catch (AssertionError a) {
+      return null;
+    }
     Connection setup = null;
     try {
       Class.forName("org.sqlite.JDBC");

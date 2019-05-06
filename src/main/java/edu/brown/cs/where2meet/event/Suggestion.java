@@ -83,20 +83,23 @@ public class Suggestion {
     this.location = loc;
   }
 
-  /** sets the dist param by calculating haversine
-   * distance to the event location.
+  /**
+   * sets the dist param by calculating haversine distance to the event
+   * location.
    *
-   * @param event - the event that this suggestion is for
+   * @param event
+   *          - the event that this suggestion is for
    */
   public void setDistFromEvent(Event event) {
-    dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
+    dist = Suggestion.haversineDist(this.lat, this.lon,
+        event.getLocation().get(0), event.getLocation().get(1));
   }
 
   /**
    *
    * @return the distance parameter
    */
-  public double getDist(){
+  public double getDist() {
     return this.dist;
   }
 
@@ -325,22 +328,29 @@ public class Suggestion {
    * @return a Suggestion object with the data from the string.
    */
   public static Suggestion toSugg(String sugg) {
+    try {
+      Suggestion res = new Suggestion();
+      JsonObject ret = (JsonObject) new JsonParser().parse(sugg);
+      res.setId(ret.get("id").getAsString());
+      res.setPrice(ret.get("price").getAsInt());
+      res.setVotes(ret.get("votes").getAsInt());
+      res.setRating(ret.get("rating").getAsDouble());
+      res.setCategory(ret.get("category").getAsString());
+      res.setLocation(ret.get("location").getAsString());
+      res.setUrl(ret.get("url").getAsString());
+      res.setPhoto(ret.get("photo").getAsString());
+      res.setVenue(ret.get("venue").getAsString());
+      res.setLat(ret.get("lat").getAsDouble());
+      res.setLon(ret.get("lon").getAsDouble());
 
-    Suggestion res = new Suggestion();
-    JsonObject ret = (JsonObject) new JsonParser().parse(sugg);
-    res.setId(ret.get("id").getAsString());
-    res.setPrice(ret.get("price").getAsInt());
-    res.setVotes(ret.get("votes").getAsInt());
-    res.setRating(ret.get("rating").getAsDouble());
-    res.setCategory(ret.get("category").getAsString());
-    res.setLocation(ret.get("location").getAsString());
-    res.setUrl(ret.get("url").getAsString());
-    res.setPhoto(ret.get("photo").getAsString());
-    res.setVenue(ret.get("venue").getAsString());
-    res.setLat(ret.get("lat").getAsDouble());
-    res.setLon(ret.get("lon").getAsDouble());
-
-    return res;
+      return res;
+    } catch (ClassCastException err) {
+      System.out.println("ERROR: cannot convert to Suggestion!");
+      return null;
+    } catch (NullPointerException n) {
+      System.out.println("ERROR: String is missing a field!");
+      return null;
+    }
 
   }
 
@@ -395,42 +405,44 @@ public class Suggestion {
 
   public double suggScore(Event event) {
 
-    //Haversine distance to venue from event
+    // Haversine distance to venue from event
     this.setDistFromEvent(event);
-    //Value of the venue in terms of price per cost
+    // Value of the venue in terms of price per cost
     double value = Math.log(this.rating / (1.0 * this.price) + 2.5);
-    //A weight for the rating of the restaurant
+    // A weight for the rating of the restaurant
     double c = 0.25 * value;
-    //The distance is perceived logarithmically, so it is adjusted and inverted
-    //The adjusted distance is multiplied by a value/quality metric
+    // The distance is perceived logarithmically, so it is adjusted and inverted
+    // The adjusted distance is multiplied by a value/quality metric
     double score = (1.0 / Math.log(dist)) * (value + c * this.rating);
 
     return score;
   }
 
-  public static double haversineDist(Double lat1, Double lon1, Double lat2, Double lon2) {
-    final double radius = 3958.8; //miles
+  public static double haversineDist(Double lat1, Double lon1, Double lat2,
+      Double lon2) {
+    final double radius = 3958.8; // miles
 
-//    left part of the square root in haversine's
-    double left =  Math.pow(Math.sin(degreeToRadian(lat2 - lat1) / 2.0), 2.0);
-//    right part of the square root in haversine's
-    double right = Math.cos(degreeToRadian(lat1)) * Math.cos(degreeToRadian(lat2))
-            * Math.pow(Math.sin(degreeToRadian(lon2 - lon1) / 2.0), 2.0);
-
+    // left part of the square root in haversine's
+    double left = Math.pow(Math.sin(degreeToRadian(lat2 - lat1) / 2.0), 2.0);
+    // right part of the square root in haversine's
+    double right = Math.cos(degreeToRadian(lat1))
+        * Math.cos(degreeToRadian(lat2))
+        * Math.pow(Math.sin(degreeToRadian(lon2 - lon1) / 2.0), 2.0);
 
     Double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
-
 
     return dist;
   }
 
   /**
    * This function converts degrees to radians.
-   * @param degree - a degree measurement
+   *
+   * @param degree
+   *          - a degree measurement
    * @return the degree measure in radians
    */
   public static double degreeToRadian(Double degree) {
-    return degree * (Math.PI/180.0);
+    return degree * (Math.PI / 180.0);
   }
 
   @Override

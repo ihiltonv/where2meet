@@ -44,4 +44,38 @@ public class SuggestionComparatorTest {
     assertEquals(sugg.get(0).getVenue(), "three");
   }
 
+  @Test
+  public void testSortEmptyList() {
+    SuggestionComparator comp = new SuggestionComparator();
+    List<Suggestion> sugg = new ArrayList<>();
+    sugg.sort(comp);
+    assertEquals(sugg.size(), 0);
+  }
+
+  @Test
+  public void testSortSameValues() {
+    Suggestion s1 = new Suggestion();
+    s1.setVenue("one");
+    Suggestion s2 = new Suggestion();
+    s2.setVenue("two");
+    Suggestion s3 = new Suggestion();
+    s3.setVenue("three");
+    SuggestionComparator comp = new SuggestionComparator();
+
+    s1.setVotes(3);
+    s2.setVotes(3);
+    s3.setVotes(3);
+
+    List<Suggestion> sugg = new ArrayList<>();
+    sugg.add(s1);
+    sugg.add(s2);
+    sugg.add(s3);
+
+    sugg.sort(comp);
+
+    assertEquals(sugg.get(0).getVenue(), "one");
+    assertEquals(sugg.get(1).getVenue(), "two");
+    assertEquals(sugg.get(2).getVenue(), "three");
+  }
+
 }

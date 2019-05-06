@@ -2,6 +2,7 @@ package edu.brown.cs.where2meet.event;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,25 @@ public class SuggestionTest {
     test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertNotNull(test);
+  }
+
+  @Test
+  public void testGetAndSetDist() {
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(1.0);
+    Event e = new Event("name", coords, "date", "time");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
+    test.setLatLonLoc(1.0, 1.0, "loc");
+    test.setDistFromEvent(e);
+    assert test.getDist() == 0.0;
+
+    test.setLatLonLoc(2.0, 2.0, "loc");
+
+    test.setDistFromEvent(e);
+    assert Math.abs(test.getDist() - 97.696443313) < .000000001;
+
   }
 
   @Test
@@ -147,6 +167,22 @@ public class SuggestionTest {
   }
 
   @Test
+  public void testToSuggBadString() {
+    String s = "BadString";
+    Suggestion sugg = Suggestion.toSugg(s);
+    assertNull(sugg);
+
+  }
+
+  @Test
+  public void testToSuggMissingField() {
+    String s = "{\"id\":\"id\",\"votes\":1,\"rating\":1.0,\"location\":\"loc\",\"url\":\"url\","
+        + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\",\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}";
+    Suggestion sugg = Suggestion.toSugg(s);
+    assertNull(sugg);
+  }
+
+  @Test
   public void testSuggToString() {
     List<Suggestion> suggs = new ArrayList<>();
     Suggestion test1 = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
@@ -164,6 +200,25 @@ public class SuggestionTest {
         + "\"{\\\"id\\\":\\\"id2\\\",\\\"price\\\":2,\\\"votes\\\":2,\\\"rating\\\":2.0,\\\"location\\\":\\\"loc2\\\",\\\"url\\\":\\\"url2\\\","
         + "\\\"category\\\":\\\"cat2\\\",\\\"photo\\\":\\\"photo2\\\",\\\"venue\\\":\\\"ven2\\\",\\\"lat\\\":2.0,\\\"lon\\\":2.0,\\\"distance\\\":0.0}\"]";
     assertEquals(res, comp);
+  }
+
+  @Test
+  public void testSuggToEmptyString() {
+    List<Suggestion> suggs = new ArrayList<>();
+    String res = Suggestion.suggToString(suggs);
+    assertEquals(res, "[]");
+  }
+
+  @Test
+  public void testSetLatLonLoc() {
+    Suggestion s = new Suggestion();
+    assert s.getLat() == 0.0;
+    assert s.getLon() == 0.0;
+    assertEquals(s.getLocation(), "loc");
+    s.setLatLonLoc(1.0, 2.0, "location");
+    assert s.getLat() == 1.0;
+    assert s.getLon() == 2.0;
+    assertEquals(s.getLocation(), "location");
   }
 
 }
