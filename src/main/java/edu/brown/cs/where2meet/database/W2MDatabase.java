@@ -147,7 +147,6 @@ public class W2MDatabase {
           }
         }
       } catch (SQLException err) {
-
       }
 
       return e;
