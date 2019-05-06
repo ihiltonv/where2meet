@@ -1,10 +1,6 @@
 package edu.brown.cs.where2meet.database;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.LoadingCache;
-import edu.brown.cs.where2meet.event.Event;
-import edu.brown.cs.where2meet.event.Suggestion;
-import edu.brown.cs.where2meet.event.User;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,6 +13,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+
+import edu.brown.cs.where2meet.event.Event;
+import edu.brown.cs.where2meet.event.Suggestion;
+import edu.brown.cs.where2meet.event.User;
 
 /**
  * A class to facilitate interacting with the mongodb database.
@@ -31,26 +34,36 @@ public class W2MDatabase {
 
   /**
    * Constructor for the W2MDatabase.
-   * @param dbname the name of the database to use.
+   * 
+   * @param dbname
+   *          the name of the database to use.
    */
   public W2MDatabase(String dbname) {
     W2MDatabase.conn = connectToDB(dbname);
 
-    W2MDatabase.userCache =
-        CacheBuilder.newBuilder().maximumSize(W2MDatabase.MAX_CACHE)
-            .build(new UserCacheLoader());
+    W2MDatabase.userCache = CacheBuilder.newBuilder()
+        .maximumSize(W2MDatabase.MAX_CACHE).build(new UserCacheLoader());
 
-    W2MDatabase.eventCache =
-        CacheBuilder.newBuilder().maximumSize(W2MDatabase.MAX_CACHE)
-            .build(new EventCacheLoader());
+    W2MDatabase.eventCache = CacheBuilder.newBuilder()
+        .maximumSize(W2MDatabase.MAX_CACHE).build(new EventCacheLoader());
   }
 
   /**
    * Establishes a connection to the database.
-   * @param dbname the name of the database to connect to.
+   * 
+   * @param dbname
+   *          the name of the database to connect to.
    * @return a connection to the database.
    */
   private Connection connectToDB(String dbname) {
+    String fileEnding = ".sqlite3";
+    int len = dbname.length();
+    try {
+      assertTrue(len > 8);
+      assertTrue(dbname.substring(len - 8).equals(fileEnding));
+    } catch (AssertionError a) {
+      return null;
+    }
     Connection setup = null;
     try {
       Class.forName("org.sqlite.JDBC");
@@ -76,7 +89,9 @@ public class W2MDatabase {
 
   /**
    * Adds an event to the database.
-   * @param event the event whose data is to be added.
+   * 
+   * @param event
+   *          the event whose data is to be added.
    */
   public static void addEvent(Event event) {
     Long id = event.getId();
@@ -103,7 +118,9 @@ public class W2MDatabase {
 
   /**
    * Gets an event from the database.
-   * @param id the id of the event to be retrieved
+   * 
+   * @param id
+   *          the id of the event to be retrieved
    * @return an event object holding the data from the database.
    */
   public static Event getEvent(Long id) {
@@ -142,7 +159,9 @@ public class W2MDatabase {
 
   /**
    * Adds a user to the user collection in the database.
-   * @param user the user whose data is added to the collection
+   * 
+   * @param user
+   *          the user whose data is added to the collection
    */
   public static void addUser(User user) {
     Long id = user.getId();
@@ -161,7 +180,9 @@ public class W2MDatabase {
 
   /**
    * Gets a user from the database.
-   * @param id the id of the user to be retrieved.
+   * 
+   * @param id
+   *          the id of the user to be retrieved.
    * @return a User object with the data retrieved from the database.
    */
   public static User getUser(Long id) {
@@ -190,8 +211,11 @@ public class W2MDatabase {
 
   /**
    * Gets the id of a name associated with an event.
-   * @param name  the name of the user.
-   * @param event the id of the event.
+   * 
+   * @param name
+   *          the name of the user.
+   * @param event
+   *          the id of the event.
    * @return the id of the user with the corresponding name.
    */
   public static User getUserFromName(String name, Long event) {
@@ -220,8 +244,11 @@ public class W2MDatabase {
   /**
    * returns true if there a user with the given name associated with the given
    * event, false otherwise.
-   * @param name  the name to check.
-   * @param event the id of the event to search.
+   * 
+   * @param name
+   *          the name to check.
+   * @param event
+   *          the id of the event to search.
    * @return true if the user exists in the event, false otherwise.
    */
   public static boolean userExists(String name, Long event) {
@@ -234,15 +261,18 @@ public class W2MDatabase {
 
   /**
    * Gets the user associated with an event.
-   * @param uid the id of the user to get.
-   * @param eid the id of the event to get.
+   * 
+   * @param uid
+   *          the id of the user to get.
+   * @param eid
+   *          the id of the event to get.
    * @return the user associated with the event.
    */
   public static User getUserWithEvent(Long uid, Long eid) {
     User u = W2MDatabase.getUser(uid);
 
-    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
-        "SELECT price, rating, distance,category,s1,s2,s3 "
+    try (PreparedStatement prep = W2MDatabase.conn
+        .prepareStatement("SELECT price, rating, distance,category,s1,s2,s3 "
             + "FROM events_users WHERE (user_id = ? AND event_id = ?);")) {
       prep.setLong(1, uid);
       prep.setLong(2, eid);
@@ -271,7 +301,9 @@ public class W2MDatabase {
 
   /**
    * Loads an event to be stored in the cache.
-   * @param id the id of the event to be stored.
+   * 
+   * @param id
+   *          the id of the event to be stored.
    * @return the event to be stored.
    */
   public static Event loadEvent(Long id) {
@@ -312,7 +344,9 @@ public class W2MDatabase {
 
   /**
    * Loads a user to be stored in the cache.
-   * @param id the id of the user to be stored
+   * 
+   * @param id
+   *          the id of the user to be stored
    * @return the user to be stored.
    */
   public static User loadUser(Long id) {
@@ -341,8 +375,11 @@ public class W2MDatabase {
 
   /**
    * Adds a user to an event in the events_users table of the database.
-   * @param user  the user to add
-   * @param event the id of the event with which the user is associated.
+   * 
+   * @param user
+   *          the user to add
+   * @param event
+   *          the id of the event with which the user is associated.
    */
   public static void addUserToEvent(User user, Long event) {
 
@@ -366,8 +403,11 @@ public class W2MDatabase {
 
   /**
    * Updates the filters for a user in the events_users table.
-   * @param user  the user whose data is to be updated.
-   * @param event the event with which the user is associated.
+   * 
+   * @param user
+   *          the user whose data is to be updated.
+   * @param event
+   *          the event with which the user is associated.
    */
   public static void updateUser(User user, Long event) {
     try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
@@ -392,7 +432,9 @@ public class W2MDatabase {
 
   /**
    * Updates the values of an event in the database.
-   * @param event the event to update.
+   * 
+   * @param event
+   *          the event to update.
    */
   public static void updateEvent(Event event) {
     Long id = event.getId();
@@ -423,16 +465,16 @@ public class W2MDatabase {
    * Creates the tables for the db. Primarily used for testing.
    */
   public void createdb() {
-    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, "
+    try (PreparedStatement prep = W2MDatabase.conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, "
             + "'name' TEXT);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'events'"
+    try (PreparedStatement prep = W2MDatabase.conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'events'"
             + "('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, "
             + "'longitude' INTEGER, 'date' TEXT, 'time' TEXT, 's1'"
             + " TEXT);")) {
@@ -441,8 +483,8 @@ public class W2MDatabase {
       System.out.println();
     }
 
-    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'events_users'"
+    try (PreparedStatement prep = W2MDatabase.conn
+        .prepareStatement("CREATE TABLE IF NOT EXISTS 'events_users'"
             + "('event_id' INTEGER, 'user_id' INTEGER, 'price' INTEGER, "
             + "'rating' INTEGER, 'distance' INTEGER, category TEXT,'s1' "
             + "TEXT, 's2' TEXT, 's3' TEXT);")) {
@@ -496,7 +538,9 @@ public class W2MDatabase {
 
   /**
    * deletes an event from the events and events_users tables.
-   * @param event the id of the event to delete.
+   * 
+   * @param event
+   *          the id of the event to delete.
    */
   public void deleteEvent(Long event) {
     try (PreparedStatement prep = W2MDatabase.conn
@@ -518,6 +562,7 @@ public class W2MDatabase {
 
   /**
    * Gets the connection for this database for testing purposes.
+   * 
    * @return the connection of this database.
    */
   public Connection getConn() {

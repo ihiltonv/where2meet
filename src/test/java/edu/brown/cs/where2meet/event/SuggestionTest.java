@@ -1,13 +1,15 @@
 package edu.brown.cs.where2meet.event;
 
-import com.google.gson.JsonObject;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+
+import com.google.gson.JsonObject;
 
 public class SuggestionTest {
 
@@ -22,9 +24,28 @@ public class SuggestionTest {
   }
 
   @Test
+  public void testGetAndSetDist() {
+    List<Double> coords = new ArrayList<>();
+    coords.add(1.0);
+    coords.add(1.0);
+    Event e = new Event("name", coords, "date", "time");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
+    test.setLatLonLoc(1.0, 1.0, "loc");
+    test.setDistFromEvent(e);
+    assert test.getDist() == 0.0;
+
+    test.setLatLonLoc(2.0, 2.0, "loc");
+
+    test.setDistFromEvent(e);
+    assert Math.abs(test.getDist() - 97.696443313) < .000000001;
+
+  }
+
+  @Test
   public void testSetAndGetPrice() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
 
     assertEquals(test.getPrice(), 1);
@@ -34,8 +55,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetVotes() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(test.getVotes(), 1);
     test.setVotes(2);
@@ -44,8 +65,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetRating() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assert test.getRating() == 1.0;
     test.setRating(2);
@@ -54,8 +75,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetLocation() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(test.getLocation(), "loc");
     test.setLocation("loc2");
@@ -64,8 +85,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetUrl() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(test.getUrl(), "url");
     test.setUrl("url2");
@@ -74,8 +95,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetCategory() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(test.getCategory(), "cat");
     test.setCategory("cat2");
@@ -84,8 +105,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetVenue() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(test.getVenue(), "ven");
     test.setVenue("ven2");
@@ -94,8 +115,8 @@ public class SuggestionTest {
 
   @Test
   public void testSetAndGetPhoto() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(test.getPhoto(), "photo");
     test.setPhoto("photo2");
@@ -104,8 +125,8 @@ public class SuggestionTest {
 
   @Test
   public void testToString() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     String tString = test.toString();
     assertEquals(tString,
@@ -117,8 +138,8 @@ public class SuggestionTest {
 
   @Test
   public void testGetAsJsonObject() {
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     JsonObject obj = new JsonObject();
     obj.addProperty("id", "id");
@@ -138,45 +159,78 @@ public class SuggestionTest {
 
   @Test
   public void testToSugg() {
-    String s =
-        "{\"id\":\"id\",\"price\":1,\"votes\":1,\"rating\":1.0,"
-            + "\"location\":\"loc\",\"url\":\"url\","
-            + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\","
-            + "\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}";
+    String s = "{\"id\":\"id\",\"price\":1,\"votes\":1,\"rating\":1.0,"
+        + "\"location\":\"loc\",\"url\":\"url\","
+        + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\","
+        + "\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}";
     Suggestion sugg = Suggestion.toSugg(s);
-    Suggestion test =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test.setLatLonLoc(1.0, 1.0, "loc");
     assertEquals(sugg, test);
   }
 
   @Test
+  public void testToSuggBadString() {
+    String s = "BadString";
+    Suggestion sugg = Suggestion.toSugg(s);
+    assertNull(sugg);
+
+  }
+
+  @Test
+  public void testToSuggMissingField() {
+    String s = "{\"id\":\"id\",\"votes\":1,\"rating\":1.0,\"location\":\"loc\",\"url\":\"url\","
+        + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\",\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}";
+    Suggestion sugg = Suggestion.toSugg(s);
+    assertNull(sugg);
+  }
+
+  @Test
   public void testSuggToString() {
     List<Suggestion> suggs = new ArrayList<>();
-    Suggestion test1 =
-        new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo", "ven");
+    Suggestion test1 = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
+        "ven");
     test1.setLatLonLoc(1.0, 1.0, "loc");
-    Suggestion test2 =
-        new Suggestion("id2", 2, 2, 2.0, "url2", "cat2", "photo2", "ven2");
+    Suggestion test2 = new Suggestion("id2", 2, 2, 2.0, "url2", "cat2",
+        "photo2", "ven2");
     test2.setLatLonLoc(2.0, 2.0, "loc2");
 
     suggs.add(test1);
     suggs.add(test2);
     String res = Suggestion.suggToString(suggs, false);
-    String comp =
-        "[\"{\\\"id\\\":\\\"id\\\",\\\"price\\\":1,\\\"votes\\\":1,"
-            + "\\\"rating\\\":1.0,\\\"location\\\":\\\"loc\\\","
-            + "\\\"url\\\":\\\"url\\\","
-            + "\\\"category\\\":\\\"cat\\\",\\\"photo\\\":\\\"photo\\\","
-            + "\\\"venue\\\":\\\"ven\\\",\\\"lat\\\":1.0,\\\"lon\\\":1.0,"
-            + "\\\"distance\\\":0.0}\","
-            + "\"{\\\"id\\\":\\\"id2\\\",\\\"price\\\":2,\\\"votes\\\":2,"
-            + "\\\"rating\\\":2.0,\\\"location\\\":\\\"loc2\\\","
-            + "\\\"url\\\":\\\"url2\\\","
-            + "\\\"category\\\":\\\"cat2\\\",\\\"photo\\\":\\\"photo2\\\","
-            + "\\\"venue\\\":\\\"ven2\\\",\\\"lat\\\":2.0,\\\"lon\\\":2.0,"
-            + "\\\"distance\\\":0.0}\"]";
+    String comp = "[\"{\\\"id\\\":\\\"id\\\",\\\"price\\\":1,\\\"votes\\\":1,"
+        + "\\\"rating\\\":1.0,\\\"location\\\":\\\"loc\\\","
+        + "\\\"url\\\":\\\"url\\\","
+        + "\\\"category\\\":\\\"cat\\\",\\\"photo\\\":\\\"photo\\\","
+        + "\\\"venue\\\":\\\"ven\\\",\\\"lat\\\":1.0,\\\"lon\\\":1.0,"
+        + "\\\"distance\\\":0.0}\","
+        + "\"{\\\"id\\\":\\\"id2\\\",\\\"price\\\":2,\\\"votes\\\":2,"
+        + "\\\"rating\\\":2.0,\\\"location\\\":\\\"loc2\\\","
+        + "\\\"url\\\":\\\"url2\\\","
+        + "\\\"category\\\":\\\"cat2\\\",\\\"photo\\\":\\\"photo2\\\","
+        + "\\\"venue\\\":\\\"ven2\\\",\\\"lat\\\":2.0,\\\"lon\\\":2.0,"
+        + "\\\"distance\\\":0.0}\"]";
     assertEquals(res, comp);
+  }
+
+  @Test
+  public void testSuggToEmptyString() {
+    List<Suggestion> suggs = new ArrayList<>();
+    String res = Suggestion.suggToString(suggs, false);
+    assertEquals(res, "[]");
+  }
+
+  @Test
+  public void testSetLatLonLoc() {
+    Suggestion s = new Suggestion();
+    assert s.getLat() == 0.0;
+    assert s.getLon() == 0.0;
+    assertEquals(s.getLocation(), "loc");
+    s.setLatLonLoc(1.0, 2.0, "location");
+    assert s.getLat() == 1.0;
+    assert s.getLon() == 2.0;
+    assertEquals(s.getLocation(), "location");
   }
 
 }
