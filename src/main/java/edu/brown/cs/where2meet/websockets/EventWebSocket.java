@@ -28,20 +28,7 @@ public class EventWebSocket {
 
   private static final Gson GSON = new Gson();
   private static final Queue<Session> sessions = new ConcurrentLinkedQueue<>();
-  // private static int nextId = 0;
   private static final Map<Long, ConcurrentLinkedQueue<Session>> eventMap = new ConcurrentHashMap<>();
-  // private static final Map<Session, Thread> threadMap = new
-  // ConcurrentHashMap();
-
-  /**
-   * CONNECT: event_id: event id event_name: event name event_lat: event lat
-   * event_lng: event longitude event_time: event's time event_date: event's
-   * date user_name: user name user_lat: user latitude user_lng: user longitude
-   *
-   * UPDATE: event_id: event id, user_id: user id, votes: the votes to assign to
-   * the new suggestion, suggestion: the new suggestion to which votes are
-   * assigned.
-   */
 
   private static enum MESSAGE_TYPE {
     CONNECT, UPDATE, SCORING
@@ -57,12 +44,14 @@ public class EventWebSocket {
   }
 
   /**
+   * Handles sending initial data to the client.
    *
    * @param session
    *          the connecting session.
    *
    * @param message
    *          the message with the connection.
+   *
    * @throws IOException
    */
   public void connected(Session session, String message) throws IOException {
@@ -82,6 +71,7 @@ public class EventWebSocket {
     Suggestion s2 = suggestions.get(1);
     Suggestion s3 = suggestions.get(2);
 
+    // populates response object with initial data.
     if (s1.getVotes() > 0) {
       leaderboard.addProperty("s1", GSON.toJson(s1.getAsJsonObject()));
     } else {
@@ -98,6 +88,7 @@ public class EventWebSocket {
       leaderboard.addProperty("s3", GSON.toJson(new JsonObject()));
     }
 
+    leaderboard.addProperty("oldSugg", GSON.toJson(new JsonObject()));
     session.getRemote().sendString(GSON.toJson(leaderboard));
 
     if (eventMap.get(eid) == null) {
@@ -107,6 +98,16 @@ public class EventWebSocket {
 
   }
 
+  /**
+   * Updates the event suggestions according to what is voted for.
+   *
+   * @param session
+   *          the session the data was sent from.
+   * @param received
+   *          the message sent by the client.
+   * @throws IOException
+   *           if the response cannot be sent.
+   */
   private void updateLeaderBoard(Session session, JsonObject received)
       throws IOException {
     int userVotes = received.get("votes").getAsInt();
@@ -116,7 +117,7 @@ public class EventWebSocket {
     List<Suggestion> eventSuggestions = event.getSuggestions();
     String sId = received.get("suggestion").getAsString();
     String sId2 = received.get("oldSuggestion").getAsString();
-    // get suggestion id rather than suggestion as a json object
+
     Suggestion newSugg = null;
     Suggestion oldSugg = null;
     for (Suggestion s : eventSuggestions) {
@@ -127,6 +128,7 @@ public class EventWebSocket {
         oldSugg = s;
       }
     }
+    // update new suggestion.
     if (newSugg == null) {
       newSugg = W2MDatabase
           .getSuggestion(received.get("suggestion").getAsString());
@@ -140,6 +142,7 @@ public class EventWebSocket {
       eventSuggestions.add(newSugg);
     }
 
+    // update old suggestion.
     try {
       oldSugg.setVotes(oldSugg.getVotes() - userVotes);
       ind = eventSuggestions.indexOf(oldSugg);
@@ -152,11 +155,13 @@ public class EventWebSocket {
       System.out.println("Old sugg isn't real");
     }
 
+    // sort suggestions.
     SuggestionComparator comp = new SuggestionComparator();
     eventSuggestions.sort(comp);
     event.setSuggestions(eventSuggestions);
     W2MDatabase.updateEvent(event);
 
+    // build response object.
     Suggestion s1 = eventSuggestions.get(0);
     Suggestion s2 = eventSuggestions.get(1);
     Suggestion s3 = eventSuggestions.get(2);
@@ -177,7 +182,13 @@ public class EventWebSocket {
     } else {
       response.addProperty("s3", GSON.toJson(new JsonObject()));
     }
+    if (oldSugg == null) {
+      response.addProperty("oldSugg", GSON.toJson(new JsonObject()));
+    } else {
+      response.addProperty("oldSugg", GSON.toJson(oldSugg.getAsJsonObject()));
+    }
 
+    // send response to every client in the event.
     for (Session s : eventMap.get(eid)) {
       s.getRemote().sendString(GSON.toJson(response));
     }
@@ -186,7 +197,6 @@ public class EventWebSocket {
   @OnWebSocketClose
   public void closed(Session session, int statusCode, String reason) {
     sessions.remove(session);
-    // threadMap.remove(session);
     Collection<ConcurrentLinkedQueue<Session>> values = eventMap.values();
     Iterator<ConcurrentLinkedQueue<Session>> iter = values.iterator();
     while (iter.hasNext()) {

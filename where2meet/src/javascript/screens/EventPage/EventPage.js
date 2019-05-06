@@ -61,11 +61,23 @@ class EventPage extends React.Component {
             yourPicksList: [{}, {}, {}],
             prevSelected: null,
             socket: new WebSocket(`ws://localhost:4567/voting`),
+            iFrameURL: "",
+            wantiFrame: false,
+            modalHeight: 0,
+            venueNames: [],
+            selectedNames: [],
         };
     }
 
-    openModalHandler = () => {
-        this.setState({
+    openModalHandler = (url, height) => {
+        url ? this.setState({
+            modalHeight: height,
+            isNameModelShowing: true,
+            wantiFrame: true,
+            iFrameURL: url,
+            opacity: "rgba(255,255,255,0.5)"
+        }) : this.setState({
+            modalHeight: height,
             isNameModelShowing: true,
             opacity: "rgba(255,255,255,0.5)"
         });
@@ -74,35 +86,49 @@ class EventPage extends React.Component {
     closeModalHandler = () => {
         this.setState({
             isNameModelShowing: false,
+            wantiFrame: false,
             opacity: "rgba(255,255,255,0)"
         });
     };
 
     socketListener = () => {
         this.state.socket.onmessage = async msg => {
-            console.log("message recieved");
+            //console.log("message recieved");
             const data = JSON.parse(msg.data);
             switch (data.type) {
                 default:
                     console.log("Unkown message type:" + data.type);
                     break;
                 case MESSAGE_TYPE.CONNECT:
-                    console.log("Connected!");
                     let str = '{"type":' + String(MESSAGE_TYPE.CONNECT) + ',"event_id":' + String(this.props.match.params.id) + '}'
                     this.state.socket.send(JSON.parse(JSON.stringify(str)));
                     break;
                 case MESSAGE_TYPE.UPDATE:
                     break;
                 case MESSAGE_TYPE.SCORING:
+
                     console.log("Scoring!");
+                    let suggestions = this.state.suggestionsList;
+
+                    let oldSuggestion = data.oldSugg;
+
+                    oldSuggestion = JSON.parse(oldSuggestion);
+                    if (oldSuggestion.id != null && suggestions.length > 0) {
+                        let temp = suggestions.find(sugg => {
+                            return sugg.id == oldSuggestion.id;
+                        });
+                        let ind = suggestions.indexOf(temp);
+
+
+                        suggestions[ind].votes = oldSuggestion.votes;
+                    }
 
                     let newList = [JSON.parse(data.s1), JSON.parse(data.s2), JSON.parse(data.s3)];
-
-
                     await this.setState({
                         leaderBoardList: newList,
-                        //suggestionsList: this.state.suggestionsList,
+                        suggestionsList: suggestions,
                     });
+
                     break;
             }
         };
@@ -115,6 +141,13 @@ class EventPage extends React.Component {
         // get the required data from the database
         API.get(`/event/${eventId}`).then((response) => {
             let data = response.data;
+            let names = [];
+            let i;
+            for (i = 0; i < data.suggestionsList.length; i = i + 1) {
+                let name = data.suggestionsList[i].venue;
+                let temp = '{"value":"' + name + '","label":"' + name + '"}';
+                names.push(JSON.parse(temp));
+            }
             console.log(data);
             this.setState({
                 latlon: data.location,
@@ -123,8 +156,11 @@ class EventPage extends React.Component {
                 meetingDate: data.meetingDate,
                 suggestionsList: data.suggestionsList,
                 filteredSuggestionList: data.suggestionsList,
-                categoryOptions: data.cats
+                categoryOptions: data.cats,
+                venueNames: names
             })
+            console.log(this.state.venueNames);
+            console.log(this.state.categoryOptions);
         })
             .catch(function (error) {
                 console.log(error);
@@ -176,7 +212,7 @@ class EventPage extends React.Component {
         this.setState({ prevSelected: document.getElementById(elem) });
         document.getElementById(elem).setAttribute("style", "border-color: #4da6ff; border-width: 8px")
 
-    }
+    };
 
     submitName = (name) => {
         let eventId = this.props.match.params.id;
@@ -251,16 +287,29 @@ class EventPage extends React.Component {
                 }
 
             }
-            await this.setState({ yourPicksList: oldList });
+            //await this.setState({yourPicksList: oldList});
             if (update) {
                 const msg = '{"type":' + String(MESSAGE_TYPE.UPDATE) + ',"votes":' + String(val) +
                     ',"event":' + String(this.props.match.params.id) + ',"suggestion":' +
-                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + '}';
-                console.log(msg);
-                console.log(suggestion[0]);
+                    String(suggestion[0].id) + ',"oldSuggestion":' + String(oldSugg.id) + ',"suggestions":' +
+                    JSON.stringify(this.state.suggestionsList) + '}';
                 this.state.socket.send(JSON.parse(JSON.stringify(msg)));
             }
 
+        }
+    };
+
+    filterBySearch = (object) => {
+        const { selectedNames } = this.state;
+        //filter based on names.
+        if (selectedNames.length === 0) {
+            return true;
+        } else {
+            for (let venue in selectedNames) {
+                if (object.venue === selectedNames[venue].value) {
+                    return true;
+                }
+            }
         }
     };
 
@@ -324,7 +373,8 @@ class EventPage extends React.Component {
         return this.filterByCategories(object)
             && this.filterByPopularity(object)
             && this.filterByPriceRange(object)
-            && this.filterBySearchRadius(object);
+            && this.filterBySearchRadius(object)
+            && this.filterBySearch(object);
     };
     /*methods for filtering suggestions*/
     filterSuggestions = () => {
@@ -344,6 +394,14 @@ class EventPage extends React.Component {
         this.socketListener();
         return (
             <div className={"body"}>
+                <UsernameModel
+                    submitName={this.submitName}
+                    show={this.state.isNameModelShowing}
+                    close={this.closeModalHandler}
+                    wantiFrame={this.state.wantiFrame}
+                    url={this.state.iFrameURL}
+                    height={this.state.modalHeight}
+                />
                 {this.state.isNameModelShowing && <div style={{
                     width: "100vw",
                     height: "100vh",
@@ -366,6 +424,25 @@ class EventPage extends React.Component {
                     <div>
                         Meeting Date: {this.state.meetingDate}
                     </div>
+                    <div className={"filtersRow"}>
+                        <CollapsableContainer title={"Search"} filter={
+                            <div className={"searchOptionsContainer"}>
+                                <Select
+                                    options={this.state.venueNames}
+                                    onChange={async (selectedOption) => {
+                                        await this.setState({ selectedNames: selectedOption })
+                                        this.filterSuggestions();
+                                    }}
+                                    closeMenuOnSelect={false}
+                                    components={makeAnimated()}
+                                    isMulti
+
+                                />
+                            </div>
+                        } />
+                    </div>
+
+
                     <div className={"filtersRow"}>
                         <CollapsableContainer title={"Categories"} filter={
                             <div className={"categoryOptionsContainer"}>
@@ -467,18 +544,16 @@ class EventPage extends React.Component {
                 {/*suggestions list*/}
                 <div className={"suggestionsBoardContainer"} id={"suggTable"}>
                     <div className={"tableTitle"}>
-                        Some Suggestions
+                        Some Suggestions For You!
                     </div>
-                    <UsernameModel
-                        submitName={this.submitName}
-                        show={this.state.isNameModelShowing}
-                        close={this.closeModalHandler}
-                    />
+
                     <SuggestionsTable buttonClicked={this.buttonClicked} showRank={false}
+                        data={this.state.filteredSuggestionList} openModalURL={this.openModalHandler}
                         data={this.state.filteredSuggestionList} />
                     <div className="addButtonContainer">
                         <button className={"addMoreButton"} onClick={this.loadMore}>Load More</button>
                     </div>
+
                 </div>
                 {/*top suggestions list*/}
                 <div className={"rightSidebar"}>
