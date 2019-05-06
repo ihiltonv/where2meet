@@ -130,8 +130,10 @@ public class SuggestionTest {
     test.setLatLonLoc(1.0, 1.0, "loc");
     String tString = test.toString();
     assertEquals(tString,
-        "{\"id\":\"id\",\"price\":1,\"votes\":1,\"rating\":1.0,\"location\":\"loc\",\"url\":\"url\","
-            + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\",\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}");
+        "{\"id\":\"id\",\"price\":1,\"votes\":1,\"rating\":1.0,"
+            + "\"location\":\"loc\",\"url\":\"url\","
+            + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\","
+            + "\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}");
   }
 
   @Test
@@ -157,8 +159,10 @@ public class SuggestionTest {
 
   @Test
   public void testToSugg() {
-    String s = "{\"id\":\"id\",\"price\":1,\"votes\":1,\"rating\":1.0,\"location\":\"loc\",\"url\":\"url\","
-        + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\",\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}";
+    String s = "{\"id\":\"id\",\"price\":1,\"votes\":1,\"rating\":1.0,"
+        + "\"location\":\"loc\",\"url\":\"url\","
+        + "\"category\":\"cat\",\"photo\":\"photo\",\"venue\":\"ven\","
+        + "\"lat\":1.0,\"lon\":1.0,\"distance\":0.0}";
     Suggestion sugg = Suggestion.toSugg(s);
     Suggestion test = new Suggestion("id", 1, 1, 1.0, "url", "cat", "photo",
         "ven");
@@ -194,18 +198,26 @@ public class SuggestionTest {
 
     suggs.add(test1);
     suggs.add(test2);
-    String res = Suggestion.suggToString(suggs);
-    String comp = "[\"{\\\"id\\\":\\\"id\\\",\\\"price\\\":1,\\\"votes\\\":1,\\\"rating\\\":1.0,\\\"location\\\":\\\"loc\\\",\\\"url\\\":\\\"url\\\","
-        + "\\\"category\\\":\\\"cat\\\",\\\"photo\\\":\\\"photo\\\",\\\"venue\\\":\\\"ven\\\",\\\"lat\\\":1.0,\\\"lon\\\":1.0,\\\"distance\\\":0.0}\","
-        + "\"{\\\"id\\\":\\\"id2\\\",\\\"price\\\":2,\\\"votes\\\":2,\\\"rating\\\":2.0,\\\"location\\\":\\\"loc2\\\",\\\"url\\\":\\\"url2\\\","
-        + "\\\"category\\\":\\\"cat2\\\",\\\"photo\\\":\\\"photo2\\\",\\\"venue\\\":\\\"ven2\\\",\\\"lat\\\":2.0,\\\"lon\\\":2.0,\\\"distance\\\":0.0}\"]";
+    String res = Suggestion.suggToString(suggs, false);
+    String comp = "[\"{\\\"id\\\":\\\"id\\\",\\\"price\\\":1,\\\"votes\\\":1,"
+        + "\\\"rating\\\":1.0,\\\"location\\\":\\\"loc\\\","
+        + "\\\"url\\\":\\\"url\\\","
+        + "\\\"category\\\":\\\"cat\\\",\\\"photo\\\":\\\"photo\\\","
+        + "\\\"venue\\\":\\\"ven\\\",\\\"lat\\\":1.0,\\\"lon\\\":1.0,"
+        + "\\\"distance\\\":0.0}\","
+        + "\"{\\\"id\\\":\\\"id2\\\",\\\"price\\\":2,\\\"votes\\\":2,"
+        + "\\\"rating\\\":2.0,\\\"location\\\":\\\"loc2\\\","
+        + "\\\"url\\\":\\\"url2\\\","
+        + "\\\"category\\\":\\\"cat2\\\",\\\"photo\\\":\\\"photo2\\\","
+        + "\\\"venue\\\":\\\"ven2\\\",\\\"lat\\\":2.0,\\\"lon\\\":2.0,"
+        + "\\\"distance\\\":0.0}\"]";
     assertEquals(res, comp);
   }
 
   @Test
   public void testSuggToEmptyString() {
     List<Suggestion> suggs = new ArrayList<>();
-    String res = Suggestion.suggToString(suggs);
+    String res = Suggestion.suggToString(suggs, false);
     assertEquals(res, "[]");
   }
 

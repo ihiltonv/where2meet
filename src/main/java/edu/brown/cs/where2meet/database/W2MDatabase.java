@@ -23,7 +23,6 @@ import edu.brown.cs.where2meet.event.User;
 
 /**
  * A class to facilitate interacting with the mongodb database.
- *
  */
 public class W2MDatabase {
 
@@ -35,23 +34,23 @@ public class W2MDatabase {
 
   /**
    * Constructor for the W2MDatabase.
-   *
+   * 
    * @param dbname
    *          the name of the database to use.
    */
   public W2MDatabase(String dbname) {
-    conn = connectToDB(dbname);
+    W2MDatabase.conn = connectToDB(dbname);
 
-    userCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE)
-        .build(new UserCacheLoader());
+    W2MDatabase.userCache = CacheBuilder.newBuilder()
+        .maximumSize(W2MDatabase.MAX_CACHE).build(new UserCacheLoader());
 
-    eventCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE)
-        .build(new EventCacheLoader());
+    W2MDatabase.eventCache = CacheBuilder.newBuilder()
+        .maximumSize(W2MDatabase.MAX_CACHE).build(new EventCacheLoader());
   }
 
   /**
    * Establishes a connection to the database.
-   *
+   * 
    * @param dbname
    *          the name of the database to connect to.
    * @return a connection to the database.
@@ -90,7 +89,7 @@ public class W2MDatabase {
 
   /**
    * Adds an event to the database.
-   *
+   * 
    * @param event
    *          the event whose data is to be added.
    */
@@ -100,7 +99,7 @@ public class W2MDatabase {
     List<Double> coords = event.getLocation();
     String date = event.getDate();
     String time = event.getTime();
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("INSERT INTO events VALUES(?,?,?,?,?,?,?)")) {
       prep.setLong(1, id);
       prep.setString(2, name);
@@ -109,7 +108,7 @@ public class W2MDatabase {
       prep.setString(5, date);
       prep.setString(6, time);
       List<Suggestion> s = event.getSuggestions();
-      prep.setString(7, Suggestion.suggToString(s));
+      prep.setString(7, Suggestion.suggToString(s, true));
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -119,15 +118,15 @@ public class W2MDatabase {
 
   /**
    * Gets an event from the database.
-   *
+   * 
    * @param id
    *          the id of the event to be retrieved
    * @return an event object holding the data from the database.
    */
   public static Event getEvent(Long id) {
     try {
-      Event e = eventCache.get(id);
-      try (PreparedStatement prep = conn.prepareStatement(
+      Event e = W2MDatabase.eventCache.get(id);
+      try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
           "SELECT user_id FROM events_users WHERE event_id = ?;")) {
         prep.setLong(1, id);
         try (ResultSet rs = prep.executeQuery()) {
@@ -139,7 +138,7 @@ public class W2MDatabase {
         System.out.println(err);
       }
 
-      try (PreparedStatement prep = conn
+      try (PreparedStatement prep = W2MDatabase.conn
           .prepareStatement("SELECT s1 FROM events WHERE id = ?")) {
         prep.setLong(1, id);
         try (ResultSet rs = prep.executeQuery()) {
@@ -160,7 +159,7 @@ public class W2MDatabase {
 
   /**
    * Adds a user to the user collection in the database.
-   *
+   * 
    * @param user
    *          the user whose data is added to the collection
    */
@@ -168,7 +167,7 @@ public class W2MDatabase {
     Long id = user.getId();
     String name = user.getName();
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("INSERT INTO users VALUES(?,?)")) {
       prep.setLong(1, id);
       prep.setString(2, name);
@@ -181,16 +180,16 @@ public class W2MDatabase {
 
   /**
    * Gets a user from the database.
-   *
+   * 
    * @param id
    *          the id of the user to be retrieved.
    * @return a User object with the data retrieved from the database.
    */
   public static User getUser(Long id) {
     try {
-      User u = userCache.get(id);
+      User u = W2MDatabase.userCache.get(id);
 
-      try (PreparedStatement prep = conn.prepareStatement(
+      try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
           "SELECT event_id FROM events_users WHERE user_id = ?;")) {
         prep.setLong(1, id);
 
@@ -212,7 +211,7 @@ public class W2MDatabase {
 
   /**
    * Gets the id of a name associated with an event.
-   *
+   * 
    * @param name
    *          the name of the user.
    * @param event
@@ -221,9 +220,9 @@ public class W2MDatabase {
    */
   public static User getUserFromName(String name, Long event) {
     Long uid = null;
-    try (PreparedStatement prep = conn.prepareStatement(
-        "SELECT u.id FROM users AS u, events_users AS eu WHERE (eu.event_id = ? "
-            + "AND u.name = ? AND eu.user_id = u.id);")) {
+    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
+        "SELECT u.id FROM users AS u, events_users AS eu WHERE (eu.event_id ="
+            + " ? " + "AND u.name = ? AND eu.user_id = u.id);")) {
       prep.setLong(1, event);
       prep.setString(2, name);
       try (ResultSet rs = prep.executeQuery()) {
@@ -245,7 +244,7 @@ public class W2MDatabase {
   /**
    * returns true if there a user with the given name associated with the given
    * event, false otherwise.
-   *
+   * 
    * @param name
    *          the name to check.
    * @param event
@@ -253,7 +252,7 @@ public class W2MDatabase {
    * @return true if the user exists in the event, false otherwise.
    */
   public static boolean userExists(String name, Long event) {
-    User user = getUserFromName(name, event);
+    User user = W2MDatabase.getUserFromName(name, event);
     if (user == null) {
       return false;
     }
@@ -262,7 +261,7 @@ public class W2MDatabase {
 
   /**
    * Gets the user associated with an event.
-   *
+   * 
    * @param uid
    *          the id of the user to get.
    * @param eid
@@ -270,9 +269,9 @@ public class W2MDatabase {
    * @return the user associated with the event.
    */
   public static User getUserWithEvent(Long uid, Long eid) {
-    User u = getUser(uid);
+    User u = W2MDatabase.getUser(uid);
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("SELECT price, rating, distance,category,s1,s2,s3 "
             + "FROM events_users WHERE (user_id = ? AND event_id = ?);")) {
       prep.setLong(1, uid);
@@ -302,7 +301,7 @@ public class W2MDatabase {
 
   /**
    * Loads an event to be stored in the cache.
-   *
+   * 
    * @param id
    *          the id of the event to be stored.
    * @return the event to be stored.
@@ -316,7 +315,7 @@ public class W2MDatabase {
     String time = "";
     List<Suggestion> suggestions = new ArrayList<>();
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("SELECT * FROM events WHERE id = ?;")) {
       prep.setLong(1, id);
       try (ResultSet rs = prep.executeQuery()) {
@@ -345,7 +344,7 @@ public class W2MDatabase {
 
   /**
    * Loads a user to be stored in the cache.
-   *
+   * 
    * @param id
    *          the id of the user to be stored
    * @return the user to be stored.
@@ -354,7 +353,7 @@ public class W2MDatabase {
 
     String name = "";
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("SELECT name FROM users WHERE id = ?;")) {
       prep.setLong(1, id);
 
@@ -376,7 +375,7 @@ public class W2MDatabase {
 
   /**
    * Adds a user to an event in the events_users table of the database.
-   *
+   * 
    * @param user
    *          the user to add
    * @param event
@@ -384,7 +383,7 @@ public class W2MDatabase {
    */
   public static void addUserToEvent(User user, Long event) {
 
-    try (PreparedStatement prep = conn.prepareStatement(
+    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
         "INSERT INTO events_users VALUES(?,?,?,?,?,?,?,?,?);")) {
       prep.setLong(1, event);
       prep.setLong(2, user.getId());
@@ -404,14 +403,14 @@ public class W2MDatabase {
 
   /**
    * Updates the filters for a user in the events_users table.
-   *
+   * 
    * @param user
    *          the user whose data is to be updated.
    * @param event
    *          the event with which the user is associated.
    */
   public static void updateUser(User user, Long event) {
-    try (PreparedStatement prep = conn.prepareStatement(
+    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
         "UPDATE events_users SET price = ?, rating = ?, distance = ?, "
             + "category = ?, s1 = ?, s2 = ?, s3 = ? WHERE "
             + "(user_id = ? AND event_id = ?);")) {
@@ -433,7 +432,7 @@ public class W2MDatabase {
 
   /**
    * Updates the values of an event in the database.
-   *
+   * 
    * @param event
    *          the event to update.
    */
@@ -443,7 +442,7 @@ public class W2MDatabase {
     List<Double> coords = event.getLocation();
     String date = event.getDate();
     String time = event.getTime();
-    try (PreparedStatement prep = conn.prepareStatement(
+    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
         "UPDATE events SET name = ?, latitude = ?, longitude = ?, "
             + "date = ?, time = ?, s1 = ? WHERE id = ?")) {
       prep.setLong(7, id);
@@ -453,7 +452,7 @@ public class W2MDatabase {
       prep.setString(4, date);
       prep.setString(5, time);
       List<Suggestion> s = event.getSuggestions();
-      prep.setString(6, Suggestion.suggToString(s));
+      prep.setString(6, Suggestion.suggToString(s, true));
 
       prep.execute();
     } catch (SQLException e) {
@@ -466,7 +465,7 @@ public class W2MDatabase {
    * Creates the tables for the db. Primarily used for testing.
    */
   public void createdb() {
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'users'('id' INTEGER, "
             + "'name' TEXT);")) {
       prep.execute();
@@ -474,7 +473,7 @@ public class W2MDatabase {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'events'"
             + "('id' INTEGER, 'name' TEXT, 'latitude' INTEGER, "
             + "'longitude' INTEGER, 'date' TEXT, 'time' TEXT, 's1'"
@@ -484,7 +483,7 @@ public class W2MDatabase {
       System.out.println();
     }
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("CREATE TABLE IF NOT EXISTS 'events_users'"
             + "('event_id' INTEGER, 'user_id' INTEGER, 'price' INTEGER, "
             + "'rating' INTEGER, 'distance' INTEGER, category TEXT,'s1' "
@@ -494,8 +493,9 @@ public class W2MDatabase {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn.prepareStatement(
-        "CREATE TABLE IF NOT EXISTS 'suggestions'('id' TEXT, 'suggestion' TEXT);")) {
+    try (PreparedStatement prep = W2MDatabase.conn.prepareStatement(
+        "CREATE TABLE IF NOT EXISTS 'suggestions'('id' TEXT, 'suggestion' "
+            + "TEXT);")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
@@ -507,28 +507,28 @@ public class W2MDatabase {
    * testdb size down.
    */
   public void cleardb() {
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("DROP TABLE IF EXISTS users")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("DROP TABLE IF EXISTS events")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("DROP TABLE IF EXISTS events_users")) {
       prep.execute();
     } catch (SQLException e) {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("DROP TABLE IF EXISTS suggestions")) {
       prep.execute();
     } catch (SQLException e) {
@@ -538,12 +538,12 @@ public class W2MDatabase {
 
   /**
    * deletes an event from the events and events_users tables.
-   *
+   * 
    * @param event
    *          the id of the event to delete.
    */
   public void deleteEvent(Long event) {
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("DELETE FROM events WHERE id = ?;")) {
       prep.setLong(1, event);
       prep.execute();
@@ -551,7 +551,7 @@ public class W2MDatabase {
       System.out.println(e);
     }
 
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("DELETE FROM events_users WHERE event_id = ?;")) {
       prep.setLong(1, event);
       prep.execute();
@@ -562,7 +562,7 @@ public class W2MDatabase {
 
   /**
    * Gets the connection for this database for testing purposes.
-   *
+   * 
    * @return the connection of this database.
    */
   public Connection getConn() {
@@ -570,7 +570,7 @@ public class W2MDatabase {
   }
 
   public static void addSuggestion(Suggestion s) {
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("INSERT INTO suggestions VALUES(?,?);")) {
       prep.setString(1, s.getId());
       prep.setString(2, s.toString());
@@ -583,7 +583,7 @@ public class W2MDatabase {
 
   public static Suggestion getSuggestion(String id) {
     Suggestion ret = null;
-    try (PreparedStatement prep = conn
+    try (PreparedStatement prep = W2MDatabase.conn
         .prepareStatement("SELECT suggestion FROM suggestions WHERE id=?;")) {
       try (ResultSet rs = prep.executeQuery()) {
         while (rs.next()) {

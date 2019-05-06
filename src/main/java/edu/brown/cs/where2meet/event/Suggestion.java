@@ -2,11 +2,14 @@ package edu.brown.cs.where2meet.event;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import edu.brown.cs.where2meet.main.Main;
 
 /**
  * Wrapper class for data for a suggestion.
@@ -40,7 +43,7 @@ public class Suggestion {
     this.dist = 0.0;
     this.location = "loc";
     this.url = "url";
-    this.category = "cat";
+    this.category = new JsonObject().toString();
     this.photo = "photo";
     this.venue = "venue";
   }
@@ -71,7 +74,7 @@ public class Suggestion {
     this.votes = votes;
     this.rating = rating;
     this.url = url;
-    this.category = category;
+    this.setCategory(category);
     this.photo = photo;
     this.venue = venue;
     this.dist = 0.0;
@@ -86,17 +89,16 @@ public class Suggestion {
   /**
    * sets the dist param by calculating haversine distance to the event
    * location.
-   *
+   * 
    * @param event
    *          - the event that this suggestion is for
    */
   public void setDistFromEvent(Event event) {
-    dist = Suggestion.haversineDist(this.lat, this.lon,
+    this.dist = Suggestion.haversineDist(this.lat, this.lon,
         event.getLocation().get(0), event.getLocation().get(1));
   }
 
   /**
-   *
    * @return the distance parameter
    */
   public double getDist() {
@@ -242,7 +244,15 @@ public class Suggestion {
    * @return the category
    */
   public String getCategory() {
-    return this.category;
+    if (this.category == null) {
+      return "category";
+    }
+    JsonObject json = Main.GSON.fromJson(this.category, JsonObject.class);
+    if (json.has("label")) {
+      return json.get("label").getAsString();
+    } else {
+      return "category";
+    }
   }
 
   /**
@@ -252,7 +262,56 @@ public class Suggestion {
    *          the category to set
    */
   public void setCategory(String category) {
-    this.category = category;
+    if (category.contains("{") && category.contains("}")) {
+      this.category = category;
+      return;
+    }
+    JsonObject json;
+    if (this.category == null) {
+      json = new JsonObject();
+    } else {
+      json = Main.GSON.fromJson(this.category, JsonObject.class);
+    }
+    json.addProperty("label", category);
+    this.category = json.toString();
+  }
+
+  /**
+   * Get the yelp value of the category.
+   *
+   * @return - the category value.
+   */
+  public String getCatValue() {
+    if (this.category == null) {
+      return "catVal";
+    }
+    JsonObject json = Main.GSON.fromJson(this.category, JsonObject.class);
+    if (json.has("value")) {
+      return json.get("value").getAsString();
+    } else {
+      return "catVal";
+    }
+  }
+
+  /**
+   * Set the yelp value of the category.
+   *
+   * @param catValue
+   *          - the category value.
+   */
+  public void setCatValue(String catValue) {
+    JsonObject json;
+    if (this.category == null) {
+      json = new JsonObject();
+    } else {
+      json = Main.GSON.fromJson(this.category, JsonObject.class);
+    }
+    json.addProperty("value", catValue);
+    this.category = json.toString();
+  }
+
+  public String getCatJson() {
+    return this.category;
   }
 
   /**
@@ -294,7 +353,29 @@ public class Suggestion {
     obj.addProperty("rating", this.rating);
     obj.addProperty("location", this.location);
     obj.addProperty("url", this.url);
-    obj.addProperty("category", this.category);
+    obj.addProperty("category", this.getCategory());
+    obj.addProperty("photo", this.photo);
+    obj.addProperty("venue", this.venue);
+    obj.addProperty("lat", this.lat);
+    obj.addProperty("lon", this.lon);
+    obj.addProperty("distance", this.dist);
+    return obj;
+  }
+
+  /**
+   * Gets a suggestion represented as a JsonObject with full category.
+   *
+   * @return a JsonObject with the data from the caller.
+   */
+  public JsonObject getAsJsonObjectFull() {
+    JsonObject obj = new JsonObject();
+    obj.addProperty("id", this.id);
+    obj.addProperty("price", this.price);
+    obj.addProperty("votes", this.votes);
+    obj.addProperty("rating", this.rating);
+    obj.addProperty("location", this.location);
+    obj.addProperty("url", this.url);
+    obj.addProperty("category", this.getCatJson());
     obj.addProperty("photo", this.photo);
     obj.addProperty("venue", this.venue);
     obj.addProperty("lat", this.lat);
@@ -310,10 +391,14 @@ public class Suggestion {
    *          the suggestion list to translate.
    * @return a string representing a JsonArray of the contents of the list.
    */
-  public static String suggToString(List<Suggestion> s) {
+  public static String suggToString(List<Suggestion> s, boolean fullCat) {
     JsonArray jarray = new JsonArray();
     for (Suggestion sugg : s) {
-      jarray.add(sugg.toString());
+      if (!fullCat) {
+        jarray.add(sugg.toString());
+      } else {
+        jarray.add(sugg.getAsJsonObjectFull().toString());
+      }
     }
 
     return jarray.toString();
@@ -413,7 +498,7 @@ public class Suggestion {
     double c = 0.25 * value;
     // The distance is perceived logarithmically, so it is adjusted and inverted
     // The adjusted distance is multiplied by a value/quality metric
-    double score = (1.0 / Math.log(dist)) * (value + c * this.rating);
+    double score = (1.0 / Math.log(this.dist)) * (value + c * this.rating);
 
     return score;
   }
@@ -423,11 +508,12 @@ public class Suggestion {
     final double radius = 3958.8; // miles
 
     // left part of the square root in haversine's
-    double left = Math.pow(Math.sin(degreeToRadian(lat2 - lat1) / 2.0), 2.0);
+    double left = Math
+        .pow(Math.sin(Suggestion.degreeToRadian(lat2 - lat1) / 2.0), 2.0);
     // right part of the square root in haversine's
-    double right = Math.cos(degreeToRadian(lat1))
-        * Math.cos(degreeToRadian(lat2))
-        * Math.pow(Math.sin(degreeToRadian(lon2 - lon1) / 2.0), 2.0);
+    double right = Math.cos(Suggestion.degreeToRadian(lat1))
+        * Math.cos(Suggestion.degreeToRadian(lat2))
+        * Math.pow(Math.sin(Suggestion.degreeToRadian(lon2 - lon1) / 2.0), 2.0);
 
     Double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
 
@@ -449,80 +535,39 @@ public class Suggestion {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((category == null) ? 0 : category.hashCode());
-    result = prime * result + ((location == null) ? 0 : location.hashCode());
-    result = prime * result + ((photo == null) ? 0 : photo.hashCode());
-    result = prime * result + price;
+    result = prime * result
+        + ((this.category == null) ? 0 : this.category.hashCode());
+    result = prime * result
+        + ((this.location == null) ? 0 : this.location.hashCode());
+    result = prime * result
+        + ((this.photo == null) ? 0 : this.photo.hashCode());
+    result = prime * result + this.price;
     long temp;
-    temp = Double.doubleToLongBits(rating);
+    temp = Double.doubleToLongBits(this.rating);
     result = prime * result + (int) (temp ^ (temp >>> 32));
-    result = prime * result + ((url == null) ? 0 : url.hashCode());
-    result = prime * result + ((venue == null) ? 0 : venue.hashCode());
+    result = prime * result + ((this.url == null) ? 0 : this.url.hashCode());
+    result = prime * result
+        + ((this.venue == null) ? 0 : this.venue.hashCode());
     return result;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
     }
-    if (obj == null) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    Suggestion other = (Suggestion) obj;
-    if (category == null) {
-      if (other.category != null) {
-        return false;
-      }
-    } else if (!category.equals(other.category)) {
-      return false;
-    }
-    if (location == null) {
-      if (other.location != null) {
-        return false;
-      }
-    } else if (!location.equals(other.location)) {
-      return false;
-    }
-    if (photo == null) {
-      if (other.photo != null) {
-        return false;
-      }
-    } else if (!photo.equals(other.photo)) {
-      return false;
-    }
-    if (price != other.price) {
-      return false;
-    }
-    if (Double.doubleToLongBits(rating) != Double
-        .doubleToLongBits(other.rating)) {
-      return false;
-    }
-    if (url == null) {
-      if (other.url != null) {
-        return false;
-      }
-    } else if (!url.equals(other.url)) {
-      return false;
-    }
-    if (venue == null) {
-      if (other.venue != null) {
-        return false;
-      }
-    } else if (!venue.equals(other.venue)) {
-      return false;
-    }
-    return true;
+    Suggestion that = (Suggestion) o;
+    return Objects.equals(this.id, that.id);
   }
 
   /**
    * @return the id
    */
   public String getId() {
-    return id;
+    return this.id;
   }
 
   /**
