@@ -6,6 +6,7 @@ import edu.brown.cs.where2meet.VenueRanker.VenueRanker;
 import edu.brown.cs.where2meet.database.W2MDatabase;
 import edu.brown.cs.where2meet.networking.YelpConnection;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -110,6 +111,27 @@ public class Event {
     }
   }
 
+  /**
+   * Queries for new suggestions and adds them to the events suggestion list.
+   * @param categories - categories to query new suggestions
+   * @return - the new suggestions.
+   */
+  public List<Suggestion> updateSuggestions(List<String> categories) {
+    List<Suggestion> newSuggs = YelpConnection
+        .exploreQuery(this.coordinates.get(0), this.coordinates.get(1),
+            categories, Event.DEFAULT_RADIUS);
+    List<Suggestion> filtered = new ArrayList<>();
+    for (Suggestion sug : newSuggs) {
+      sug.setDistFromEvent(this);
+      sug.getDist();
+      if (!this.suggestions.contains(sug)) {
+        this.suggestions.add(sug);
+        filtered.add(sug);
+      }
+    }
+    return filtered;
+  }
+
 
   /**
    * This function returns a json array of
@@ -124,7 +146,7 @@ public class Event {
       if (!allCats.contains(sug.getCategory())) {
         allCats.add(sug.getCategory());
         JsonObject newEntry = new JsonObject();
-        newEntry.addProperty("value", sug.getCategory());
+        newEntry.addProperty("value", sug.getCatValue());
         newEntry.addProperty("label", sug.getCategory());
         ja.add(newEntry);
       }

@@ -1,4 +1,16 @@
 package edu.brown.cs.where2meet.VenueRanker;
 
-public class testVenueRanker {
+import static org.junit.Assert.assertNotNull;
+
+
+import org.junit.Test;
+
+public class VenueRankerTest {
+
+  @Test
+  public void testConstructor() {
+    VenueRanker test = new VenueRanker();
+    assertNotNull(test);
+  }
+
 }
