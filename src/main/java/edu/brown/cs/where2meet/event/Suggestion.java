@@ -1,12 +1,14 @@
 package edu.brown.cs.where2meet.event;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import edu.brown.cs.where2meet.main.Main;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Wrapper class for data for a suggestion.
@@ -40,38 +42,30 @@ public class Suggestion {
     this.dist = 0.0;
     this.location = "loc";
     this.url = "url";
-    this.category = "cat";
+    this.category = new JsonObject().toString();
     this.photo = "photo";
     this.venue = "venue";
   }
 
   /**
    * Constructor for a suggestion.
-   *
-   * @param price
-   *          the price value.
-   * @param votes
-   *          the votes value
-   * @param rating
-   *          the rating value
-   * @param url
-   *          the url
-   * @param category
-   *          the category string
-   * @param photo
-   *          the url of the photo
-   * @param venue
-   *          the name of the venue
+   * @param price    the price value.
+   * @param votes    the votes value
+   * @param rating   the rating value
+   * @param url      the url
+   * @param category the category string
+   * @param photo    the url of the photo
+   * @param venue    the name of the venue
    */
   // TODO fix checkstyle error!
   public Suggestion(String id, int price, int votes, double rating, String url,
-      String category, String photo, String venue) {
+                    String category, String photo, String venue) {
     this.id = id;
     this.price = price;
     this.votes = votes;
     this.rating = rating;
     this.url = url;
-    this.category = category;
+    this.setCategory(category);
     this.photo = photo;
     this.venue = venue;
     this.dist = 0.0;
@@ -83,26 +77,26 @@ public class Suggestion {
     this.location = loc;
   }
 
-  /** sets the dist param by calculating haversine
+  /**
+   * sets the dist param by calculating haversine
    * distance to the event location.
-   *
    * @param event - the event that this suggestion is for
    */
   public void setDistFromEvent(Event event) {
-    dist = Suggestion.haversineDist(this.lat, this.lon, event.getLocation().get(0), event.getLocation().get(1));
+    this.dist = Suggestion
+        .haversineDist(this.lat, this.lon, event.getLocation().get(0),
+            event.getLocation().get(1));
   }
 
   /**
-   *
    * @return the distance parameter
    */
-  public double getDist(){
+  public double getDist() {
     return this.dist;
   }
 
   /**
    * gets the price.
-   *
    * @return the price
    */
   public int getPrice() {
@@ -111,9 +105,7 @@ public class Suggestion {
 
   /**
    * sets the price.
-   *
-   * @param price
-   *          the price to set
+   * @param price the price to set
    */
   public void setPrice(int price) {
     this.price = price;
@@ -121,7 +113,6 @@ public class Suggestion {
 
   /**
    * gets the votes.
-   *
    * @return the votes
    */
   public int getVotes() {
@@ -130,9 +121,7 @@ public class Suggestion {
 
   /**
    * sets the votes.
-   *
-   * @param votes
-   *          the votes to set
+   * @param votes the votes to set
    */
   public void setVotes(int votes) {
     this.votes = votes;
@@ -140,7 +129,6 @@ public class Suggestion {
 
   /**
    * gets the rating.
-   *
    * @return the rating
    */
   public double getRating() {
@@ -149,9 +137,7 @@ public class Suggestion {
 
   /**
    * sets the rating.
-   *
-   * @param rating
-   *          the rating to set
+   * @param rating the rating to set
    */
   public void setRating(double rating) {
     this.rating = rating;
@@ -159,7 +145,6 @@ public class Suggestion {
 
   /**
    * gets the latitude
-   *
    * @return the latitude
    */
   public double getLat() {
@@ -168,9 +153,7 @@ public class Suggestion {
 
   /**
    * sets the latitude
-   *
-   * @param lat
-   *          the latitude
+   * @param lat the latitude
    */
   public void setLat(double lat) {
     this.lat = lat;
@@ -178,7 +161,6 @@ public class Suggestion {
 
   /**
    * gets the longitude
-   *
    * @return the longitude
    */
   public double getLon() {
@@ -187,9 +169,7 @@ public class Suggestion {
 
   /**
    * sets the longitude
-   *
-   * @param lon
-   *          the longitude
+   * @param lon the longitude
    */
   public void setLon(double lon) {
     this.lon = lon;
@@ -197,7 +177,6 @@ public class Suggestion {
 
   /**
    * gets the location.
-   *
    * @return the location
    */
   public String getLocation() {
@@ -206,9 +185,7 @@ public class Suggestion {
 
   /**
    * sets the location.
-   *
-   * @param location
-   *          the location to set
+   * @param location the location to set
    */
   public void setLocation(String location) {
     this.location = location;
@@ -216,7 +193,6 @@ public class Suggestion {
 
   /**
    * gets the url.
-   *
    * @return the url
    */
   public String getUrl() {
@@ -225,9 +201,7 @@ public class Suggestion {
 
   /**
    * sets the url.
-   *
-   * @param url
-   *          the url to set
+   * @param url the url to set
    */
   public void setUrl(String url) {
     this.url = url;
@@ -235,26 +209,76 @@ public class Suggestion {
 
   /**
    * gets the category.
-   *
    * @return the category
    */
   public String getCategory() {
-    return this.category;
+    if (this.category == null) {
+      return "category";
+    }
+    JsonObject json = Main.GSON.fromJson(this.category, JsonObject.class);
+    if (json.has("label")) {
+      return json.get("label").getAsString();
+    } else {
+      return "category";
+    }
   }
 
   /**
    * sets the category.
-   *
-   * @param category
-   *          the category to set
+   * @param category the category to set
    */
   public void setCategory(String category) {
-    this.category = category;
+    if (category.contains("{") && category.contains("}")) {
+      this.category = category;
+      return;
+    }
+    JsonObject json;
+    if (this.category == null) {
+      json = new JsonObject();
+    } else {
+      json = Main.GSON.fromJson(this.category, JsonObject.class);
+    }
+    json.addProperty("label", category);
+    this.category = json.toString();
+  }
+
+  /**
+   * Get the yelp value of the category.
+   * @return - the category value.
+   */
+  public String getCatValue() {
+    if (this.category == null) {
+      return "catVal";
+    }
+    JsonObject json = Main.GSON.fromJson(this.category, JsonObject.class);
+    if (json.has("value")) {
+      return json.get("value").getAsString();
+    } else {
+      return "catVal";
+    }
+  }
+
+  /**
+   * Set the yelp value of the category.
+   * @param catValue - the category value.
+   */
+  public void setCatValue(String catValue) {
+    JsonObject json;
+    if (this.category == null) {
+      json = new JsonObject();
+    } else {
+      json = Main.GSON.fromJson(this.category, JsonObject.class);
+    }
+    json.addProperty("value", catValue);
+    this.category = json.toString();
+  }
+
+  public String getCatJson() {
+    return this.category;
   }
 
   /**
    * gets the photo.
-   *
    * @return the photo
    */
   public String getPhoto() {
@@ -263,9 +287,7 @@ public class Suggestion {
 
   /**
    * sets the photo.
-   *
-   * @param photo
-   *          the photo to set
+   * @param photo the photo to set
    */
   public void setPhoto(String photo) {
     this.photo = photo;
@@ -280,7 +302,6 @@ public class Suggestion {
 
   /**
    * Gets a suggestion represented as a JsonObject.
-   *
    * @return a JsonObject with the data from the caller.
    */
   public JsonObject getAsJsonObject() {
@@ -291,7 +312,28 @@ public class Suggestion {
     obj.addProperty("rating", this.rating);
     obj.addProperty("location", this.location);
     obj.addProperty("url", this.url);
-    obj.addProperty("category", this.category);
+    obj.addProperty("category", this.getCategory());
+    obj.addProperty("photo", this.photo);
+    obj.addProperty("venue", this.venue);
+    obj.addProperty("lat", this.lat);
+    obj.addProperty("lon", this.lon);
+    obj.addProperty("distance", this.dist);
+    return obj;
+  }
+
+  /**
+   * Gets a suggestion represented as a JsonObject with full category.
+   * @return a JsonObject with the data from the caller.
+   */
+  public JsonObject getAsJsonObjectFull() {
+    JsonObject obj = new JsonObject();
+    obj.addProperty("id", this.id);
+    obj.addProperty("price", this.price);
+    obj.addProperty("votes", this.votes);
+    obj.addProperty("rating", this.rating);
+    obj.addProperty("location", this.location);
+    obj.addProperty("url", this.url);
+    obj.addProperty("category", this.getCatJson());
     obj.addProperty("photo", this.photo);
     obj.addProperty("venue", this.venue);
     obj.addProperty("lat", this.lat);
@@ -302,15 +344,17 @@ public class Suggestion {
 
   /**
    * Turns a list of suggestions into a string.
-   *
-   * @param s
-   *          the suggestion list to translate.
+   * @param s the suggestion list to translate.
    * @return a string representing a JsonArray of the contents of the list.
    */
-  public static String suggToString(List<Suggestion> s) {
+  public static String suggToString(List<Suggestion> s, boolean fullCat) {
     JsonArray jarray = new JsonArray();
     for (Suggestion sugg : s) {
-      jarray.add(sugg.toString());
+      if (!fullCat) {
+        jarray.add(sugg.toString());
+      } else {
+        jarray.add(sugg.getAsJsonObjectFull().toString());
+      }
     }
 
     return jarray.toString();
@@ -319,9 +363,7 @@ public class Suggestion {
   /**
    * Takes a string produced to a json object by Suggestion.toString() and turns
    * it into a Suggestion object.
-   *
-   * @param sugg
-   *          the string to be translated into a Suggestion.
+   * @param sugg the string to be translated into a Suggestion.
    * @return a Suggestion object with the data from the string.
    */
   public static Suggestion toSugg(String sugg) {
@@ -347,9 +389,7 @@ public class Suggestion {
   /**
    * Translates a string representing a list of suggestions into a list of
    * suggestions.
-   *
-   * @param array
-   *          the string to translate
+   * @param array the string to translate
    * @return A list of suggestions.
    */
   public static List<Suggestion> getStringAsList(String array) {
@@ -367,9 +407,7 @@ public class Suggestion {
 
   /**
    * Translates a JsonElement into a Suggestion object.
-   *
-   * @param s
-   *          the JsonElement to translate.
+   * @param s the JsonElement to translate.
    * @return A suggestion Object with the data from s.
    */
   private static Suggestion toSugg(JsonElement s) {
@@ -386,8 +424,7 @@ public class Suggestion {
   }
 
   /**
-   * @param venue
-   *          the venue to set
+   * @param venue the venue to set
    */
   public void setVenue(String venue) {
     this.venue = venue;
@@ -403,19 +440,22 @@ public class Suggestion {
     double c = 0.25 * value;
     //The distance is perceived logarithmically, so it is adjusted and inverted
     //The adjusted distance is multiplied by a value/quality metric
-    double score = (1.0 / Math.log(dist)) * (value + c * this.rating);
+    double score = (1.0 / Math.log(this.dist)) * (value + c * this.rating);
 
     return score;
   }
 
-  public static double haversineDist(Double lat1, Double lon1, Double lat2, Double lon2) {
+  public static double haversineDist(Double lat1, Double lon1, Double lat2,
+                                     Double lon2) {
     final double radius = 3958.8; //miles
 
 //    left part of the square root in haversine's
-    double left =  Math.pow(Math.sin(degreeToRadian(lat2 - lat1) / 2.0), 2.0);
+    double left =
+        Math.pow(Math.sin(Suggestion.degreeToRadian(lat2 - lat1) / 2.0), 2.0);
 //    right part of the square root in haversine's
-    double right = Math.cos(degreeToRadian(lat1)) * Math.cos(degreeToRadian(lat2))
-            * Math.pow(Math.sin(degreeToRadian(lon2 - lon1) / 2.0), 2.0);
+    double right = Math.cos(Suggestion.degreeToRadian(lat1)) * Math
+        .cos(Suggestion.degreeToRadian(lat2)) * Math
+        .pow(Math.sin(Suggestion.degreeToRadian(lon2 - lon1) / 2.0), 2.0);
 
 
     Double dist = 2.0 * radius * Math.asin(Math.sqrt(left + right));
@@ -430,92 +470,50 @@ public class Suggestion {
    * @return the degree measure in radians
    */
   public static double degreeToRadian(Double degree) {
-    return degree * (Math.PI/180.0);
+    return degree * (Math.PI / 180.0);
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((category == null) ? 0 : category.hashCode());
-    result = prime * result + ((location == null) ? 0 : location.hashCode());
-    result = prime * result + ((photo == null) ? 0 : photo.hashCode());
-    result = prime * result + price;
+    result = prime * result + ((this.category == null) ? 0 :
+        this.category.hashCode());
+    result = prime * result + ((this.location == null) ? 0 :
+        this.location.hashCode());
+    result =
+        prime * result + ((this.photo == null) ? 0 : this.photo.hashCode());
+    result = prime * result + this.price;
     long temp;
-    temp = Double.doubleToLongBits(rating);
+    temp = Double.doubleToLongBits(this.rating);
     result = prime * result + (int) (temp ^ (temp >>> 32));
-    result = prime * result + ((url == null) ? 0 : url.hashCode());
-    result = prime * result + ((venue == null) ? 0 : venue.hashCode());
+    result = prime * result + ((this.url == null) ? 0 : this.url.hashCode());
+    result =
+        prime * result + ((this.venue == null) ? 0 : this.venue.hashCode());
     return result;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
     }
-    if (obj == null) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    Suggestion other = (Suggestion) obj;
-    if (category == null) {
-      if (other.category != null) {
-        return false;
-      }
-    } else if (!category.equals(other.category)) {
-      return false;
-    }
-    if (location == null) {
-      if (other.location != null) {
-        return false;
-      }
-    } else if (!location.equals(other.location)) {
-      return false;
-    }
-    if (photo == null) {
-      if (other.photo != null) {
-        return false;
-      }
-    } else if (!photo.equals(other.photo)) {
-      return false;
-    }
-    if (price != other.price) {
-      return false;
-    }
-    if (Double.doubleToLongBits(rating) != Double
-        .doubleToLongBits(other.rating)) {
-      return false;
-    }
-    if (url == null) {
-      if (other.url != null) {
-        return false;
-      }
-    } else if (!url.equals(other.url)) {
-      return false;
-    }
-    if (venue == null) {
-      if (other.venue != null) {
-        return false;
-      }
-    } else if (!venue.equals(other.venue)) {
-      return false;
-    }
-    return true;
+    Suggestion that = (Suggestion) o;
+    return Objects.equals(this.id, that.id);
   }
 
   /**
    * @return the id
    */
   public String getId() {
-    return id;
+    return this.id;
   }
 
   /**
-   * @param id
-   *          the id to set
+   * @param id the id to set
    */
   public void setId(String id) {
     this.id = id;

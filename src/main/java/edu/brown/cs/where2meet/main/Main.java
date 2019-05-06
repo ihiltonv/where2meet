@@ -1,18 +1,10 @@
 package edu.brown.cs.where2meet.main;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import edu.brown.cs.where2meet.event.Event;
 import edu.brown.cs.where2meet.event.Suggestion;
 import edu.brown.cs.where2meet.event.User;
@@ -26,6 +18,14 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public final class Main {
 
@@ -63,8 +63,8 @@ public final class Main {
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
-      System.out.printf("ERROR: Unable use %s for template loading.%n",
-          templates);
+      System.out
+          .printf("ERROR: Unable use %s for template loading.%n", templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -78,18 +78,18 @@ public final class Main {
     Spark.exception(Exception.class, new ExceptionPrinter());
 
     Spark.options("/*", (request, response) -> {
-      String accessControlRequestHeaders = request
-          .headers("Access-Control-Request-Headers");
+      String accessControlRequestHeaders =
+          request.headers("Access-Control-Request-Headers");
       if (accessControlRequestHeaders != null) {
         response.header("Access-Control-Allow-Headers",
             accessControlRequestHeaders);
       }
 
-      String accessControlRequestMethod = request
-          .headers("Access-Control-Request-Method");
+      String accessControlRequestMethod =
+          request.headers("Access-Control-Request-Method");
       if (accessControlRequestMethod != null) {
-        response.header("Access-Control-Allow-Methods",
-            accessControlRequestMethod);
+        response
+            .header("Access-Control-Allow-Methods", accessControlRequestMethod);
       }
 
       return "OK";
@@ -109,6 +109,7 @@ public final class Main {
     Spark.post("/event", new EventHandler(Main.wmu));
     Spark.get("/event/:id", new GetEventDataHandler(Main.wmu));
     Spark.post("/newuser", new UserHandler(Main.wmu));
+    Spark.post("/update/:id", new UpdateSuggestions(Main.wmu));
 
   }
 
@@ -153,8 +154,59 @@ public final class Main {
 
       // TODO: Build the json
 
-      Map<String, Object> variables = ImmutableMap.of("id", event.getId(),
-          "suggestionsList", suggestions, "error", false, "errorMsg", "");
+      Map<String, Object> variables = ImmutableMap
+          .of("id", event.getId(), "suggestionsList", suggestions, "error",
+              false, "errorMsg", "");
+
+      return Main.GSON.toJson(variables);
+    }
+  }
+
+
+  public static class UpdateSuggestions implements Route {
+    W2MUniverse wmu;
+
+    public UpdateSuggestions(W2MUniverse wmu) {
+      this.wmu = wmu;
+    }
+
+    @Override
+    public Object handle(Request req, Response res) throws Exception {
+      // get the JSON String
+      String data = req.body();
+      boolean error = false;
+      String errorMsg = "";
+      // get the id from the url
+      String id = req.params(":id");
+
+      Event event = this.wmu.wmd.getEvent(Long.parseLong(id));
+
+      String name = "";
+      String time = "";
+      String date = "";
+      double distance = 0.0;
+      List<Suggestion> updatedSuggestionsList = new ArrayList<>();
+      List<Double> location = new ArrayList<>();
+      JsonArray cats = new JsonArray();
+      if (event == null) {
+        error = true;
+        errorMsg = "No event found with ID " + id;
+      } else {
+        // get the string as an object
+        JsonObject json = Main.GSON.fromJson(data, JsonObject.class);
+        cats = json.getAsJsonArray("categories");
+        List<String> catList = new ArrayList<>();
+        for (JsonElement e : cats) {
+          catList.add(e.getAsJsonObject().get("value").getAsString());
+        }
+
+        updatedSuggestionsList = event.updateSuggestions(catList);
+        this.wmu.wmd.updateEvent(event);
+      }
+
+      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
+          .put("suggestionsList", updatedSuggestionsList).put("error", error)
+          .put("errorMsg", errorMsg).build();
 
       return Main.GSON.toJson(variables);
     }
@@ -204,21 +256,20 @@ public final class Main {
         cats = event.getAllCats();
       }
 
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-          .put("eventID", id).put("groupName", name).put("meetingTime", time)
-          .put("meetingDate", date)
-          .put("suggestionsList", initialSuggestionsList)
-          .put("location", location).put("cats", cats).put("error", error)
-          .put("errorMsg", errorMsg).build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().put("eventID", id)
+              .put("groupName", name).put("meetingTime", time)
+              .put("meetingDate", date)
+              .put("suggestionsList", initialSuggestionsList)
+              .put("location", location).put("cats", cats).put("error", error)
+              .put("errorMsg", errorMsg).build();
 
       return Main.GSON.toJson(variables);
     }
   }
 
   /**
-   * <<<<<<< HEAD This class handles a user voting in a specific event. =======
-   * This class handles the creation of a new user for a specific event. >>>>>>>
-   * abc8ae73fd6264bf8cd91aca30bd6034155c9bc3
+   * This class handles the creation of a new user for a specific event.
    */
   public static class UserHandler implements Route {
 
@@ -258,8 +309,9 @@ public final class Main {
         uID = u.getId();
       }
 
-      Map<String, Object> variables = ImmutableMap.of("userID", uID,
-          "existingUser", existingUser, "error", error, "errorMsg", errorMsg);
+      Map<String, Object> variables = ImmutableMap
+          .of("userID", uID, "existingUser", existingUser, "error", error,
+              "errorMsg", errorMsg);
 
       return Main.GSON.toJson(variables);
     }
@@ -267,7 +319,6 @@ public final class Main {
 
   /**
    * Display an error page when an exception occurs in the server.
-   *
    * @author jj
    */
   private static class ExceptionPrinter implements ExceptionHandler {

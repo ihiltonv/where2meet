@@ -25,7 +25,7 @@ class SuggestionsTable extends React.Component {
                                 <div className={"dollarVotes"}>
                                     <div>
                                         <div className={"category"}>
-                                            {data.category}
+                                            {JSON.parse(data.category).label}
                                         </div>
                                         <div className={"venueName"}>
                                             <a className={"venueName"} target="_blank" href={data.url}>{data.venue}</a>

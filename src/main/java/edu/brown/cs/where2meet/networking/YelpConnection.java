@@ -56,9 +56,16 @@ public class YelpConnection {
     return cats.get(0).getAsJsonObject().get("title").getAsString();
   }
 
+  private static String parseCatValue(JsonObject root) {
+    JsonArray cats = root.getAsJsonArray("categories");
+    if (cats.size() <= 0) {
+      return "";
+    }
+    return cats.get(0).getAsJsonObject().get("alias").getAsString();
+  }
+
   /**
    * Method to get the venues nearest a given point.
-   *
    * @param lat    - the lat of the point
    * @param lon    - the lon of the point
    * @param types  - the types of the venue to search for
@@ -99,6 +106,7 @@ public class YelpConnection {
         }
         if (curr.has("categories")) {
           s.setCategory(YelpConnection.parseCategories(curr));
+          s.setCatValue(YelpConnection.parseCatValue(curr));
         }
         if (curr.has("image_url")) {
           s.setPhoto(curr.get("image_url").getAsString());
@@ -122,7 +130,6 @@ public class YelpConnection {
 
   /**
    * Method to make a query to the foursquare API.
-   *
    * @param url the URL of the query
    * @return the query as a JsonObject
    * @throws IOException if there is an error networking with the API
