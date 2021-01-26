@@ -1,19 +1,27 @@
-# term-project
+# Where2Meet
 
-DATA:
-The data contains three tables: users, events, and events\_users. 
+## About
+The motivation for this project was to create an easy way for people to find the best place to meet up with friends. In order to do this, we designed an app that recommends venues based on a variety of factors such as the type of venue the user wants, the area they are in, and the time they are meeting. Users are able to create a group and send a link to their friends who can view results, filter them based on distance, price, and type of venue, and vote on their top three choices. As everyone votes, the leaderboard of the top three choices is displayed so everyone knows what the top choices are.
 
-Users contains id:Long, name:string, latitude:double, longitude:double. Id is the id of the user, name is the name of the user, latitude is the lat of the user's location, and longitude is the long of the user's location. 
+### Features
+- Real-time leaderboard rankings updated using websockets
+- Backend API features a SQL database with caching to facilitate quick data access
+- Frontend uses React.js with Google Maps integration featuring real-time filtering and sorting of data
 
-Events contains. id:Long, name:string, latitude:double, longitude:double, date:string, time:string, s1:string, s2:string, s3:string. Id is the event id, name is the event name, latitude and longitude are the coordinates of the event's location, date is a string with the date of the event and time is a string with the time of the event. S1,s2, and s3 are the top three suggestions for a user in that event, in string form. Use the Suggestion.toSugg(String) method to turn them back into suggestions.
 
-Events\_users contains event\_id:long, user\_id:Long, price:int, rating:double, distance:double, category:string, s1:string, s2:string, and s3:string. Event\_id is the id of the event, user\_id is the id of the user, price and rating are integers representing the values of the filters for that user in that event, distance is a double representing the distance filter for that event with that user, and category is the category filter for that user and that event. S1,s2, and s3 are the top three suggestions for a user in that event, in string form. Use the Suggestion.toSugg(String) method to turn them back into suggestions.
+## Screenshots
+The initial login page displayed to the user:
 
-Filters in use: 
-	Price (integer 1-4)
-	Location range(double)
-	Popularity(double 0-5)
-	Category(string)
-	
-	
-There are also a number of magic number errors in the checkstyle for W2MDatabase, those should be disregarded as they pertain to indices that were used to get data from a resultset.
+<img src="screenshots/login.png" alt="login page" width="800"/>
+
+The popup to enter initial event information:
+
+<img src="screenshots/signup.png" alt="login page" width="800"/>
+
+The homepage with a scroll pane in the center, filtering options on the left, and leaderborard info on the right:
+
+<img src="screenshots/home_with_votes.png" alt="login page" width="800"/>
+
+A modal that users can select to view more yelp information when clicking on a venue:
+
+<img src="screenshots/yelp.png" alt="login page" width="800"/>
