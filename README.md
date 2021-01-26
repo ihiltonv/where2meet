@@ -35,4 +35,3 @@ From the `where2meet` directory:
 - `npm install` to install dependencies
 - `npm run build` to compile production build
 - `npm start` to run
-- `np
