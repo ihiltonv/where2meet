@@ -25,3 +25,14 @@ The homepage with a scroll pane in the center, filtering options on the left, an
 A modal that users can select to view more yelp information when clicking on a venue:
 
 <img src="screenshots/yelp.png" alt="login page" width="800"/>
+
+## To Run
+### Backend:
+- `mvn package` from the root directory to compile.
+- `./run` to run the compiled code
+### Frontend:
+From the `where2meet` directory:
+- `npm install` to install dependencies
+- `npm run build` to compile production build
+- `npm start` to run
+- `np
